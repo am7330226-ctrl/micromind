@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicroMind - Daily Mental Declutter</title>
+    <meta name="description" content="MicroMind – a premium daily mental declutter app. Capture tasks instantly, prioritize with the Eisenhower matrix, track micro-habits, and start each day with a clear mind.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="header-main">
+                <div class="logo-area">
+                    <div class="logo-icon">
+                        <i data-lucide="brain-circuit"></i>
+                    </div>
+                    <div>
+                        <h1 class="app-title">MicroMind</h1>
+                        <p class="app-subtitle">Daily Mental Declutter</p>
+                    </div>
+                </div>
+                <div class="date-display" id="current-date">July 8, 2026</div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Daily Streak</span>
+                    <div class="stat-value streak-value">
+                        <i data-lucide="flame" class="streak-icon"></i>
+                        <span id="streak-count">0</span> days
+                    </div>
+                </div>
+                <div class="stat-card completion-stat">
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="56" height="56">
+                            <circle class="progress-ring-circle-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="4" fill="transparent" r="24" cx="28" cy="28"/>
+                            <circle class="progress-ring-circle" id="progress-circle" stroke="var(--color-emerald)" stroke-width="4" fill="transparent" r="24" cx="28" cy="28"/>
+                        </svg>
+                        <div class="progress-text" id="progress-percentage">0%</div>
+                    </div>
+                    <div class="progress-labels">
+                        <span class="stat-label">Tasks Done</span>
+                        <span class="stat-value" id="task-ratio">0/0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Left Column: Brain Dump & Habits -->
+            <section class="column-left">
+                <div class="glass-panel brain-dump-panel">
+                    <div class="panel-header">
+                        <h2><i data-lucide="list-todo"></i> Brain Dump</h2>
+                        <span class="helper-badge">Frictionless Capture</span>
+                    </div>
+
+                    <div class="dump-input-container">
+                        <input type="text" id="dump-input" placeholder="Type a task, thought, or distraction and hit Enter..." autocomplete="off">
+                        <button id="dump-submit-btn" aria-label="Add task">
+                            <i data-lucide="arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="inbox-container">
+                        <div class="inbox-header">
+                            <h3>Unsorted Thoughts (<span id="inbox-count">0</span>)</h3>
+                            <button id="clear-inbox-btn" class="text-btn">Clear Completed</button>
+                        </div>
+                        <div class="task-list scrollable-list" id="inbox-list" data-category="inbox">
+                            <div class="empty-state">
+                                <i data-lucide="sparkles"></i>
+                                <p>Mind is clear! Type above to dump thoughts.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Habits -->
+                <div class="glass-panel habits-panel">
+                    <div class="panel-header">
+                        <h2><i data-lucide="check-circle-2"></i> Daily Micro-Habits</h2>
+                        <span class="helper-badge">Routine</span>
+                    </div>
+                    <div class="habits-grid" id="habits-container"></div>
+                </div>
+            </section>
+
+            <!-- Right Column: Focus Three & Eisenhower Matrix -->
+            <section class="column-right">
+                <!-- Today's Focus Three -->
+                <div class="glass-panel focus-panel">
+                    <div class="panel-header">
+                        <h2><i data-lucide="target"></i> Today's Focus Three</h2>
+                        <span class="helper-badge focus-badge">Critical Intent</span>
+                    </div>
+                    <p class="panel-desc">Commit to just three high-impact outcomes for today. Drag tasks here.</p>
+                    <div class="focus-slots" id="focus-slots-container">
+                        <div class="focus-slot" data-slot="1">
+                            <div class="slot-number">1</div>
+                            <div class="slot-target" data-category="focus-1">
+                                <span class="slot-placeholder">Drag primary focus here</span>
+                            </div>
+                        </div>
+                        <div class="focus-slot" data-slot="2">
+                            <div class="slot-number">2</div>
+                            <div class="slot-target" data-category="focus-2">
+                                <span class="slot-placeholder">Drag secondary focus here</span>
+                            </div>
+                        </div>
+                        <div class="focus-slot" data-slot="3">
+                            <div class="slot-number">3</div>
+                            <div class="slot-target" data-category="focus-3">
+                                <span class="slot-placeholder">Drag tertiary focus here</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eisenhower Priority Grid -->
+                <div class="glass-panel matrix-panel">
+                    <div class="panel-header">
+                        <h2><i data-lucide="layout-grid"></i> Eisenhower Sorting Matrix</h2>
+                        <span class="helper-badge">Prioritization</span>
+                    </div>
+                    <div class="matrix-grid">
+                        <div class="matrix-quadrant q-urgent-important" id="quadrant-q1" data-category="q1">
+                            <div class="quadrant-header">
+                                <h3><i data-lucide="zap" class="q-icon icon-q1"></i> Do First</h3>
+                                <span class="quadrant-label">Urgent & Important</span>
+                            </div>
+                            <div class="quadrant-content task-list scrollable-list" id="q1-list"></div>
+                        </div>
+
+                        <div class="matrix-quadrant q-important" id="quadrant-q2" data-category="q2">
+                            <div class="quadrant-header">
+                                <h3><i data-lucide="calendar" class="q-icon icon-q2"></i> Schedule</h3>
+                                <span class="quadrant-label">Important, Not Urgent</span>
+                            </div>
+                            <div class="quadrant-content task-list scrollable-list" id="q2-list"></div>
+                        </div>
+
+                        <div class="matrix-quadrant q-urgent" id="quadrant-q3" data-category="q3">
+                            <div class="quadrant-header">
+                                <h3><i data-lucide="users" class="q-icon icon-q3"></i> Delegate</h3>
+                                <span class="quadrant-label">Urgent, Not Important</span>
+                            </div>
+                            <div class="quadrant-content task-list scrollable-list" id="q3-list"></div>
+                        </div>
+
+                        <div class="matrix-quadrant q-eliminate" id="quadrant-q4" data-category="q4">
+                            <div class="quadrant-header">
+                                <h3><i data-lucide="trash-2" class="q-icon icon-q4"></i> Eliminate</h3>
+                                <span class="quadrant-label">Neither</span>
+                            </div>
+                            <div class="quadrant-content task-list scrollable-list" id="q4-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer / Daily Reset -->
+        <footer class="app-footer">
+            <div class="reset-prompt-area">
+                <p>Ready to wrap up? Clean your mind for tomorrow.</p>
+                <span class="reset-help">Archives completed tasks, saves your streak, and rolls over active tasks.</span>
+            </div>
+            <button id="daily-reset-btn" class="btn btn-primary btn-glow">
+                <i data-lucide="refresh-cw"></i> Complete Daily Reset
+            </button>
+        </footer>
+    </div>
+
+    <!-- Completion Animation Canvas -->
+    <canvas id="animation-canvas"></canvas>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
