@@ -36,6 +36,10 @@
             </div>
 
             <div class="header-stats">
+                <div class="profile-badge" id="profile-badge" style="display: none;">
+                    <div class="avatar" id="avatar-initials"></div>
+                    <span class="profile-name" id="profile-name"></span>
+                </div>
                 <button id="logout-btn" class="btn" style="display: none; padding: 6px 12px; border: 1px solid var(--color-border); background: var(--color-surface); font-size: 0.75rem; border-radius: var(--radius-md); color: var(--text-secondary);"><i data-lucide="log-out"></i> Logout</button>
                 <div class="stat-card">
                     <span class="stat-label">Daily Streak</span>
@@ -265,21 +269,31 @@
         <div class="auth-modal-content glass-panel">
             <div class="auth-header">
                 <i data-lucide="brain-circuit" class="auth-icon"></i>
-                <h2 id="auth-title">Welcome to MicroMind</h2>
+                <h2 id="auth-title">Welcome Back</h2>
                 <p id="auth-subtitle">Log in to sync your mental declutter.</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" type="button">Log In</button>
+                <button class="auth-tab" id="tab-signup" type="button">Sign Up</button>
             </div>
             
             <form id="auth-form">
-                <input type="email" id="auth-email" placeholder="Email Address" required>
-                <input type="password" id="auth-password" placeholder="Password" required minlength="6">
+                <div class="input-group" id="name-group" style="display: none;">
+                    <i data-lucide="user" class="input-icon"></i>
+                    <input type="text" id="auth-name" placeholder="Full Name">
+                </div>
+                <div class="input-group">
+                    <i data-lucide="mail" class="input-icon"></i>
+                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock" class="input-icon"></i>
+                    <input type="password" id="auth-password" placeholder="Password" required minlength="6">
+                </div>
                 <div id="auth-error" class="auth-error"></div>
                 <button type="submit" id="auth-submit-btn" class="btn btn-primary">Log In</button>
             </form>
-            
-            <p class="auth-toggle">
-                <span id="auth-toggle-text">Don't have an account?</span> 
-                <button id="auth-toggle-btn" type="button" class="text-btn">Sign Up</button>
-            </p>
         </div>
     </div>
 

@@ -50,22 +50,40 @@ let isLoginMode = true;
 function initAuth() {
     const authModal = document.getElementById('auth-modal');
     const authForm = document.getElementById('auth-form');
-    const toggleBtn = document.getElementById('auth-toggle-btn');
-    const toggleText = document.getElementById('auth-toggle-text');
+    
+    const tabLogin = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
+    const nameGroup = document.getElementById('name-group');
+    const authName = document.getElementById('auth-name');
+    
     const submitBtn = document.getElementById('auth-submit-btn');
     const authTitle = document.getElementById('auth-title');
     const errorEl = document.getElementById('auth-error');
     const logoutBtn = document.getElementById('logout-btn');
 
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            authTitle.textContent = isLoginMode ? 'Welcome to MicroMind' : 'Create an Account';
-            submitBtn.textContent = isLoginMode ? 'Log In' : 'Sign Up';
-            toggleText.textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            toggleBtn.textContent = isLoginMode ? 'Sign Up' : 'Log In';
-            errorEl.textContent = '';
-        });
+    function setLoginMode(login) {
+        isLoginMode = login;
+        if (login) {
+            tabLogin.classList.add('active');
+            tabSignup.classList.remove('active');
+            nameGroup.style.display = 'none';
+            authName.required = false;
+            authTitle.textContent = 'Welcome Back';
+            submitBtn.textContent = 'Log In';
+        } else {
+            tabSignup.classList.add('active');
+            tabLogin.classList.remove('active');
+            nameGroup.style.display = 'flex';
+            authName.required = true;
+            authTitle.textContent = 'Create an Account';
+            submitBtn.textContent = 'Sign Up';
+        }
+        errorEl.textContent = '';
+    }
+
+    if (tabLogin && tabSignup) {
+        tabLogin.addEventListener('click', () => setLoginMode(true));
+        tabSignup.addEventListener('click', () => setLoginMode(false));
     }
 
     if (authForm) {
@@ -73,14 +91,17 @@ function initAuth() {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
+            const name = authName.value;
             errorEl.textContent = 'Loading...';
 
             try {
                 const endpoint = isLoginMode ? '/api/login' : '/api/register';
+                const bodyData = isLoginMode ? { email, password } : { email, password, name };
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify(bodyData)
                 });
                 
                 const data = await response.json();
@@ -96,6 +117,8 @@ function initAuth() {
                 authModal.classList.remove('active');
                 if (logoutBtn) logoutBtn.style.display = 'block';
                 
+                if (data.name) updateProfileBadge(data.name);
+                
                 loadState();
             } catch (err) {
                 errorEl.textContent = 'Failed to connect to server';
@@ -109,6 +132,9 @@ function initAuth() {
             localStorage.removeItem('micromind_token');
             authModal.classList.add('active');
             logoutBtn.style.display = 'none';
+            const badge = document.getElementById('profile-badge');
+            if (badge) badge.style.display = 'none';
+            
             // Clear current view
             state.tasks = [];
             renderAll();
@@ -123,7 +149,30 @@ function initAuth() {
     } else {
         authModal.classList.add('active');
         if (logoutBtn) logoutBtn.style.display = 'none';
+        const badge = document.getElementById('profile-badge');
+        if (badge) badge.style.display = 'none';
     }
+}
+
+function updateProfileBadge(fullName) {
+    const badge = document.getElementById('profile-badge');
+    const nameEl = document.getElementById('profile-name');
+    const initialsEl = document.getElementById('avatar-initials');
+    
+    if (!badge || !fullName) return;
+    
+    badge.style.display = 'flex';
+    
+    // Get first name for display
+    const names = fullName.trim().split(' ');
+    nameEl.textContent = names[0];
+    
+    // Get initials (up to 2)
+    let initials = names[0].charAt(0).toUpperCase();
+    if (names.length > 1) {
+        initials += names[names.length - 1].charAt(0).toUpperCase();
+    }
+    initialsEl.textContent = initials;
 }
 
 async function saveState() {
@@ -157,11 +206,19 @@ async function loadState() {
             localStorage.removeItem('micromind_token');
             document.getElementById('auth-modal').classList.add('active');
             document.getElementById('logout-btn').style.display = 'none';
+            const badge = document.getElementById('profile-badge');
+            if (badge) badge.style.display = 'none';
             return;
         }
 
         if (response.ok) {
-            const data = await response.json();
+            const result = await response.json();
+            
+            if (result.profile && result.profile.name) {
+                updateProfileBadge(result.profile.name);
+            }
+            
+            const data = result.data;
             if (data) {
                 if (data.state) state = { ...state, ...data.state };
                 if (data.streak !== undefined) streak = data.streak;
