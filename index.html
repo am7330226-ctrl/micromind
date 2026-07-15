@@ -53,6 +53,10 @@
                     </div>
                 </div>
             </div>
+            <button id="pomodoro-toggle-btn" class="pomodoro-header-btn" title="Open Pomodoro Timer" aria-label="Open Pomodoro Timer">
+                <span class="pomodoro-tomato">🍅</span>
+                <span class="pomodoro-header-label">Pomodoro</span>
+            </button>
         </header>
 
         <!-- Main Workspace -->
@@ -181,6 +185,72 @@
             </button>
         </footer>
     </div>
+
+    <!-- Pomodoro Timer Widget -->
+    <div id="pomodoro-widget" class="pomodoro-widget" aria-label="Pomodoro Timer" role="dialog" aria-modal="true">
+        <div class="pomodoro-inner">
+            <!-- Header -->
+            <div class="pomodoro-header">
+                <div class="pomodoro-title-area">
+                    <span class="pomodoro-tomato-lg">🍅</span>
+                    <div>
+                        <h2 class="pomodoro-title">Pomodoro Timer</h2>
+                        <p class="pomodoro-task-label" id="pomodoro-task-label">No task selected</p>
+                    </div>
+                </div>
+                <button id="pomodoro-close-btn" class="pomodoro-close" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Mode Tabs -->
+            <div class="pomodoro-modes">
+                <button class="pomo-mode-btn active" data-mode="focus" id="mode-focus">Focus 25m</button>
+                <button class="pomo-mode-btn" data-mode="short" id="mode-short">Break 5m</button>
+                <button class="pomo-mode-btn" data-mode="long" id="mode-long">Long 15m</button>
+            </div>
+
+            <!-- Circular Timer -->
+            <div class="pomodoro-clock-container">
+                <svg class="pomo-ring" viewBox="0 0 200 200" width="200" height="200">
+                    <circle class="pomo-ring-bg" cx="100" cy="100" r="88" />
+                    <circle class="pomo-ring-fill" id="pomo-ring-fill" cx="100" cy="100" r="88" />
+                </svg>
+                <div class="pomodoro-clock-inner">
+                    <div class="pomo-time" id="pomo-time">25:00</div>
+                    <div class="pomo-mode-label" id="pomo-mode-label">Focus Time</div>
+                </div>
+            </div>
+
+            <!-- Session Counter -->
+            <div class="pomo-sessions">
+                <span class="pomo-sessions-label">Sessions today</span>
+                <div class="pomo-session-dots" id="pomo-session-dots"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="pomodoro-controls">
+                <button id="pomo-reset-btn" class="pomo-ctrl-btn pomo-secondary" title="Reset">
+                    <i data-lucide="rotate-ccw"></i>
+                </button>
+                <button id="pomo-start-btn" class="pomo-ctrl-btn pomo-primary">
+                    <i data-lucide="play" id="pomo-play-icon"></i>
+                    <span id="pomo-start-label">Start</span>
+                </button>
+                <button id="pomo-skip-btn" class="pomo-ctrl-btn pomo-secondary" title="Skip">
+                    <i data-lucide="skip-forward"></i>
+                </button>
+            </div>
+
+            <!-- Focus Task Picker -->
+            <div class="pomo-task-picker">
+                <span class="pomo-task-picker-label">Link a Focus Task</span>
+                <div class="pomo-focus-slots" id="pomo-focus-slots"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Pomodoro Backdrop -->
+    <div id="pomodoro-backdrop" class="pomodoro-backdrop"></div>
 
     <!-- Completion Animation Canvas -->
     <canvas id="animation-canvas"></canvas>

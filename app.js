@@ -603,8 +603,333 @@ function init() {
 }
 
 // Wait for DOM + Lucide to be ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
+function bootApp() {
     init();
+    initPomodoro();
+    requestNotifPermission();
+}
+
+
+// ============================================================
+// POMODORO TIMER MODULE
+// ============================================================
+const POMO_DURATIONS = {
+    focus: 25 * 60,
+    short:  5 * 60,
+    long:  15 * 60,
+};
+
+const POMO_LABELS = {
+    focus: 'Focus Time',
+    short: 'Short Break',
+    long:  'Long Break',
+};
+
+const RING_CIRCUMFERENCE = 2 * Math.PI * 88; // ≈ 552.9
+
+const pomo = {
+    mode:           'focus',
+    secondsLeft:    POMO_DURATIONS.focus,
+    totalSeconds:   POMO_DURATIONS.focus,
+    running:        false,
+    intervalId:     null,
+    sessions:       0,
+    linkedTaskId:   null,
+    linkedTaskText: null,
+};
+
+/* --- DOM refs (resolved after DOMContentLoaded) --- */
+let pomoWidget, pomoBackdrop, pomoToggleBtn,
+    pomoCloseBtn, pomoStartBtn, pomoResetBtn, pomoSkipBtn,
+    pomoTimeEl, pomoModeLabelEl, pomoRingFill,
+    pomoSessionDotsEl, pomoTaskLabelEl, pomoFocusSlotsEl,
+    pomoPlayIcon, pomoStartLabel;
+
+function initPomodoro() {
+    pomoWidget        = document.getElementById('pomodoro-widget');
+    pomoBackdrop      = document.getElementById('pomodoro-backdrop');
+    pomoToggleBtn     = document.getElementById('pomodoro-toggle-btn');
+    pomoCloseBtn      = document.getElementById('pomodoro-close-btn');
+    pomoStartBtn      = document.getElementById('pomo-start-btn');
+    pomoResetBtn      = document.getElementById('pomo-reset-btn');
+    pomoSkipBtn       = document.getElementById('pomo-skip-btn');
+    pomoTimeEl        = document.getElementById('pomo-time');
+    pomoModeLabelEl   = document.getElementById('pomo-mode-label');
+    pomoRingFill      = document.getElementById('pomo-ring-fill');
+    pomoSessionDotsEl = document.getElementById('pomo-session-dots');
+    pomoTaskLabelEl   = document.getElementById('pomodoro-task-label');
+    pomoFocusSlotsEl  = document.getElementById('pomo-focus-slots');
+    pomoPlayIcon      = document.getElementById('pomo-play-icon');
+    pomoStartLabel    = document.getElementById('pomo-start-label');
+
+    // Toggle open/close
+    pomoToggleBtn.addEventListener('click', () => {
+        const isOpen = pomoWidget.classList.contains('open');
+        if (isOpen) pomodoroClose(); else pomodoroOpen();
+    });
+    pomoCloseBtn.addEventListener('click', pomodoroClose);
+    pomoBackdrop.addEventListener('click', pomodoroClose);
+
+    // Mode tabs
+    document.querySelectorAll('.pomo-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (pomo.running) return; // can't switch while running
+            pomoSetMode(btn.dataset.mode);
+        });
+    });
+
+    // Controls
+    pomoStartBtn.addEventListener('click', pomoToggleTimer);
+    pomoResetBtn.addEventListener('click', pomoReset);
+    pomoSkipBtn.addEventListener('click',  pomoSkip);
+
+    // Init display
+    pomoUpdateDisplay();
+    pomoUpdateSessionDots();
+    pomoRenderFocusTaskPicker();
+}
+
+function pomodoroOpen() {
+    pomoRenderFocusTaskPicker();
+    pomoWidget.classList.add('open');
+    pomoBackdrop.classList.add('visible');
+    lucide.createIcons();
+}
+
+function pomodoroClose() {
+    pomoWidget.classList.remove('open');
+    pomoBackdrop.classList.remove('visible');
+}
+
+/* --- Mode Switching --- */
+function pomoSetMode(mode) {
+    pomo.mode         = mode;
+    pomo.secondsLeft  = POMO_DURATIONS[mode];
+    pomo.totalSeconds = POMO_DURATIONS[mode];
+
+    // Tabs
+    document.querySelectorAll('.pomo-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+    });
+
+    // Widget colour class
+    pomoWidget.classList.remove('mode-focus', 'mode-short', 'mode-long');
+    pomoWidget.classList.add('mode-' + mode);
+
+    pomoUpdateDisplay();
+    pomoUpdateRing();
+}
+
+/* --- Timer Tick --- */
+function pomoToggleTimer() {
+    if (pomo.running) {
+        pomoPause();
+    } else {
+        pomoStart();
+    }
+}
+
+function pomoStart() {
+    pomo.running = true;
+    pomoWidget.classList.add('running');
+    pomoUpdateStartBtn();
+
+    // Show badge on header btn
+    if (!document.querySelector('.pomo-running-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'pomo-running-badge';
+        pomoToggleBtn.appendChild(badge);
+    }
+
+    pomo.intervalId = setInterval(() => {
+        pomo.secondsLeft--;
+
+        if (pomo.secondsLeft <= 0) {
+            pomo.secondsLeft = 0;
+            pomoUpdateDisplay();
+            pomoUpdateRing();
+            pomoTimerDone();
+            return;
+        }
+
+        pomoUpdateDisplay();
+        pomoUpdateRing();
+    }, 1000);
+}
+
+function pomoPause() {
+    pomo.running = false;
+    clearInterval(pomo.intervalId);
+    pomoWidget.classList.remove('running');
+    pomoUpdateStartBtn();
+}
+
+function pomoReset() {
+    pomoPause();
+    pomo.secondsLeft  = POMO_DURATIONS[pomo.mode];
+    pomo.totalSeconds = POMO_DURATIONS[pomo.mode];
+    pomoUpdateDisplay();
+    pomoUpdateRing();
+    // Remove badge
+    const badge = document.querySelector('.pomo-running-badge');
+    if (badge) badge.remove();
+}
+
+function pomoSkip() {
+    pomoPause();
+    // Advance to next logical mode
+    const next = pomo.mode === 'focus' ? 'short' : 'focus';
+    pomoSetMode(next);
+}
+
+function pomoTimerDone() {
+    pomoPause();
+
+    // Count sessions (focus sessions only)
+    if (pomo.mode === 'focus') {
+        pomo.sessions = Math.min(pomo.sessions + 1, 8);
+        pomoUpdateSessionDots();
+    }
+
+    // Flash the widget
+    pomoWidget.classList.add('done-flash');
+    setTimeout(() => pomoWidget.classList.remove('done-flash'), 1500);
+
+    // Remove running badge
+    const badge = document.querySelector('.pomo-running-badge');
+    if (badge) badge.remove();
+
+    // Browser notification
+    if (Notification && Notification.permission === 'granted') {
+        const isFocus = pomo.mode === 'focus';
+        new Notification('MicroMind 🍅', {
+            body: isFocus
+                ? `Focus session done! Time for a break.`
+                : `Break over! Ready to focus?`,
+            icon: '🍅',
+        });
+    }
+
+    // Toast in-app
+    const msg = pomo.mode === 'focus'
+        ? `🎉 Focus session done! ${pomo.sessions} session${pomo.sessions !== 1 ? 's' : ''} today.`
+        : `✅ Break over — ready to focus again!`;
+    showToast(msg, '🍅');
+
+    // Auto-advance to next mode
+    const next = pomo.mode === 'focus' ? 'short' : 'focus';
+    pomoSetMode(next);
+}
+
+/* --- Display Helpers --- */
+function pomoUpdateDisplay() {
+    const m = Math.floor(pomo.secondsLeft / 60).toString().padStart(2, '0');
+    const s = (pomo.secondsLeft % 60).toString().padStart(2, '0');
+    pomoTimeEl.textContent   = `${m}:${s}`;
+    pomoModeLabelEl.textContent = POMO_LABELS[pomo.mode];
+
+    // Update browser tab title when timer is open and running
+    if (pomo.running) {
+        document.title = `${m}:${s} — MicroMind`;
+    } else {
+        document.title = 'MicroMind - Daily Mental Declutter';
+    }
+}
+
+function pomoUpdateRing() {
+    const ratio   = pomo.secondsLeft / pomo.totalSeconds;
+    const offset  = RING_CIRCUMFERENCE * (1 - ratio);
+    pomoRingFill.style.strokeDashoffset = offset;
+}
+
+function pomoUpdateStartBtn() {
+    if (pomo.running) {
+        pomoPlayIcon.setAttribute('data-lucide', 'pause');
+        pomoStartLabel.textContent = 'Pause';
+    } else {
+        pomoPlayIcon.setAttribute('data-lucide', 'play');
+        pomoStartLabel.textContent = pomo.secondsLeft < pomo.totalSeconds ? 'Resume' : 'Start';
+    }
+    lucide.createIcons();
+}
+
+function pomoUpdateSessionDots() {
+    pomoSessionDotsEl.innerHTML = '';
+    const MAX_DOTS = 4;
+    for (let i = 0; i < MAX_DOTS; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'pomo-dot' + (i < pomo.sessions ? ' filled' : '');
+        pomoSessionDotsEl.appendChild(dot);
+    }
+}
+
+/* --- Focus Task Picker --- */
+function pomoRenderFocusTaskPicker() {
+    if (!pomoFocusSlotsEl) return;
+    pomoFocusSlotsEl.innerHTML = '';
+
+    const slotKeys = ['focus-1', 'focus-2', 'focus-3'];
+    let hasAny = false;
+
+    slotKeys.forEach((key, idx) => {
+        const taskId = state.focusSlots[key];
+        const task   = taskId ? state.tasks.find(t => t.id === taskId) : null;
+
+        if (task) {
+            hasAny = true;
+            const btn = document.createElement('button');
+            btn.className = 'pomo-slot-btn' + (pomo.linkedTaskId === taskId ? ' active-slot' : '');
+
+            const numEl = document.createElement('span');
+            numEl.className = 'pomo-slot-num';
+            numEl.textContent = idx + 1;
+
+            const textEl = document.createElement('span');
+            textEl.className = 'pomo-slot-text';
+            textEl.textContent = task.text;
+
+            btn.appendChild(numEl);
+            btn.appendChild(textEl);
+            btn.addEventListener('click', () => pomoLinkTask(task.id, task.text));
+            pomoFocusSlotsEl.appendChild(btn);
+        }
+    });
+
+    if (!hasAny) {
+        const empty = document.createElement('p');
+        empty.className = 'pomo-slot-empty';
+        empty.style.fontSize = '0.78rem';
+        empty.style.padding = '4px 0';
+        empty.textContent = 'Drag tasks into "Today\'s Focus Three" first.';
+        pomoFocusSlotsEl.appendChild(empty);
+    }
+}
+
+function pomoLinkTask(taskId, taskText) {
+    if (pomo.linkedTaskId === taskId) {
+        pomo.linkedTaskId   = null;
+        pomo.linkedTaskText = null;
+        pomoTaskLabelEl.textContent = 'No task selected';
+    } else {
+        pomo.linkedTaskId   = taskId;
+        pomo.linkedTaskText = taskText;
+        pomoTaskLabelEl.textContent = '\u25B6 ' + taskText;
+    }
+    pomoRenderFocusTaskPicker();
+}
+
+/* --- Browser Notification Permission --- */
+function requestNotifPermission() {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+// ============================================================
+// Boot — placed after all module code so const declarations are initialized
+// ============================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+    bootApp();
 }
