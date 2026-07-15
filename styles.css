@@ -491,11 +491,44 @@ body {
 }
 
 .task-text {
-    font-size: 0.83rem;
-    color: var(--text-primary);
     flex: 1;
+    font-size: 0.95rem;
+    color: var(--text-primary);
     line-height: 1.4;
+    word-break: break-word;
     transition: var(--transition-base);
+}
+
+/* ---- Tags & Markdown ---- */
+.task-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 0 2px;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--color-indigo);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.task-tag[data-tag="work"] { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+.task-tag[data-tag="personal"] { background: rgba(16, 185, 129, 0.1); color: #059669; }
+.task-tag[data-tag="urgent"] { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+.task-text a {
+    color: var(--color-indigo);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.task-text a:hover {
+    color: #4338ca;
+}
+.task-text strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.task-text em {
+    font-style: italic;
 }
 
 .task-delete-btn {
