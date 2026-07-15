@@ -17,15 +17,7 @@
       "token": "bs2v6tt8wnomrm80irc",
       "data": {
         "state": {
-          "tasks": [
-            {
-              "id": "task-1784128856115-6304",
-              "text": "to complete my work",
-              "category": "focus-1",
-              "completed": true,
-              "createdAt": 1784128856115
-            }
-          ],
+          "tasks": [],
           "habits": [
             {
               "id": "habit-1",
@@ -65,15 +57,31 @@
             }
           ],
           "focusSlots": {
-            "focus-1": "task-1784128856115-6304",
+            "focus-1": null,
             "focus-2": null,
             "focus-3": null
           },
-          "history": [],
-          "moodToday": 5
+          "history": [
+            {
+              "date": "2026-07-15",
+              "tasksCompleted": 1,
+              "totalTasks": 1,
+              "habitsCompleted": 4,
+              "totalHabits": 6,
+              "quadrantBreakdown": {
+                "q1": 1,
+                "q2": 0,
+                "q3": 0,
+                "q4": 0
+              },
+              "mood": 5,
+              "pomodoroSessions": 0
+            }
+          ],
+          "moodToday": 0
         },
-        "streak": 0,
-        "lastReset": ""
+        "streak": 1,
+        "lastReset": "Wed Jul 15 2026"
       }
     }
   }
