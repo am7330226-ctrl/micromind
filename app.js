@@ -504,7 +504,7 @@ function buildTaskEl(task) {
 
     const text = document.createElement('span');
     text.className = 'task-text';
-    text.textContent = task.text;
+    text.innerHTML = typeof parseRichText === 'function' ? parseRichText(task.text) : task.text;
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'task-delete-btn';
@@ -1124,7 +1124,7 @@ function pomoRenderFocusTaskPicker() {
 
             const textEl = document.createElement('span');
             textEl.className = 'pomo-slot-text';
-            textEl.textContent = task.text;
+            textEl.innerHTML = typeof parseRichText === 'function' ? parseRichText(task.text) : task.text;
 
             btn.appendChild(numEl);
             btn.appendChild(textEl);
@@ -1151,7 +1151,7 @@ function pomoLinkTask(taskId, taskText) {
     } else {
         pomo.linkedTaskId   = taskId;
         pomo.linkedTaskText = taskText;
-        pomoTaskLabelEl.textContent = '\u25B6 ' + taskText;
+        pomoTaskLabelEl.innerHTML = '▶ ' + parseRichText(taskText);
     }
     pomoRenderFocusTaskPicker();
 }
@@ -2028,6 +2028,52 @@ function initShortcuts() {
             }
         }
     });
+}
+
+// ============================================================
+// RICH TEXT & TAG PARSING
+// ============================================================
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
+function parseRichText(text) {
+    let safeText = escapeHTML(text);
+    
+    // Bold: **text**
+    safeText = safeText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Italic: *text* or _text_
+    safeText = safeText.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    safeText = safeText.replace(/_([^_]+)_/g, '<em>$1</em>');
+    
+    // Links: [text](url)
+    safeText = safeText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        let cleanUrl = url;
+        if (cleanUrl.startsWith('&#39;') || cleanUrl.startsWith('&quot;')) {
+            cleanUrl = cleanUrl.replace(/^(?:&#39;|&quot;)+|(?:&#39;|&quot;)+$/g, '');
+        }
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+            cleanUrl = 'https://' + cleanUrl;
+        }
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+    });
+    
+    // Tags: #tag
+    safeText = safeText.replace(/(^|\s)#([\w-]+)/g, (match, prefix, tag) => {
+        return `${prefix}<span class="task-tag" data-tag="${tag.toLowerCase()}">#${tag}</span>`;
+    });
+    
+    return safeText;
 }
 
 // ============================================================
