@@ -1333,6 +1333,58 @@ body {
     50%       { transform: scale(1.5); opacity: 0.7; }
 }
 
+/* ====================================================================
+   ZEN MODE
+   ==================================================================== */
+body.zen-mode {
+    background: var(--color-bg-base);
+}
+body.zen-mode .app-header,
+body.zen-mode .app-main,
+body.zen-mode .app-footer,
+body.zen-mode .pomodoro-backdrop,
+body.zen-mode .analytics-panel,
+body.zen-mode .settings-modal,
+body.zen-mode #auth-modal,
+body.zen-mode .pomodoro-header-btn {
+    display: none !important;
+}
+body.zen-mode .pomodoro-widget {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    max-width: 95vw;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    right: auto;
+    bottom: auto;
+    opacity: 1;
+    pointer-events: auto;
+}
+body.zen-mode .pomodoro-inner {
+    padding: 0;
+}
+body.zen-mode #pomodoro-close-btn {
+    display: none;
+}
+body.zen-mode .pomo-ring {
+    filter: drop-shadow(0 0 30px rgba(248,113,113,0.15));
+}
+body.zen-mode .pomodoro-widget.mode-short .pomo-ring,
+body.zen-mode .pomodoro-widget.mode-long .pomo-ring {
+    filter: drop-shadow(0 0 30px rgba(52,211,153,0.15));
+}
+#ambient-noise-btn.active {
+    background: rgba(79, 70, 229, 0.15);
+    color: var(--color-indigo);
+    border-color: rgba(79, 70, 229, 0.4);
+    box-shadow: 0 0 12px rgba(79, 70, 229, 0.2);
+}
+
 /* Responsive: full-width on mobile */
 @media (max-width: 480px) {
     .pomodoro-widget {

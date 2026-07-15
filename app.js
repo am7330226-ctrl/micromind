@@ -835,6 +835,9 @@ function bootApp() {
     initMoodWidget();
     initSettings();
     initNotifications();
+    initZenMode();
+    initAmbientNoise();
+    initShortcuts();
     requestNotifPermission();
 
     if ('serviceWorker' in navigator) {
@@ -1849,6 +1852,182 @@ function checkReminders() {
             }
         }
     }
+}
+
+// ============================================================
+// ZEN MODE & AMBIENT NOISE
+// ============================================================
+let isZenMode = false;
+let ambientNoisePlaying = false;
+let ambientNoiseSource = null;
+let ambientNoiseGain = null;
+
+function initZenMode() {
+    const zenBtn = document.getElementById('zen-mode-btn');
+    const zenIcon = document.getElementById('zen-mode-icon');
+    if (zenBtn) {
+        zenBtn.addEventListener('click', () => {
+            isZenMode = !isZenMode;
+            if (isZenMode) {
+                document.body.classList.add('zen-mode');
+                zenIcon.setAttribute('data-lucide', 'minimize');
+                // Request native browser fullscreen
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen failed', e));
+                }
+            } else {
+                document.body.classList.remove('zen-mode');
+                zenIcon.setAttribute('data-lucide', 'maximize');
+                // Exit native browser fullscreen
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen().catch(e => console.log('Exit fullscreen failed', e));
+                }
+            }
+            lucide.createIcons();
+        });
+    }
+}
+
+function initAmbientNoise() {
+    const noiseBtn = document.getElementById('ambient-noise-btn');
+    if (noiseBtn) {
+        noiseBtn.addEventListener('click', () => {
+            ambientNoisePlaying = !ambientNoisePlaying;
+            if (ambientNoisePlaying) {
+                startAmbientNoise();
+                noiseBtn.classList.add('active');
+            } else {
+                stopAmbientNoise();
+                noiseBtn.classList.remove('active');
+            }
+        });
+    }
+}
+
+function startAmbientNoise() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const bufferSize = audioCtx.sampleRate * 2; // 2 seconds of noise
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    
+    // Generate white noise
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+    }
+
+    ambientNoiseSource = audioCtx.createBufferSource();
+    ambientNoiseSource.buffer = noiseBuffer;
+    ambientNoiseSource.loop = true;
+
+    // Filter white noise to make it brown noise (warm/rain-like)
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400; // Cut off high frequencies
+
+    ambientNoiseGain = audioCtx.createGain();
+    // Fade in
+    ambientNoiseGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    ambientNoiseGain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 2); // 2 second fade in
+
+    ambientNoiseSource.connect(filter);
+    filter.connect(ambientNoiseGain);
+    ambientNoiseGain.connect(audioCtx.destination);
+
+    ambientNoiseSource.start(0);
+}
+
+function stopAmbientNoise() {
+    if (ambientNoiseGain && ambientNoiseSource) {
+        // Fade out
+        const t = audioCtx.currentTime;
+        ambientNoiseGain.gain.setValueAtTime(ambientNoiseGain.gain.value, t);
+        ambientNoiseGain.gain.linearRampToValueAtTime(0, t + 1); // 1 second fade out
+        
+        ambientNoiseSource.stop(t + 1);
+        
+        // Cleanup references after stop
+        setTimeout(() => {
+            ambientNoiseSource = null;
+            ambientNoiseGain = null;
+        }, 1000);
+    }
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+function initShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ignore shortcuts if the user is typing in an input or textarea
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            if (e.key === 'Escape') {
+                e.target.blur();
+            }
+            return;
+        }
+
+        // Focus brain dump input
+        if (e.key === '/') {
+            e.preventDefault();
+            const dumpInput = document.getElementById('dump-input');
+            if (dumpInput) dumpInput.focus();
+            return;
+        }
+
+        // Hover-based shortcuts
+        const hoveredTaskEl = document.querySelector('.task-item:hover');
+        if (hoveredTaskEl) {
+            const taskId = hoveredTaskEl.dataset.id;
+            const task = state.tasks.find(t => t.id === taskId);
+            
+            if (!task) return;
+
+            // Space to complete task
+            if (e.key === ' ') {
+                e.preventDefault();
+                const checkbox = hoveredTaskEl.querySelector('input[type="checkbox"]');
+                toggleTaskComplete(taskId, checkbox);
+                return;
+            }
+
+            // 1, 2, 3, 4 to move task to respective matrix quadrant
+            if (['1', '2', '3', '4'].includes(e.key)) {
+                e.preventDefault();
+                const targetCategory = `quadrant-${e.key}`;
+                
+                // Clear from focus slots if it was in one
+                for (const s in state.focusSlots) {
+                    if (state.focusSlots[s] === taskId) state.focusSlots[s] = null;
+                }
+                
+                task.category = targetCategory;
+                saveState();
+                renderAll();
+                
+                // Tiny UI sound for moving a task
+                if (typeof audioCtx !== 'undefined' && audioCtx) {
+                    const t = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(800 + (parseInt(e.key) * 150), t);
+                    gain.gain.setValueAtTime(0, t);
+                    gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                    osc.start(t);
+                    osc.stop(t + 0.1);
+                }
+            }
+        }
+    });
 }
 
 // ============================================================
