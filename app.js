@@ -35,6 +35,8 @@ let state = {
         'focus-2': null,
         'focus-3': null,
     },
+    history: [],     // [{ date, tasksCompleted, totalTasks, habitsCompleted, totalHabits, quadrantBreakdown, mood, pomodoroSessions }]
+    moodToday: 0,    // 0 = unset, 1-5 = rated
 };
 
 let streak = 0;
@@ -381,6 +383,9 @@ function toggleTaskComplete(taskId, checkboxEl) {
 
     if (task.completed) {
         triggerParticleBurst(checkboxEl);
+        if (typeof playAudioTone === 'function') playAudioTone('check');
+    } else {
+        if (typeof playAudioTone === 'function') playAudioTone('uncheck');
     }
 
     renderAll();
@@ -605,6 +610,9 @@ function renderHabits() {
         el.addEventListener('click', () => {
             habit.done = !habit.done;
             saveState();
+            if (typeof playAudioTone === 'function') {
+                playAudioTone(habit.done ? 'check' : 'uncheck');
+            }
             renderHabits();
         });
         container.appendChild(el);
@@ -616,6 +624,7 @@ function renderAll() {
     renderMatrix();
     renderFocusSlots();
     renderHabits();
+    renderMoodWidget();
     updateProgressRing();
     updateStreak();
     lucide.createIcons();
@@ -667,6 +676,49 @@ function performDailyReset() {
     const completed = state.tasks.filter(t => t.completed).length;
     const total = state.tasks.length;
 
+    // --- Snapshot today's stats into history ---
+    const todayStr = new Date().toISOString().split('T')[0];
+    const habitsCompleted = state.habits.filter(h => h.done).length;
+    const totalHabits = state.habits.length;
+
+    // Quadrant breakdown for completed tasks
+    const qb = { q1: 0, q2: 0, q3: 0, q4: 0 };
+    state.tasks.forEach(t => {
+        if (t.completed && qb.hasOwnProperty(t.category)) {
+            qb[t.category]++;
+        }
+        // Tasks in focus slots — check their original quadrant isn't tracked,
+        // but count them in a general "focus" bucket mapped to q1
+        if (t.completed && t.category.startsWith('focus-')) {
+            qb.q1++;
+        }
+    });
+
+    const historyEntry = {
+        date: todayStr,
+        tasksCompleted: completed,
+        totalTasks: total,
+        habitsCompleted: habitsCompleted,
+        totalHabits: totalHabits,
+        quadrantBreakdown: qb,
+        mood: state.moodToday || 0,
+        pomodoroSessions: typeof pomo !== 'undefined' ? pomo.sessions : 0,
+    };
+
+    // Avoid duplicate entries for the same day
+    if (!state.history) state.history = [];
+    const existingIdx = state.history.findIndex(h => h.date === todayStr);
+    if (existingIdx >= 0) {
+        state.history[existingIdx] = historyEntry;
+    } else {
+        state.history.push(historyEntry);
+    }
+
+    // Keep max 90 days of history
+    if (state.history.length > 90) {
+        state.history = state.history.slice(-90);
+    }
+
     // Increment streak if at least one task was completed
     if (completed > 0) {
         streak++;
@@ -684,8 +736,9 @@ function performDailyReset() {
         }
     }
 
-    // Reset habits
+    // Reset habits and mood
     state.habits = state.habits.map(h => ({ ...h, done: false }));
+    state.moodToday = 0;
 
     // Save last reset date
     localStorage.setItem(LAST_RESET_KEY, new Date().toDateString());
@@ -778,6 +831,10 @@ function init() {
 function bootApp() {
     init();
     initPomodoro();
+    initAnalytics();
+    initMoodWidget();
+    initSettings();
+    initNotifications();
     requestNotifPermission();
 
     if ('serviceWorker' in navigator) {
@@ -1100,6 +1157,697 @@ function pomoLinkTask(taskId, taskText) {
 function requestNotifPermission() {
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
         Notification.requestPermission();
+    }
+}
+
+// ============================================================
+// MOOD WIDGET MODULE
+// ============================================================
+const MOOD_LABELS = ['', 'Exhausted', 'Low', 'Okay', 'Good', 'Energized'];
+
+function initMoodWidget() {
+    const starsContainer = document.getElementById('mood-stars');
+    if (!starsContainer) return;
+
+    const stars = starsContainer.querySelectorAll('.mood-star');
+
+    // Hover preview
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', () => {
+            const val = parseInt(star.dataset.value);
+            stars.forEach(s => {
+                const sv = parseInt(s.dataset.value);
+                s.classList.toggle('hovered', sv <= val && !s.classList.contains('active'));
+            });
+        });
+
+        star.addEventListener('mouseleave', () => {
+            stars.forEach(s => s.classList.remove('hovered'));
+        });
+
+        star.addEventListener('click', () => {
+            const val = parseInt(star.dataset.value);
+            // Toggle off if clicking the same value
+            if (state.moodToday === val) {
+                state.moodToday = 0;
+            } else {
+                state.moodToday = val;
+            }
+            saveState();
+            renderMoodWidget();
+
+            // Pop animation
+            if (state.moodToday > 0) {
+                star.classList.add('pop');
+                setTimeout(() => star.classList.remove('pop'), 400);
+                showToast(`Mood set: ${MOOD_LABELS[state.moodToday]} ${'⭐'.repeat(state.moodToday)}`, '😊');
+            }
+        });
+    });
+}
+
+function renderMoodWidget() {
+    const starsContainer = document.getElementById('mood-stars');
+    const feedbackEl = document.getElementById('mood-feedback');
+    if (!starsContainer) return;
+
+    const stars = starsContainer.querySelectorAll('.mood-star');
+    const currentMood = state.moodToday || 0;
+
+    stars.forEach(s => {
+        const sv = parseInt(s.dataset.value);
+        s.classList.toggle('active', sv <= currentMood);
+    });
+
+    if (feedbackEl) {
+        feedbackEl.textContent = currentMood > 0 ? MOOD_LABELS[currentMood] : '';
+    }
+}
+
+// ============================================================
+// ANALYTICS MODULE
+// ============================================================
+let analyticsPanel, analyticsBackdrop, analyticsRange = 7;
+
+function initAnalytics() {
+    analyticsPanel = document.getElementById('analytics-panel');
+    analyticsBackdrop = document.getElementById('analytics-backdrop');
+    const toggleBtn = document.getElementById('analytics-toggle-btn');
+    const closeBtn = document.getElementById('analytics-close-btn');
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openAnalytics);
+    if (closeBtn) closeBtn.addEventListener('click', closeAnalytics);
+    if (analyticsBackdrop) analyticsBackdrop.addEventListener('click', closeAnalytics);
+
+    // Tab switching
+    document.querySelectorAll('.analytics-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            analyticsRange = parseInt(tab.dataset.range);
+            document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderAnalytics();
+        });
+    });
+}
+
+function openAnalytics() {
+    if (!analyticsPanel) return;
+    analyticsPanel.classList.add('open');
+    analyticsBackdrop.classList.add('visible');
+    renderAnalytics();
+    lucide.createIcons();
+}
+
+function closeAnalytics() {
+    if (!analyticsPanel) return;
+    analyticsPanel.classList.remove('open');
+    analyticsBackdrop.classList.remove('visible');
+}
+
+function getHistoryForRange(days) {
+    if (!state.history || state.history.length === 0) return [];
+    const now = new Date();
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    return state.history.filter(h => h.date >= cutoffStr).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function renderAnalytics() {
+    const history = getHistoryForRange(analyticsRange);
+    renderHighlightCards(history);
+    drawTasksBarChart(history);
+    drawQuadrantDoughnut(history);
+    drawMoodLineChart(history);
+}
+
+// --- Highlight Cards ---
+function renderHighlightCards(history) {
+    const hlStreak = document.getElementById('hl-streak');
+    const hlTotal = document.getElementById('hl-total-tasks');
+    const hlBest = document.getElementById('hl-best-day');
+    const hlMood = document.getElementById('hl-avg-mood');
+
+    // Longest streak
+    if (hlStreak) hlStreak.textContent = streak + ' days';
+
+    // Total tasks completed in range
+    const totalCompleted = history.reduce((sum, h) => sum + (h.tasksCompleted || 0), 0);
+    if (hlTotal) hlTotal.textContent = totalCompleted;
+
+    // Best day
+    if (hlBest) {
+        if (history.length > 0) {
+            const best = history.reduce((a, b) => (a.tasksCompleted || 0) >= (b.tasksCompleted || 0) ? a : b);
+            const d = new Date(best.date + 'T00:00:00');
+            hlBest.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } else {
+            hlBest.textContent = '\u2014';
+        }
+    }
+
+    // Average mood
+    if (hlMood) {
+        const moods = history.filter(h => h.mood > 0).map(h => h.mood);
+        if (moods.length > 0) {
+            const avg = (moods.reduce((a, b) => a + b, 0) / moods.length).toFixed(1);
+            hlMood.textContent = avg + ' \u2605';
+        } else {
+            hlMood.textContent = '\u2014';
+        }
+    }
+}
+
+// --- Canvas Chart Colors ---
+const CHART_COLORS = {
+    indigo: '#4f46e5',
+    indigoSoft: 'rgba(79, 70, 229, 0.15)',
+    emerald: '#10b981',
+    emeraldSoft: 'rgba(16, 185, 129, 0.15)',
+    amber: '#f59e0b',
+    amberSoft: 'rgba(245, 158, 11, 0.15)',
+    coral: '#ef4444',
+    coralSoft: 'rgba(239, 68, 68, 0.15)',
+    cyan: '#06b6d4',
+    textMuted: '#94a3b8',
+    gridLine: 'rgba(0, 0, 0, 0.06)',
+};
+
+// --- Bar Chart: Tasks Completed ---
+function drawTasksBarChart(history) {
+    const canvas = document.getElementById('chart-tasks-bar');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    // Build labels for the full range, filling gaps with 0
+    const days = analyticsRange;
+    const labels = [];
+    const data = [];
+    const today = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const shortLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        labels.push(shortLabel);
+        const entry = history.find(h => h.date === dateStr);
+        data.push(entry ? entry.tasksCompleted : 0);
+    }
+
+    const W = canvas.width;
+    const H = canvas.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, W, H);
+
+    const padLeft = 36, padRight = 12, padTop = 12, padBottom = 36;
+    const chartW = W - padLeft - padRight;
+    const chartH = H - padTop - padBottom;
+    const maxVal = Math.max(...data, 1);
+    const barCount = labels.length;
+    const barGap = Math.max(2, chartW / barCount * 0.3);
+    const barW = (chartW - barGap * (barCount + 1)) / barCount;
+
+    // Grid lines
+    ctx.strokeStyle = CHART_COLORS.gridLine;
+    ctx.lineWidth = 1;
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++) {
+        const y = padTop + chartH - (chartH / gridSteps) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(W - padRight, y);
+        ctx.stroke();
+
+        // Y-axis labels
+        ctx.fillStyle = CHART_COLORS.textMuted;
+        ctx.font = '10px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal / gridSteps * i), padLeft - 6, y + 3);
+    }
+
+    // Bars
+    data.forEach((val, i) => {
+        const x = padLeft + barGap + i * (barW + barGap);
+        const barH = (val / maxVal) * chartH;
+        const y = padTop + chartH - barH;
+
+        // Bar gradient
+        const grad = ctx.createLinearGradient(x, y, x, padTop + chartH);
+        grad.addColorStop(0, CHART_COLORS.indigo);
+        grad.addColorStop(1, 'rgba(79, 70, 229, 0.4)');
+        ctx.fillStyle = grad;
+
+        // Rounded top
+        const radius = Math.min(barW / 2, 4);
+        ctx.beginPath();
+        ctx.moveTo(x, padTop + chartH);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.lineTo(x + barW - radius, y);
+        ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
+        ctx.lineTo(x + barW, padTop + chartH);
+        ctx.closePath();
+        ctx.fill();
+
+        // Value on top
+        if (val > 0) {
+            ctx.fillStyle = CHART_COLORS.indigo;
+            ctx.font = 'bold 10px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(val, x + barW / 2, y - 4);
+        }
+
+        // X-axis label
+        ctx.fillStyle = CHART_COLORS.textMuted;
+        ctx.font = '9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        // Show fewer labels on week view vs month view
+        if (days <= 7 || i % Math.ceil(days / 10) === 0) {
+            ctx.fillText(labels[i], x + barW / 2, H - 6);
+        }
+    });
+}
+
+// --- Doughnut Chart: Quadrant Distribution ---
+function drawQuadrantDoughnut(history) {
+    const canvas = document.getElementById('chart-quadrant-doughnut');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    // Aggregate quadrant totals
+    const totals = { q1: 0, q2: 0, q3: 0, q4: 0 };
+    history.forEach(h => {
+        if (h.quadrantBreakdown) {
+            totals.q1 += h.quadrantBreakdown.q1 || 0;
+            totals.q2 += h.quadrantBreakdown.q2 || 0;
+            totals.q3 += h.quadrantBreakdown.q3 || 0;
+            totals.q4 += h.quadrantBreakdown.q4 || 0;
+        }
+    });
+
+    const segments = [
+        { label: 'Do First', value: totals.q1, color: CHART_COLORS.coral },
+        { label: 'Schedule', value: totals.q2, color: CHART_COLORS.indigo },
+        { label: 'Delegate', value: totals.q3, color: CHART_COLORS.amber },
+        { label: 'Eliminate', value: totals.q4, color: CHART_COLORS.textMuted },
+    ];
+
+    const total = segments.reduce((s, seg) => s + seg.value, 0);
+    const cx = W * 0.35;
+    const cy = H / 2;
+    const outerR = Math.min(cx, cy) - 16;
+    const innerR = outerR * 0.55;
+
+    if (total === 0) {
+        // Empty state
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+        ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+        ctx.fillStyle = CHART_COLORS.gridLine;
+        ctx.fill();
+
+        ctx.fillStyle = CHART_COLORS.textMuted;
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No data yet', cx, cy + 4);
+        return;
+    }
+
+    let startAngle = -Math.PI / 2;
+    segments.forEach(seg => {
+        if (seg.value === 0) return;
+        const sliceAngle = (seg.value / total) * Math.PI * 2;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, startAngle, startAngle + sliceAngle);
+        ctx.arc(cx, cy, innerR, startAngle + sliceAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+
+        startAngle += sliceAngle;
+    });
+
+    // Center label
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 18px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(total, cx, cy + 2);
+    ctx.fillStyle = CHART_COLORS.textMuted;
+    ctx.font = '9px Inter, sans-serif';
+    ctx.fillText('TOTAL', cx, cy + 14);
+
+    // Legend
+    const legendX = W * 0.65;
+    let legendY = cy - (segments.length * 22) / 2 + 10;
+    segments.forEach(seg => {
+        ctx.fillStyle = seg.color;
+        ctx.beginPath();
+        ctx.arc(legendX, legendY, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${seg.label}`, legendX + 12, legendY + 1);
+
+        ctx.fillStyle = CHART_COLORS.textMuted;
+        ctx.font = 'bold 11px Inter, sans-serif';
+        const pct = total > 0 ? Math.round((seg.value / total) * 100) : 0;
+        ctx.fillText(`${seg.value} (${pct}%)`, legendX + 12, legendY + 15);
+
+        legendY += 30;
+    });
+}
+
+// --- Line Chart: Mood vs Productivity ---
+function drawMoodLineChart(history) {
+    const canvas = document.getElementById('chart-mood-line');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const days = analyticsRange;
+    const labels = [];
+    const moodData = [];
+    const taskData = [];
+    const today = new Date();
+
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const shortLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        labels.push(shortLabel);
+        const entry = history.find(h => h.date === dateStr);
+        moodData.push(entry ? entry.mood || 0 : 0);
+        taskData.push(entry ? entry.tasksCompleted || 0 : 0);
+    }
+
+    const padLeft = 36, padRight = 40, padTop = 16, padBottom = 36;
+    const chartW = W - padLeft - padRight;
+    const chartH = H - padTop - padBottom;
+    const maxTasks = Math.max(...taskData, 1);
+    const maxMood = 5;
+
+    // Grid
+    ctx.strokeStyle = CHART_COLORS.gridLine;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = padTop + chartH - (chartH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(W - padRight, y);
+        ctx.stroke();
+    }
+
+    // Draw a smooth line
+    function drawLine(data, maxVal, color, fillColor) {
+        if (data.length < 2) return;
+        const points = data.map((v, i) => ({
+            x: padLeft + (i / (data.length - 1)) * chartW,
+            y: padTop + chartH - (v / maxVal) * chartH,
+        }));
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1];
+            const curr = points[i];
+            const cpx = (prev.x + curr.x) / 2;
+            ctx.bezierCurveTo(cpx, prev.y, cpx, curr.y, curr.x, curr.y);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Fill under
+        ctx.lineTo(points[points.length - 1].x, padTop + chartH);
+        ctx.lineTo(points[0].x, padTop + chartH);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+        // Dots
+        points.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        });
+    }
+
+    drawLine(taskData, maxTasks, CHART_COLORS.indigo, CHART_COLORS.indigoSoft);
+    drawLine(moodData, maxMood, CHART_COLORS.amber, CHART_COLORS.amberSoft);
+
+    // X-axis labels
+    ctx.fillStyle = CHART_COLORS.textMuted;
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    labels.forEach((lbl, i) => {
+        if (days <= 7 || i % Math.ceil(days / 10) === 0) {
+            const x = padLeft + (i / (labels.length - 1)) * chartW;
+            ctx.fillText(lbl, x, H - 6);
+        }
+    });
+
+    // Y-axis labels (left = tasks, right = mood)
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const y = padTop + chartH - (chartH / 4) * i;
+        ctx.fillStyle = CHART_COLORS.indigo;
+        ctx.font = '10px Inter, sans-serif';
+        ctx.fillText(Math.round(maxTasks / 4 * i), padLeft - 6, y + 3);
+    }
+    ctx.textAlign = 'left';
+    for (let i = 0; i <= 4; i++) {
+        const y = padTop + chartH - (chartH / 4) * i;
+        ctx.fillStyle = CHART_COLORS.amber;
+        ctx.font = '10px Inter, sans-serif';
+        ctx.fillText(Math.round(maxMood / 4 * i), W - padRight + 6, y + 3);
+    }
+
+    // Legend
+    const legY = padTop + 2;
+    ctx.beginPath();
+    ctx.arc(padLeft + 10, legY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = CHART_COLORS.indigo;
+    ctx.fill();
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Tasks', padLeft + 18, legY + 3);
+
+    ctx.beginPath();
+    ctx.arc(padLeft + 66, legY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = CHART_COLORS.amber;
+    ctx.fill();
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText('Mood', padLeft + 74, legY + 3);
+}
+
+// ============================================================
+// AUDIO MODULE (Web Audio API)
+// ============================================================
+let audioCtx = null;
+
+function playAudioTone(type) {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'check') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.exponentialRampToValueAtTime(800, t + 0.1);
+        
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        
+        osc.start(t);
+        osc.stop(t + 0.3);
+    } else if (type === 'uncheck') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(200, t + 0.1);
+        
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+        
+        osc.start(t);
+        osc.stop(t + 0.2);
+    }
+}
+
+// ============================================================
+// SETTINGS / DATA EXPORT & IMPORT MODULE
+// ============================================================
+function initSettings() {
+    const settingsToggle = document.getElementById('settings-toggle-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettings = document.getElementById('close-settings-btn');
+    const exportBtn = document.getElementById('export-data-btn');
+    const importBtn = document.getElementById('import-data-btn');
+    const importInput = document.getElementById('import-file-input');
+
+    if (settingsToggle && settingsModal) {
+        settingsToggle.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+        });
+    }
+
+    if (closeSettings && settingsModal) {
+        closeSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+    }
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            const dataStr = JSON.stringify(state, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `micromind-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Data exported successfully!', '📥');
+        });
+    }
+
+    if (importBtn && importInput) {
+        importBtn.addEventListener('click', () => {
+            importInput.click();
+        });
+
+        importInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const parsed = JSON.parse(event.target.result);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.tasks)) {
+                        state = { ...state, ...parsed }; // merge with default structure
+                        saveState();
+                        renderAll();
+                        if (settingsModal) settingsModal.classList.remove('active');
+                        showToast('Data imported successfully!', '🚀');
+                    } else {
+                        alert('Invalid backup file format.');
+                    }
+                } catch (err) {
+                    console.error('Import error:', err);
+                    alert('Error parsing backup file.');
+                }
+                importInput.value = ''; // reset
+            };
+            reader.readAsText(file);
+        });
+    }
+}
+
+// ============================================================
+// LOCAL PUSH NOTIFICATIONS MODULE
+// ============================================================
+function initNotifications() {
+    setInterval(checkReminders, 60 * 1000);
+    setTimeout(checkReminders, 5000); // initial check after 5s
+}
+
+function checkReminders() {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const hour = now.getHours();
+
+    // 1. Morning Reminder (9:00 AM or later)
+    if (hour >= 9) {
+        const lastMorning = localStorage.getItem('micromind_lastMorningNotif');
+        if (lastMorning !== todayStr) {
+            const hasTasks = state.tasks.length > 0;
+            if (!hasTasks) {
+                new Notification('MicroMind', {
+                    body: 'Start your day right! Time for a quick brain dump.',
+                    icon: 'icon.svg'
+                });
+                localStorage.setItem('micromind_lastMorningNotif', todayStr);
+            }
+        }
+    }
+
+    // 2. Evening Reminder (5:00 PM or later)
+    if (hour >= 17) {
+        const lastEvening = localStorage.getItem('micromind_lastEveningNotif');
+        if (lastEvening !== todayStr) {
+            let allFocusDone = true;
+            for (const slot in state.focusSlots) {
+                const taskId = state.focusSlots[slot];
+                if (taskId) {
+                    const task = state.tasks.find(t => t.id === taskId);
+                    if (task && !task.completed) {
+                        allFocusDone = false;
+                        break;
+                    }
+                } else {
+                    allFocusDone = false;
+                }
+            }
+
+            if (!allFocusDone) {
+                new Notification('MicroMind', {
+                    body: 'Don\'t forget to finish your Focus Three tasks for today!',
+                    icon: 'icon.svg'
+                });
+                localStorage.setItem('micromind_lastEveningNotif', todayStr);
+            }
+        }
     }
 }
 

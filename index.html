@@ -62,10 +62,19 @@
                     </div>
                 </div>
             </div>
-            <button id="pomodoro-toggle-btn" class="pomodoro-header-btn" title="Open Pomodoro Timer" aria-label="Open Pomodoro Timer">
-                <span class="pomodoro-tomato">🍅</span>
-                <span class="pomodoro-header-label">Pomodoro</span>
-            </button>
+            <div class="header-actions">
+                <button id="settings-toggle-btn" class="settings-header-btn" title="Open Settings" aria-label="Open Settings">
+                    <i data-lucide="settings"></i>
+                </button>
+                <button id="analytics-toggle-btn" class="analytics-header-btn" title="Open Analytics" aria-label="Open Analytics">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span class="analytics-header-label">Analytics</span>
+                </button>
+                <button id="pomodoro-toggle-btn" class="pomodoro-header-btn" title="Open Pomodoro Timer" aria-label="Open Pomodoro Timer">
+                    <span class="pomodoro-tomato">🍅</span>
+                    <span class="pomodoro-header-label">Pomodoro</span>
+                </button>
+            </div>
         </header>
 
         <!-- Main Workspace -->
@@ -185,9 +194,22 @@
 
         <!-- Footer / Daily Reset -->
         <footer class="app-footer">
-            <div class="reset-prompt-area">
-                <p>Ready to wrap up? Clean your mind for tomorrow.</p>
-                <span class="reset-help">Archives completed tasks, saves your streak, and rolls over active tasks.</span>
+            <div class="footer-left">
+                <div class="reset-prompt-area">
+                    <p>Ready to wrap up? Clean your mind for tomorrow.</p>
+                    <span class="reset-help">Archives completed tasks, saves your streak, and rolls over active tasks.</span>
+                </div>
+            </div>
+            <div class="mood-widget" id="mood-widget">
+                <span class="mood-label">How's your energy?</span>
+                <div class="mood-stars" id="mood-stars">
+                    <button class="mood-star" data-value="1" aria-label="1 star">★</button>
+                    <button class="mood-star" data-value="2" aria-label="2 stars">★</button>
+                    <button class="mood-star" data-value="3" aria-label="3 stars">★</button>
+                    <button class="mood-star" data-value="4" aria-label="4 stars">★</button>
+                    <button class="mood-star" data-value="5" aria-label="5 stars">★</button>
+                </div>
+                <span class="mood-feedback" id="mood-feedback"></span>
             </div>
             <button id="daily-reset-btn" class="btn btn-primary btn-glow">
                 <i data-lucide="refresh-cw"></i> Complete Daily Reset
@@ -261,8 +283,114 @@
     <!-- Pomodoro Backdrop -->
     <div id="pomodoro-backdrop" class="pomodoro-backdrop"></div>
 
+    <!-- Analytics Panel -->
+    <div id="analytics-backdrop" class="analytics-backdrop"></div>
+    <div id="analytics-panel" class="analytics-panel" role="dialog" aria-modal="true" aria-label="Analytics Dashboard">
+        <div class="analytics-inner">
+            <!-- Header -->
+            <div class="analytics-header">
+                <div class="analytics-title-area">
+                    <i data-lucide="bar-chart-3" class="analytics-icon"></i>
+                    <div>
+                        <h2 class="analytics-title">Analytics & Insights</h2>
+                        <p class="analytics-subtitle">Your productivity at a glance</p>
+                    </div>
+                </div>
+                <button id="analytics-close-btn" class="analytics-close" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="analytics-tabs">
+                <button class="analytics-tab active" data-range="7" id="analytics-tab-week">This Week</button>
+                <button class="analytics-tab" data-range="30" id="analytics-tab-month">This Month</button>
+            </div>
+
+            <!-- Highlight Cards -->
+            <div class="analytics-highlights">
+                <div class="highlight-card">
+                    <span class="highlight-icon">🔥</span>
+                    <div class="highlight-data">
+                        <span class="highlight-value" id="hl-streak">0</span>
+                        <span class="highlight-label">Longest Streak</span>
+                    </div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">✅</span>
+                    <div class="highlight-data">
+                        <span class="highlight-value" id="hl-total-tasks">0</span>
+                        <span class="highlight-label">Tasks Completed</span>
+                    </div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🏆</span>
+                    <div class="highlight-data">
+                        <span class="highlight-value" id="hl-best-day">—</span>
+                        <span class="highlight-label">Best Day</span>
+                    </div>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">😊</span>
+                    <div class="highlight-data">
+                        <span class="highlight-value" id="hl-avg-mood">—</span>
+                        <span class="highlight-label">Avg Mood</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h3 class="chart-title"><i data-lucide="bar-chart-2"></i> Tasks Completed</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-tasks-bar" width="500" height="240"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title"><i data-lucide="pie-chart"></i> Quadrant Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-quadrant-doughnut" width="500" height="240"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card chart-card-wide">
+                    <h3 class="chart-title"><i data-lucide="activity"></i> Mood vs Productivity</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-mood-line" width="1020" height="240"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Completion Animation Canvas -->
     <canvas id="animation-canvas"></canvas>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="auth-modal" aria-hidden="true">
+        <div class="auth-modal-content" style="max-width: 320px;">
+            <div class="auth-header">
+                <i data-lucide="settings" class="auth-icon" style="width: 36px; height: 36px; margin-bottom: var(--space-4);"></i>
+                <h2>Settings</h2>
+                <p>Manage your data</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-6);">
+                <button id="export-data-btn" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+                    <i data-lucide="download"></i> Export Data Backup
+                </button>
+                <button id="import-data-btn" class="btn btn-secondary" style="width: 100%; justify-content: center;">
+                    <i data-lucide="upload"></i> Import Data Backup
+                </button>
+                <!-- Hidden file input for import -->
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </div>
+
+            <div class="auth-toggle" style="margin-top: var(--space-5);">
+                <button id="close-settings-btn" class="btn" style="width: 100%; justify-content: center;">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Auth Modal -->
     <div id="auth-modal" class="auth-modal">
