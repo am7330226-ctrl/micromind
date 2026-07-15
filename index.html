@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MicroMind - Daily Mental Declutter</title>
     <meta name="description" content="MicroMind – a premium daily mental declutter app. Capture tasks instantly, prioritize with the Eisenhower matrix, track micro-habits, and start each day with a clear mind.">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="apple-touch-icon" href="icon.svg">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +36,7 @@
             </div>
 
             <div class="header-stats">
+                <button id="logout-btn" class="btn" style="display: none; padding: 6px 12px; border: 1px solid var(--color-border); background: var(--color-surface); font-size: 0.75rem; border-radius: var(--radius-md); color: var(--text-secondary);"><i data-lucide="log-out"></i> Logout</button>
                 <div class="stat-card">
                     <span class="stat-label">Daily Streak</span>
                     <div class="stat-value streak-value">
@@ -254,6 +259,31 @@
 
     <!-- Completion Animation Canvas -->
     <canvas id="animation-canvas"></canvas>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="auth-modal">
+        <div class="auth-modal-content glass-panel">
+            <div class="auth-header">
+                <i data-lucide="brain-circuit" class="auth-icon"></i>
+                <h2 id="auth-title">Welcome to MicroMind</h2>
+                <p id="auth-subtitle">Log in to sync your mental declutter.</p>
+            </div>
+            
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="Email Address" required>
+                <input type="password" id="auth-password" placeholder="Password" required minlength="6">
+                <div id="auth-error" class="auth-error"></div>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary">Log In</button>
+            </form>
+            
+            <p class="auth-toggle">
+                <span id="auth-toggle-text">Don't have an account?</span> 
+                <button id="auth-toggle-btn" type="button" class="text-btn">Sign Up</button>
+            </p>
+        </div>
+    </div>
+
+
 
     <!-- App Script -->
     <script src="app.js"></script>

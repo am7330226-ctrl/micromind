@@ -41,24 +41,140 @@ let streak = 0;
 let draggedTaskId = null;
 
 // ============================================================
-// Persistence
 // ============================================================
-function saveState() {
-    try {
-        localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        localStorage.setItem(STREAK_KEY, String(streak));
-    } catch (e) { console.warn('Could not save state:', e); }
+// Node.js API Auth & Persistence
+// ============================================================
+let currentUserToken = localStorage.getItem('micromind_token') || null;
+let isLoginMode = true;
+
+function initAuth() {
+    const authModal = document.getElementById('auth-modal');
+    const authForm = document.getElementById('auth-form');
+    const toggleBtn = document.getElementById('auth-toggle-btn');
+    const toggleText = document.getElementById('auth-toggle-text');
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const authTitle = document.getElementById('auth-title');
+    const errorEl = document.getElementById('auth-error');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Welcome to MicroMind' : 'Create an Account';
+            submitBtn.textContent = isLoginMode ? 'Log In' : 'Sign Up';
+            toggleText.textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            toggleBtn.textContent = isLoginMode ? 'Sign Up' : 'Log In';
+            errorEl.textContent = '';
+        });
+    }
+
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            errorEl.textContent = 'Loading...';
+
+            try {
+                const endpoint = isLoginMode ? '/api/login' : '/api/register';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    errorEl.textContent = data.error || 'An error occurred';
+                    return;
+                }
+
+                currentUserToken = data.token;
+                localStorage.setItem('micromind_token', currentUserToken);
+                
+                authModal.classList.remove('active');
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                
+                loadState();
+            } catch (err) {
+                errorEl.textContent = 'Failed to connect to server';
+            }
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            currentUserToken = null;
+            localStorage.removeItem('micromind_token');
+            authModal.classList.add('active');
+            logoutBtn.style.display = 'none';
+            // Clear current view
+            state.tasks = [];
+            renderAll();
+        });
+    }
+
+    // Check initial auth state
+    if (currentUserToken) {
+        authModal.classList.remove('active');
+        if (logoutBtn) logoutBtn.style.display = 'block';
+        loadState();
+    } else {
+        authModal.classList.add('active');
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
 }
 
-function loadState() {
+async function saveState() {
+    if (!currentUserToken) return;
     try {
-        const raw = localStorage.getItem(STATE_KEY);
-        if (raw) state = { ...state, ...JSON.parse(raw) };
+        await fetch('/api/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': currentUserToken
+            },
+            body: JSON.stringify({
+                state: state,
+                streak: streak,
+                lastReset: localStorage.getItem(LAST_RESET_KEY) || ''
+            })
+        });
+    } catch (e) { console.warn('Could not save state to server:', e); }
+}
+
+async function loadState() {
+    if (!currentUserToken) return;
+    try {
+        const response = await fetch('/api/data', {
+            headers: { 'Authorization': currentUserToken }
+        });
+        
+        if (response.status === 401) {
+            // Invalid token
+            currentUserToken = null;
+            localStorage.removeItem('micromind_token');
+            document.getElementById('auth-modal').classList.add('active');
+            document.getElementById('logout-btn').style.display = 'none';
+            return;
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data) {
+                if (data.state) state = { ...state, ...data.state };
+                if (data.streak !== undefined) streak = data.streak;
+                if (data.lastReset) localStorage.setItem(LAST_RESET_KEY, data.lastReset);
+            }
+        }
+        
         if (!state.habits || state.habits.length === 0) state.habits = DEFAULT_HABITS.map(h => ({ ...h }));
-        streak = parseInt(localStorage.getItem(STREAK_KEY) || '0', 10);
+        renderAll();
     } catch (e) {
-        console.warn('Could not load state:', e);
-        state.habits = DEFAULT_HABITS.map(h => ({ ...h }));
+        console.warn('Could not load state from server:', e);
+        if (!state.habits || state.habits.length === 0) state.habits = DEFAULT_HABITS.map(h => ({ ...h }));
+        renderAll();
     }
 }
 
@@ -596,10 +712,9 @@ function initDateDisplay() {
 // ============================================================
 function init() {
     resizeCanvas();
-    loadState();
     initDateDisplay();
     initEventListeners();
-    renderAll();
+    initAuth(); 
 }
 
 // Wait for DOM + Lucide to be ready
@@ -607,6 +722,12 @@ function bootApp() {
     init();
     initPomodoro();
     requestNotifPermission();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registered!', reg))
+            .catch(err => console.error('SW register failed:', err));
+    }
 }
 
 
