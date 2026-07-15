@@ -17,7 +17,15 @@
       "token": "bs2v6tt8wnomrm80irc",
       "data": {
         "state": {
-          "tasks": [],
+          "tasks": [
+            {
+              "id": "task-1784128856115-6304",
+              "text": "to complete my work",
+              "category": "focus-1",
+              "completed": true,
+              "createdAt": 1784128856115
+            }
+          ],
           "habits": [
             {
               "id": "habit-1",
@@ -57,7 +65,7 @@
             }
           ],
           "focusSlots": {
-            "focus-1": null,
+            "focus-1": "task-1784128856115-6304",
             "focus-2": null,
             "focus-3": null
           },
