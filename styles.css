@@ -1458,3 +1458,87 @@ body {
 .auth-toggle button:hover {
     text-decoration: underline;
 }
+
+/* ---- Auth Tabs ---- */
+.auth-tabs {
+    display: flex;
+    background: var(--color-bg-base);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin-bottom: var(--space-6);
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: var(--space-2) 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.auth-tab.active {
+    background: var(--color-surface);
+    color: var(--color-indigo);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ---- Input Groups ---- */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-group .input-icon {
+    position: absolute;
+    left: var(--space-3);
+    width: 18px;
+    height: 18px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.input-group input {
+    width: 100%;
+    padding-left: 2.5rem !important;
+    box-sizing: border-box;
+}
+
+/* ---- Profile Badge ---- */
+.profile-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 4px 12px 4px 4px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    margin-right: var(--space-3);
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-indigo), #818cf8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+}
+
+.profile-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}

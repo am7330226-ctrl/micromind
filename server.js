@@ -30,8 +30,8 @@ function generateToken() {
 
 // API Routes
 app.post('/api/register', (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+    const { email, password, name } = req.body;
+    if (!email || !password || !name) return res.status(400).json({ error: 'Name, email, and password required' });
 
     const db = getDB();
     const uid = email.toLowerCase();
@@ -42,13 +42,14 @@ app.post('/api/register', (req, res) => {
 
     const token = generateToken();
     db.users[uid] = {
+        name: name,
         password: password, // In production, hash this!
         token: token,
         data: {}
     };
     
     saveDB(db);
-    res.json({ token, email: uid });
+    res.json({ token, email: uid, name: name });
 });
 
 app.post('/api/login', (req, res) => {
@@ -68,7 +69,7 @@ app.post('/api/login', (req, res) => {
     user.token = token;
     saveDB(db);
 
-    res.json({ token, email: uid });
+    res.json({ token, email: uid, name: user.name });
 });
 
 // Middleware to authenticate
@@ -96,7 +97,7 @@ function authenticate(req, res, next) {
 }
 
 app.get('/api/data', authenticate, (req, res) => {
-    res.json(req.user.data);
+    res.json({ data: req.user.data, profile: { name: req.user.name, email: req.uid } });
 });
 
 app.post('/api/data', authenticate, (req, res) => {
