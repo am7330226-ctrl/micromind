@@ -1,0 +1,12 @@
+{
+  "name": "micromind-2",
+  "version": "1.0.0",
+  "description": "Micromind project",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
