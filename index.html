@@ -84,11 +84,24 @@
                 <div class="glass-panel brain-dump-panel">
                     <div class="panel-header">
                         <h2><i data-lucide="list-todo"></i> Brain Dump</h2>
-                        <span class="helper-badge">Frictionless Capture</span>
+                        <div style="display:flex;align-items:center;gap:var(--space-2);">
+                            <span class="helper-badge">Frictionless Capture</span>
+                            <span id="ai-status-chip" class="ai-status-chip ai-status-loading" title="Local AI Auto-Sort Status">
+                                <span class="ai-status-dot"></span>
+                                <span id="ai-status-label">AI Loading…</span>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- AI model download progress bar -->
+                    <div id="ai-progress-bar-wrap" class="ai-progress-bar-wrap" style="display:none;">
+                        <div class="ai-progress-track">
+                            <div id="ai-progress-bar" class="ai-progress-fill" style="width:0%"></div>
+                        </div>
+                        <span id="ai-progress-label" class="ai-progress-label">Downloading AI model (first time only)…</span>
                     </div>
 
                     <div class="dump-input-container">
-                        <input type="text" id="dump-input" placeholder="Type a task, thought, or distraction and hit Enter..." autocomplete="off">
+                        <input type="text" id="dump-input" placeholder="Type a task and hit Enter — AI will auto-sort it!" autocomplete="off">
                         <button id="dump-submit-btn" aria-label="Add task">
                             <i data-lucide="arrow-right"></i>
                         </button>

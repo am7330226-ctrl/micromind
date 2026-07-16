@@ -499,6 +499,98 @@ body {
     transition: var(--transition-base);
 }
 
+/* ---- Local AI Status Chip ---- */
+.ai-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: default;
+    user-select: none;
+    transition: var(--transition-base);
+}
+.ai-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.ai-status-loading {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+.ai-status-loading .ai-status-dot {
+    background: #f59e0b;
+    animation: ai-pulse 1.2s infinite;
+}
+.ai-status-ready {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+.ai-status-ready .ai-status-dot {
+    background: #10b981;
+}
+.ai-status-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+.ai-status-error .ai-status-dot { background: #ef4444; }
+@keyframes ai-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ---- AI Model Progress Bar ---- */
+.ai-progress-bar-wrap {
+    padding: 0 0 var(--space-3) 0;
+}
+.ai-progress-track {
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.ai-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-indigo), #818cf8);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+.ai-progress-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* ---- AI Badge on Task Card ---- */
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    background: rgba(79, 70, 229, 0.08);
+    border: 1px solid rgba(79, 70, 229, 0.15);
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-indigo);
+    flex-shrink: 0;
+    animation: ai-badge-in 0.3s ease;
+}
+.ai-badge.sorting {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+@keyframes ai-badge-in {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
 /* ---- Tags & Markdown ---- */
 .task-tag {
     display: inline-block;
