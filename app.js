@@ -367,9 +367,11 @@ function addTaskFromInput() {
     const input = document.getElementById('dump-input');
     const text = input.value.trim();
     if (!text) return;
-    createTask(text, 'inbox');
+    const task = createTask(text, 'inbox');
     input.value = '';
     renderAll();
+    // Kick off AI auto-sort in background
+    if (typeof aiAutoSort === 'function') aiAutoSort(task.id, text);
 }
 
 // ============================================================
@@ -517,6 +519,15 @@ function buildTaskEl(task) {
         el.style.transition = '200ms ease';
         setTimeout(() => deleteTask(task.id), 200);
     });
+
+    // AI badge — shows sorting state on new inbox tasks
+    if (task.aiSorting) {
+        const badge = document.createElement('span');
+        badge.className = 'ai-badge sorting';
+        badge.id = `ai-badge-${task.id}`;
+        badge.textContent = '✨ AI sorting…';
+        el.appendChild(badge);
+    }
 
     el.appendChild(dragHandle);
     el.appendChild(checkbox);
@@ -838,6 +849,7 @@ function bootApp() {
     initZenMode();
     initAmbientNoise();
     initShortcuts();
+    initAI();
     requestNotifPermission();
 
     if ('serviceWorker' in navigator) {
@@ -2028,6 +2040,118 @@ function initShortcuts() {
             }
         }
     });
+}
+
+// ============================================================
+// LOCAL AI MODULE
+// ============================================================
+let aiWorker = null;
+let aiReady = false;
+const CONFIDENCE_THRESHOLD = 0.60;
+
+// Map model category to human-readable quadrant name
+const CATEGORY_NAMES = {
+    'q1': 'Do First',
+    'q2': 'Schedule',
+    'q3': 'Delegate',
+    'q4': "Don't Do",
+};
+
+function initAI() {
+    // Check for Web Worker support
+    if (typeof Worker === 'undefined') {
+        setAIStatus('error', 'AI Unavailable');
+        return;
+    }
+
+    try {
+        aiWorker = new Worker('./ai-worker.js', { type: 'module' });
+    } catch (e) {
+        console.warn('AI Worker failed to start:', e);
+        setAIStatus('error', 'AI Unavailable');
+        return;
+    }
+
+    aiWorker.addEventListener('message', (event) => {
+        const { type, status, taskId, category, score, error, progress } = event.data;
+
+        if (type === 'status') {
+            if (status === 'loading') {
+                setAIStatus('loading', 'AI Loading…');
+                const wrap = document.getElementById('ai-progress-bar-wrap');
+                if (wrap) wrap.style.display = 'block';
+            } else if (status === 'ready') {
+                aiReady = true;
+                setAIStatus('ready', '✦ AI Ready');
+                const wrap = document.getElementById('ai-progress-bar-wrap');
+                if (wrap) wrap.style.display = 'none';
+            } else if (status === 'error') {
+                setAIStatus('error', 'AI Error');
+                console.error('AI Worker error:', error);
+            }
+        }
+
+        if (type === 'progress') {
+            const bar = document.getElementById('ai-progress-bar');
+            const label = document.getElementById('ai-progress-label');
+            if (bar && progress !== undefined) bar.style.width = Math.round(progress) + '%';
+            if (label) label.textContent = `Downloading AI model (first time only)… ${Math.round(progress)}%`;
+        }
+
+        if (type === 'result' && taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Remove sorting flag
+            task.aiSorting = false;
+
+            if (error) {
+                console.warn('AI classification error:', error);
+                saveState();
+                renderAll();
+                return;
+            }
+
+            if (score >= CONFIDENCE_THRESHOLD && category) {
+                // Move task to predicted quadrant
+                for (const s in state.focusSlots) {
+                    if (state.focusSlots[s] === taskId) state.focusSlots[s] = null;
+                }
+                task.category = category;
+                saveState();
+                renderAll();
+                showToast(`🤖 Sorted "${task.text.substring(0, 30)}" → ${CATEGORY_NAMES[category]}`, '✨');
+            } else {
+                // Not confident enough — leave in Inbox, show a subtle badge
+                saveState();
+                renderAll();
+            }
+        }
+    });
+
+    // Kick off model load immediately in background
+    aiWorker.postMessage({ type: 'load' });
+}
+
+function setAIStatus(state, label) {
+    const chip = document.getElementById('ai-status-chip');
+    const labelEl = document.getElementById('ai-status-label');
+    if (!chip || !labelEl) return;
+    chip.className = `ai-status-chip ai-status-${state}`;
+    labelEl.textContent = label;
+}
+
+function aiAutoSort(taskId, text) {
+    if (!aiWorker || !aiReady) return; // Model not ready yet
+
+    // Mark the task as being sorted
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    task.aiSorting = true;
+    saveState();
+    renderAll();
+
+    aiWorker.postMessage({ type: 'classify', taskId, text });
 }
 
 // ============================================================
