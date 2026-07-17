@@ -16,6 +16,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard.jsx';
 import ToastContainer from './components/ToastContainer.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import CompletedArchive from './components/CompletedArchive.jsx';
+import TaskDetailPanel from './components/TaskDetailPanel.jsx';
 
 function AppInner() {
   const { auth, login, logout } = useAuth();
@@ -90,6 +91,7 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
         open={analyticsOpen}
         onClose={() => setAnalyticsOpen(false)}
       />
+      <TaskDetailPanel />
 
       <ToastContainer toasts={toasts} />
     </div>
