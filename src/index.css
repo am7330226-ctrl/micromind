@@ -821,3 +821,67 @@ body.zen-mode .column-left > *:not(.brain-dump-panel) { opacity: 0.2; pointer-ev
   .analytics-grid { grid-template-columns: 1fr; }
   .pomodoro-widget { right: 8px; left: 8px; width: auto; }
 }
+
+/* ================================================================
+   GAMIFICATION
+   ================================================================ */
+.level-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(79,70,229,0.06);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(79,70,229,0.15);
+  min-width: 60px;
+}
+.level-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-indigo);
+  line-height: 1;
+  text-align: center;
+}
+.level-xp-bar {
+  height: 4px;
+  background: rgba(79,70,229,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.level-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-indigo), #818cf8);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: var(--transition);
+}
+.badge-item.locked {
+  opacity: 0.4;
+  filter: grayscale(100%);
+}
+.badge-icon {
+  font-size: 1.5rem;
+}
+.badge-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}

@@ -30,8 +30,16 @@ function getEmptyState() {
     pomodoroSessions: 0,
     completedTaskLog: {},
     streak: 0,
+    xp: 0,
+    level: 1,
+    badges: [],
   };
 }
+
+// ── Gamification Constants ──────────────────────────────────────────────────
+const XP_MAP = { q1: 50, q2: 40, q3: 20, q4: 10, inbox: 5 };
+function getLevel(xp) { return Math.floor(Math.sqrt(xp / 100)) + 1; }
+
 
 // ── Reducer ───────────────────────────────────────────────────────────────────
 function reducer(state, action) {
@@ -50,14 +58,43 @@ function reducer(state, action) {
 
     case 'TOGGLE_TASK': {
       const today = new Date().toISOString().split('T')[0];
+      const task = state.tasks.find(t => t.id === action.id);
+      if (!task) return state;
+
+      const isCompleting = action.completing;
+      let newXp = state.xp || 0;
+      let newBadges = [...(state.badges || [])];
+      
+      // Grant or remove XP based on completion status
+      if (isCompleting) {
+        let base = XP_MAP[task.category] || 5;
+        if (task.category.startsWith('focus-')) base = 50; // Focus slots count as Q1
+        newXp += base;
+      } else {
+        let base = XP_MAP[task.category] || 5;
+        if (task.category.startsWith('focus-')) base = 50;
+        newXp = Math.max(0, newXp - base);
+      }
+
+      const newLevel = getLevel(newXp);
+
+      // Evaluate "Task Crusher" badge (10 tasks done in a day)
+      const todayCount = (state.completedTaskLog[today] || 0) + (isCompleting ? 1 : -1);
+      if (todayCount >= 10 && !newBadges.includes('task-crusher')) {
+        newBadges.push('task-crusher');
+      }
+
       return {
         ...state,
+        xp: newXp,
+        level: newLevel,
+        badges: newBadges,
         tasks: state.tasks.map(t =>
-          t.id === action.id ? { ...t, completed: !t.completed } : t
+          t.id === action.id ? { ...t, completed: isCompleting } : t
         ),
-        completedTaskLog: action.completing
-          ? { ...state.completedTaskLog, [today]: (state.completedTaskLog[today] ?? 0) + 1 }
-          : state.completedTaskLog,
+        completedTaskLog: isCompleting
+          ? { ...state.completedTaskLog, [today]: todayCount }
+          : { ...state.completedTaskLog, [today]: Math.max(0, todayCount) },
       };
     }
 
@@ -130,17 +167,34 @@ function reducer(state, action) {
         newHistory = [...(state.history || []), historyEntry].slice(-90);
       }
       const newStreak = completed > 0 ? (state.streak || 0) + 1 : (state.streak || 0);
+      
+      // Evaluate streak & focus badges
+      let newBadges = [...(state.badges || [])];
+      if (newStreak >= 7 && !newBadges.includes('7-day-warrior')) newBadges.push('7-day-warrior');
+      if ((state.pomodoroSessions || 0) >= 5 && !newBadges.includes('focus-master')) newBadges.push('focus-master');
+
+      // Keep recurring #daily tasks by unchecking them, instead of deleting them.
+      const newTasks = state.tasks.filter(t => {
+        if (!t.completed) return true;
+        if (t.text.toLowerCase().includes('#daily')) return true;
+        return false;
+      }).map(t => {
+        if (t.completed && t.text.toLowerCase().includes('#daily')) return { ...t, completed: false };
+        return t;
+      });
+
       return {
         ...state,
-        tasks: state.tasks.filter(t => !t.completed),
+        tasks: newTasks,
         habits: state.habits.map(h => ({ ...h, done: false })),
         moodToday: 0,
         history: newHistory,
         streak: newStreak,
+        badges: newBadges,
         pomodoroSessions: 0,
         focusSlots: Object.fromEntries(
           Object.entries(state.focusSlots).map(([k, v]) => {
-            const taskStillExists = state.tasks.filter(t => !t.completed).find(t => t.id === v);
+            const taskStillExists = newTasks.find(t => t.id === v);
             return [k, taskStillExists ? v : null];
           })
         ),

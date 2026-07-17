@@ -91,6 +91,13 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
   const circ      = 2 * Math.PI * R;
   const offset    = circ - (pct / 100) * circ;
 
+  // ── Gamification (XP & Level) ──────────────────────────────────
+  const xp = state.xp || 0;
+  const level = state.level || 1;
+  const xpBase = (level - 1) * (level - 1) * 100;
+  const nextXp = level * level * 100;
+  const levelProgress = Math.max(0, Math.min(100, ((xp - xpBase) / (nextXp - xpBase)) * 100));
+
   const iconBtn = {
     width: 34, height: 34,
     borderRadius: '8px',
@@ -145,6 +152,14 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
         {/* Streak */}
         <div style={{ display:'flex', alignItems:'center', gap:'4px', background:'rgba(245,158,11,.1)', borderRadius:'999px', padding:'4px 10px', fontSize:'0.8rem', fontWeight:600, color:'#d97706' }} title="Day streak">
           🔥 <span id="streak-count">{state.streak || 0}</span>
+        </div>
+
+        {/* Level & XP */}
+        <div className="level-badge" title={`${xp} XP total`}>
+          <div className="level-label">Lvl {level}</div>
+          <div className="level-xp-bar">
+            <div className="level-xp-fill" style={{ width: `${levelProgress}%` }}></div>
+          </div>
         </div>
 
         {/* Action buttons */}

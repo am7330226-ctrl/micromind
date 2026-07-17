@@ -146,7 +146,16 @@
       "password": "password",
       "token": "lwef4f04p7mrp1s40q",
       "data": {
-        "tasks": [],
+        "tasks": [
+          {
+            "id": "yph0r79a",
+            "text": "Water plants #daily",
+            "category": "inbox",
+            "completed": true,
+            "createdAt": 1784313002236,
+            "aiSorting": false
+          }
+        ],
         "habits": [
           {
             "id": "habit-1",
@@ -190,12 +199,33 @@
           "focus-2": null,
           "focus-3": null
         },
-        "moodToday": 0,
-        "history": [],
+        "moodToday": 5,
+        "history": [
+          {
+            "date": "2026-07-17",
+            "tasksCompleted": 0,
+            "totalTasks": 0,
+            "habitsCompleted": 0,
+            "totalHabits": 6,
+            "quadrantBreakdown": {
+              "q1": 0,
+              "q2": 0,
+              "q3": 0,
+              "q4": 0
+            },
+            "mood": 0,
+            "pomodoroSessions": 0
+          }
+        ],
         "moodLog": {},
         "pomodoroSessions": 0,
-        "completedTaskLog": {},
-        "streak": 0
+        "completedTaskLog": {
+          "2026-07-17": 1
+        },
+        "streak": 0,
+        "xp": 5,
+        "level": 1,
+        "badges": []
       }
     }
   }
