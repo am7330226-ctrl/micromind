@@ -10,14 +10,26 @@ export function generateId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+const DEFAULT_HABITS = [
+  { id: 'habit-1', emoji: '💧', label: 'Drink Water', done: false },
+  { id: 'habit-2', emoji: '🚶', label: 'Take a Walk', done: false },
+  { id: 'habit-3', emoji: '📖', label: 'Read 10 Min', done: false },
+  { id: 'habit-4', emoji: '🧘', label: 'Breathe / Meditate', done: false },
+  { id: 'habit-5', emoji: '📵', label: 'No Phone 1hr', done: false },
+  { id: 'habit-6', emoji: '🌙', label: 'Sleep by 11pm', done: false },
+];
+
 function getEmptyState() {
   return {
     tasks: [],
-    habits: [],
+    habits: DEFAULT_HABITS,
     focusSlots: { 'focus-1': null, 'focus-2': null, 'focus-3': null },
+    moodToday: 0,       // 0 = unset, 1-5 = rated
+    history: [],        // [{ date, tasksCompleted, totalTasks, habitsCompleted, totalHabits, quadrantBreakdown, mood, pomodoroSessions }]
     moodLog: {},
-    pomodoroSessions: {},
+    pomodoroSessions: 0,
     completedTaskLog: {},
+    streak: 0,
   };
 }
 
@@ -64,6 +76,76 @@ function reducer(state, action) {
           t.id === action.id ? { ...t, aiSorting: action.value } : t
         ),
       };
+
+    case 'TOGGLE_HABIT':
+      return {
+        ...state,
+        habits: state.habits.map(h =>
+          h.id === action.id ? { ...h, done: !h.done } : h
+        ),
+      };
+
+    case 'SET_MOOD':
+      return { ...state, moodToday: action.mood };
+
+    case 'SET_POMODORO_SESSIONS':
+      return { ...state, pomodoroSessions: action.sessions };
+
+    case 'LOG_HISTORY': {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const existing = (state.history || []).findIndex(h => h.date === todayStr);
+      const entry = { ...action.entry, date: todayStr };
+      let newHistory;
+      if (existing >= 0) {
+        newHistory = state.history.map((h, i) => i === existing ? entry : h);
+      } else {
+        newHistory = [...(state.history || []), entry].slice(-90);
+      }
+      return { ...state, history: newHistory };
+    }
+
+    case 'DAILY_RESET': {
+      const completed = state.tasks.filter(t => t.completed).length;
+      const qb = { q1: 0, q2: 0, q3: 0, q4: 0 };
+      state.tasks.forEach(t => {
+        if (t.completed && qb.hasOwnProperty(t.category)) qb[t.category]++;
+        if (t.completed && t.category.startsWith('focus-')) qb.q1++;
+      });
+      const todayStr = new Date().toISOString().split('T')[0];
+      const historyEntry = {
+        date: todayStr,
+        tasksCompleted: completed,
+        totalTasks: state.tasks.length,
+        habitsCompleted: state.habits.filter(h => h.done).length,
+        totalHabits: state.habits.length,
+        quadrantBreakdown: qb,
+        mood: state.moodToday || 0,
+        pomodoroSessions: state.pomodoroSessions || 0,
+      };
+      const existing = (state.history || []).findIndex(h => h.date === todayStr);
+      let newHistory;
+      if (existing >= 0) {
+        newHistory = state.history.map((h, i) => i === existing ? historyEntry : h);
+      } else {
+        newHistory = [...(state.history || []), historyEntry].slice(-90);
+      }
+      const newStreak = completed > 0 ? (state.streak || 0) + 1 : (state.streak || 0);
+      return {
+        ...state,
+        tasks: state.tasks.filter(t => !t.completed),
+        habits: state.habits.map(h => ({ ...h, done: false })),
+        moodToday: 0,
+        history: newHistory,
+        streak: newStreak,
+        pomodoroSessions: 0,
+        focusSlots: Object.fromEntries(
+          Object.entries(state.focusSlots).map(([k, v]) => {
+            const taskStillExists = state.tasks.filter(t => !t.completed).find(t => t.id === v);
+            return [k, taskStillExists ? v : null];
+          })
+        ),
+      };
+    }
 
     case 'CLEAR_COMPLETED_INBOX':
       return { ...state, tasks: state.tasks.filter(t => !(t.category === 'inbox' && t.completed)) };

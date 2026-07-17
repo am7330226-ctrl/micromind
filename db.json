@@ -140,6 +140,63 @@
         "pomodoroSessions": {},
         "completedTaskLog": {}
       }
+    },
+    "another@example.com": {
+      "name": "Another User",
+      "password": "password",
+      "token": "lwef4f04p7mrp1s40q",
+      "data": {
+        "tasks": [],
+        "habits": [
+          {
+            "id": "habit-1",
+            "emoji": "💧",
+            "label": "Drink Water",
+            "done": false
+          },
+          {
+            "id": "habit-2",
+            "emoji": "🚶",
+            "label": "Take a Walk",
+            "done": false
+          },
+          {
+            "id": "habit-3",
+            "emoji": "📖",
+            "label": "Read 10 Min",
+            "done": false
+          },
+          {
+            "id": "habit-4",
+            "emoji": "🧘",
+            "label": "Breathe / Meditate",
+            "done": false
+          },
+          {
+            "id": "habit-5",
+            "emoji": "📵",
+            "label": "No Phone 1hr",
+            "done": false
+          },
+          {
+            "id": "habit-6",
+            "emoji": "🌙",
+            "label": "Sleep by 11pm",
+            "done": false
+          }
+        ],
+        "focusSlots": {
+          "focus-1": null,
+          "focus-2": null,
+          "focus-3": null
+        },
+        "moodToday": 0,
+        "history": [],
+        "moodLog": {},
+        "pomodoroSessions": 0,
+        "completedTaskLog": {},
+        "streak": 0
+      }
     }
   }
 }
