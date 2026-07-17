@@ -19,8 +19,18 @@ export default function TaskItem({ task, onToggle }) {
     dispatch({ type: 'TOGGLE_TASK', id: task.id, completing: !task.completed });
   };
 
+  const handleDragStart = (e) => {
+    e.dataTransfer.setData('text/plain', task.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
-    <div className={`task-item${task.completed ? ' completed' : ''}`} data-id={task.id}>
+    <div 
+      className={`task-item${task.completed ? ' completed' : ''}`} 
+      data-id={task.id}
+      draggable
+      onDragStart={handleDragStart}
+    >
       {/* Checkbox */}
       <div
         className={`task-checkbox${task.completed ? ' checked' : ''}`}

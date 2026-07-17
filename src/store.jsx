@@ -173,13 +173,25 @@ function reducer(state, action) {
       if (newStreak >= 7 && !newBadges.includes('7-day-warrior')) newBadges.push('7-day-warrior');
       if ((state.pomodoroSessions || 0) >= 5 && !newBadges.includes('focus-master')) newBadges.push('focus-master');
 
-      // Keep recurring #daily tasks by unchecking them, instead of deleting them.
+      // Keep recurring tasks by unchecking them, instead of deleting them.
+      const todayDay = new Date().getDay(); // 0 = Sun, 1 = Mon ... 6 = Sat
+      const daysStr = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const todayName = daysStr[todayDay];
+      const isMonday = todayDay === 1;
+
+      const shouldRegenerate = (text) => {
+        const lower = text.toLowerCase();
+        if (lower.includes('#daily') || lower.includes('@daily')) return true;
+        if (lower.includes('@weekly') && isMonday) return true; // @weekly defaults to Monday reset
+        if (lower.includes(`@${todayName}`)) return true;
+        return false;
+      };
+
       const newTasks = state.tasks.filter(t => {
         if (!t.completed) return true;
-        if (t.text.toLowerCase().includes('#daily')) return true;
-        return false;
+        return shouldRegenerate(t.text);
       }).map(t => {
-        if (t.completed && t.text.toLowerCase().includes('#daily')) return { ...t, completed: false };
+        if (t.completed && shouldRegenerate(t.text)) return { ...t, completed: false };
         return t;
       });
 
