@@ -123,6 +123,23 @@
         "streak": 1,
         "lastReset": "Wed Jul 15 2026"
       }
+    },
+    "rajendermishra39@gmil.com": {
+      "name": "manan",
+      "password": "abhay@9818",
+      "token": "zkwk4rt5vxlmrozyd0h",
+      "data": {
+        "tasks": [],
+        "habits": [],
+        "focusSlots": {
+          "focus-1": null,
+          "focus-2": null,
+          "focus-3": null
+        },
+        "moodLog": {},
+        "pomodoroSessions": {},
+        "completedTaskLog": {}
+      }
     }
   }
 }
