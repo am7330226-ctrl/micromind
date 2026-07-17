@@ -33,7 +33,7 @@ export default function BrainDump({ showToast }) {
       workerRef.current = worker;
 
       worker.addEventListener('message', (e) => {
-        const { type, status, taskId, category, score, error, progress } = e.data;
+        const { type, status, taskId, category, score, error, progress, reason } = e.data;
 
         if (type === 'status') {
           if (status === 'loading') setAiStatus('loading');
@@ -48,9 +48,18 @@ export default function BrainDump({ showToast }) {
         if (type === 'result' && taskId) {
           dispatch({ type: 'SET_TASK_AI_SORTING', id: taskId, value: false });
           if (!error && score >= CONFIDENCE_THRESHOLD && category) {
-            dispatch({ type: 'MOVE_TASK', id: taskId, category });
+            // Respect Q1 WIP limit
+            const q1Active = state.tasks.filter(t => t.category === 'q1' && !t.completed).length;
+            const targetCategory = (category === 'q1' && q1Active >= 3) ? 'inbox' : category;
+            dispatch({ type: 'MOVE_TASK', id: taskId, category: targetCategory });
+            // Store AI reason on the task for the tooltip
+            if (reason) dispatch({ type: 'SET_TASK_AI_REASON', id: taskId, reason });
             const taskText = state.tasks.find(t => t.id === taskId)?.text ?? '';
-            showToast(`Sorted "${taskText.slice(0, 28)}…" → ${CATEGORY_NAMES[category]}`, '🤖');
+            if (targetCategory !== category) {
+              showToast(`Q1 full — kept in Inbox: "${taskText.slice(0, 24)}…"`, '⛔');
+            } else {
+              showToast(`Sorted "${taskText.slice(0, 28)}…" → ${CATEGORY_NAMES[category]}`, '🤖');
+            }
           }
         }
       });

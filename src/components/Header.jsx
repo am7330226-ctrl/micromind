@@ -3,7 +3,7 @@
  * daily reset, user info, and logout.
  */
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
 
 // ── Ambient Noise helpers (Web Audio API) ──────────────────────────────────
@@ -50,6 +50,27 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
 
   const [zenMode,   setZenMode]   = useState(false);
   const [ambient,   setAmbient]   = useState(false);
+  const [lightMode, setLightMode] = useState(() => {
+    return localStorage.getItem('micromind_theme') === 'light';
+  });
+
+  // Sync light mode class on mount and when it changes
+  useEffect(() => {
+    if (lightMode) {
+      document.body.classList.add('light');
+      localStorage.setItem('micromind_theme', 'light');
+    } else {
+      document.body.classList.remove('light');
+      localStorage.setItem('micromind_theme', 'dark');
+    }
+  }, [lightMode]);
+
+  // Apply saved theme on first load
+  useEffect(() => {
+    if (localStorage.getItem('micromind_theme') === 'light') {
+      document.body.classList.add('light');
+    }
+  }, []);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -166,6 +187,12 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button id="pomodoro-toggle-btn" style={iconBtn} onClick={onOpenPomodoro} title="Pomodoro Timer">🍅</button>
           <button id="analytics-toggle-btn" style={iconBtn} onClick={onOpenAnalytics} title="Analytics">📊</button>
+          <button
+            id="theme-toggle-btn"
+            style={{ ...iconBtn, ...(lightMode ? { background: 'rgba(251,191,36,.12)', color: '#d97706', borderColor: 'rgba(251,191,36,.3)' } : {}) }}
+            onClick={() => setLightMode(m => !m)}
+            title={lightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >{lightMode ? '☀️' : '🌑'}</button>
           <button
             id="ambient-noise-btn"
             style={{ ...iconBtn, ...(ambient ? { background: 'rgba(79,70,229,.12)', color: 'var(--color-indigo)', borderColor: 'rgba(79,70,229,.25)' } : {}) }}

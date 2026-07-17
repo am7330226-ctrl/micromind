@@ -37,15 +37,28 @@ function Quadrant({ quadrant, tasks, showToast }) {
   const dispatch = useDispatch();
   const [dragOver, setDragOver] = useState(false);
 
+  const Q1_LIMIT = 3;
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setDragOver(false);
     const taskId = e.dataTransfer.getData('text/plain');
-    if (taskId) {
-      dispatch({ type: 'MOVE_TASK', id: taskId, category: quadrant.id });
-      showToast(`Moved to ${quadrant.label}`, quadrant.emoji);
+    if (!taskId) return;
+
+    // WIP limit: block drops into Q1 if already at limit
+    if (quadrant.id === 'q1') {
+      const currentQ1Count = tasks.filter(t => !t.completed).length;
+      const isAlreadyInQ1 = tasks.some(t => t.id === taskId);
+      if (!isAlreadyInQ1 && currentQ1Count >= Q1_LIMIT) {
+        showToast(`Q1 is full! Finish something first 🔥`, '⛔');
+        return;
+      }
     }
-  }, [dispatch, quadrant, showToast]);
+
+    dispatch({ type: 'MOVE_TASK', id: taskId, category: quadrant.id });
+    showToast(`Moved to ${quadrant.label}`, quadrant.emoji);
+  }, [dispatch, quadrant, showToast, tasks]);
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -68,6 +81,11 @@ function Quadrant({ quadrant, tasks, showToast }) {
             {quadrant.subtitle}
           </div>
         </div>
+        {quadrant.id === 'q1' && (
+          <span className={`wip-badge${tasks.filter(t => !t.completed).length >= Q1_LIMIT ? ' wip-full' : ''}`}>
+            {tasks.filter(t => !t.completed).length}/{Q1_LIMIT}
+          </span>
+        )}
       </div>
 
       <div className="task-list">

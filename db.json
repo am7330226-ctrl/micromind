@@ -150,8 +150,8 @@
           {
             "id": "zcq3v5de",
             "text": "hello",
-            "category": "inbox",
-            "completed": false,
+            "category": "q1",
+            "completed": true,
             "createdAt": 1784313417904,
             "aiSorting": false
           }
@@ -220,10 +220,10 @@
         "moodLog": {},
         "pomodoroSessions": 0,
         "completedTaskLog": {
-          "2026-07-17": 1
+          "2026-07-17": 2
         },
         "streak": 0,
-        "xp": 5,
+        "xp": 55,
         "level": 1,
         "badges": []
       }
