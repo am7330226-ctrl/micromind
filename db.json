@@ -37,7 +37,7 @@
               "id": "task-1784188530854-9657",
               "text": "Test normal task",
               "category": "inbox",
-              "completed": false,
+              "completed": true,
               "createdAt": 1784188530854,
               "aiSorting": false
             },
@@ -45,8 +45,16 @@
               "id": "task-1784188556213-5172",
               "text": "Someday learn to play the piano",
               "category": "inbox",
-              "completed": false,
+              "completed": true,
               "createdAt": 1784188556213,
+              "aiSorting": false
+            },
+            {
+              "id": "task-1784268945970-1937",
+              "text": "meeting at 5 remind me",
+              "category": "focus-2",
+              "completed": false,
+              "createdAt": 1784268945970,
               "aiSorting": false
             }
           ],
@@ -90,7 +98,7 @@
           ],
           "focusSlots": {
             "focus-1": "task-1784185708346-3743",
-            "focus-2": null,
+            "focus-2": "task-1784268945970-1937",
             "focus-3": null
           },
           "history": [
