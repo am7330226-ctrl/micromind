@@ -1,7 +1,14 @@
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -9,7 +16,9 @@ const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+// Serve Vite production build (dist/) in production
+app.use(express.static(path.join(__dirname, 'dist')));
+
 
 // Simple database wrapper
 function getDB() {
@@ -107,9 +116,9 @@ app.post('/api/data', authenticate, (req, res) => {
     res.json({ success: true });
 });
 
-// Fallback to index.html for SPA
+// SPA fallback — serve React's index.html for any non-API route
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
