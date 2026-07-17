@@ -338,8 +338,27 @@ export default function AnalyticsDashboard({ open, onClose }) {
             </div>
           </div>
 
+          {/* Gamification Badges */}
+          <div className="chart-card chart-card-wide" style={{ marginTop: 'var(--space-4)' }}>
+            <h3 className="chart-title">🏅 Achievements</h3>
+            <div className="badges-grid">
+              <div className={`badge-item ${state.badges?.includes('task-crusher') ? '' : 'locked'}`} title="Complete 10 tasks in a single day">
+                <span className="badge-icon">🗡️</span>
+                <span className="badge-name">Task Crusher</span>
+              </div>
+              <div className={`badge-item ${state.badges?.includes('7-day-warrior') ? '' : 'locked'}`} title="Reach a 7-day streak">
+                <span className="badge-icon">🛡️</span>
+                <span className="badge-name">7-Day Warrior</span>
+              </div>
+              <div className={`badge-item ${state.badges?.includes('focus-master') ? '' : 'locked'}`} title="Log 5 Pomodoro sessions">
+                <span className="badge-icon">🍅</span>
+                <span className="badge-name">Focus Master</span>
+              </div>
+            </div>
+          </div>
+
           {/* Charts */}
-          <div className="analytics-grid">
+          <div className="analytics-grid" style={{ marginTop: 'var(--space-4)' }}>
             <div className="chart-card">
               <h3 className="chart-title">📊 Tasks Completed</h3>
               <div className="chart-container">
