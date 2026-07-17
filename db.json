@@ -225,7 +225,9 @@
         "streak": 0,
         "xp": 55,
         "level": 1,
-        "badges": []
+        "badges": [],
+        "lastResetDate": null,
+        "completedArchive": []
       }
     }
   }
