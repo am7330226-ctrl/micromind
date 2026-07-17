@@ -78,23 +78,10 @@ function Quadrant({ quadrant, tasks, showToast }) {
           </div>
         ) : (
           tasks.map(task => (
-            <DraggableTaskItem key={task.id} task={task} />
+            <TaskItem key={task.id} task={task} />
           ))
         )}
       </div>
-    </div>
-  );
-}
-
-function DraggableTaskItem({ task }) {
-  const handleDragStart = (e) => {
-    e.dataTransfer.setData('text/plain', task.id);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  return (
-    <div draggable onDragStart={handleDragStart}>
-      <TaskItem task={task} />
     </div>
   );
 }
