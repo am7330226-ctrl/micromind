@@ -35,6 +35,7 @@ function getEmptyState() {
     badges: [],
     lastResetDate: null, // ISO date string of last DAILY_RESET
     completedArchive: [], // [{ id, text, category, completedAt, dueDate }]
+    selectedTaskId: null, // ID of task open in the side panel
   };
 }
 
@@ -142,6 +143,52 @@ function reducer(state, action) {
         ...state,
         tasks: state.tasks.map(t =>
           t.id === action.id ? { ...t, aiReason: action.reason } : t
+        ),
+      };
+
+    case 'SET_SELECTED_TASK':
+      return { ...state, selectedTaskId: action.id };
+
+    case 'UPDATE_TASK_NOTES':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id ? { ...t, notes: action.notes } : t
+        ),
+      };
+
+    case 'ADD_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id 
+            ? { ...t, subtasks: [...(t.subtasks || []), { id: generateId(), text: action.text, completed: false }] } 
+            : t
+        ),
+      };
+
+    case 'TOGGLE_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id
+            ? {
+                ...t,
+                subtasks: (t.subtasks || []).map(s => 
+                  s.id === action.subtaskId ? { ...s, completed: action.completed } : s
+                )
+              }
+            : t
+        ),
+      };
+
+    case 'DELETE_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id
+            ? { ...t, subtasks: (t.subtasks || []).filter(s => s.id !== action.subtaskId) }
+            : t
         ),
       };
 
@@ -373,5 +420,7 @@ export function createTask(text, category = 'inbox') {
     aiSorting: false,
     dueDate: null,   // ISO date string e.g. "2026-07-20"
     aiReason: null,  // Human-readable AI classification reason
+    notes: '',
+    subtasks: [],
   };
 }

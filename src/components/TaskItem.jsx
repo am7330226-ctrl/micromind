@@ -42,12 +42,18 @@ export default function TaskItem({ task, onToggle }) {
 
   const dueMeta = getDueDateMeta(task.dueDate);
 
+  const handleRowClick = () => {
+    dispatch({ type: 'SET_SELECTED_TASK', id: task.id });
+  };
+
   return (
     <div
       className={`task-item${task.completed ? ' completed' : ''}`}
       data-id={task.id}
       draggable
       onDragStart={handleDragStart}
+      onClick={handleRowClick}
+      style={{ cursor: 'pointer' }}
     >
       {/* Checkbox */}
       <div

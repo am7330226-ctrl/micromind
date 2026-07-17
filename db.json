@@ -154,6 +154,26 @@
             "completed": true,
             "createdAt": 1784313417904,
             "aiSorting": false
+          },
+          {
+            "id": "9tdsmfkv",
+            "text": "dance",
+            "category": "q2",
+            "completed": true,
+            "createdAt": 1784316791609,
+            "aiSorting": false,
+            "dueDate": "2026-07-21",
+            "aiReason": null
+          },
+          {
+            "id": "fav7va6h",
+            "text": "singing",
+            "category": "q2",
+            "completed": true,
+            "createdAt": 1784316821617,
+            "aiSorting": false,
+            "dueDate": "2026-07-20",
+            "aiReason": null
           }
         ],
         "habits": [
@@ -220,14 +240,29 @@
         "moodLog": {},
         "pomodoroSessions": 0,
         "completedTaskLog": {
-          "2026-07-17": 2
+          "2026-07-17": 4
         },
         "streak": 0,
-        "xp": 55,
-        "level": 1,
+        "xp": 135,
+        "level": 2,
         "badges": [],
         "lastResetDate": null,
-        "completedArchive": []
+        "completedArchive": [
+          {
+            "id": "9tdsmfkv",
+            "text": "dance",
+            "category": "q2",
+            "completedAt": "2026-07-17T19:34:19.893Z",
+            "dueDate": "2026-07-21"
+          },
+          {
+            "id": "fav7va6h",
+            "text": "singing",
+            "category": "q2",
+            "completedAt": "2026-07-17T19:34:37.646Z",
+            "dueDate": "2026-07-20"
+          }
+        ]
       }
     }
   }
