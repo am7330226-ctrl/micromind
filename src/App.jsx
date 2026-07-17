@@ -3,8 +3,8 @@
  */
 
 import './index.css';
-import { useState } from 'react';
-import { AppStateProvider, useAuth } from './store.jsx';
+import { useState, useEffect } from 'react';
+import { AppStateProvider, useAuth, useAppState, useDispatch } from './store.jsx';
 import { useToast } from './hooks/useToast.js';
 import Header from './components/Header.jsx';
 import BrainDump from './components/BrainDump.jsx';
@@ -15,6 +15,7 @@ import PomodoroTimer from './components/PomodoroTimer.jsx';
 import AnalyticsDashboard from './components/AnalyticsDashboard.jsx';
 import ToastContainer from './components/ToastContainer.jsx';
 import AuthModal from './components/AuthModal.jsx';
+import CompletedArchive from './components/CompletedArchive.jsx';
 
 function AppInner() {
   const { auth, login, logout } = useAuth();
@@ -28,10 +29,38 @@ function AppInner() {
   }
 
   return (
+    <AppContent
+      showToast={showToast}
+      toasts={toasts}
+      analyticsOpen={analyticsOpen}
+      setAnalyticsOpen={setAnalyticsOpen}
+      pomodoroOpen={pomodoroOpen}
+      setPomodoroOpen={setPomodoroOpen}
+      onLogout={logout}
+      userName={auth.name}
+    />
+  );
+}
+
+// Separate component so we can access state/dispatch after auth check
+function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodoroOpen, setPomodoroOpen, onLogout, userName }) {
+  const state    = useAppState();
+  const dispatch = useDispatch();
+
+  // ── Auto daily reset when a new day is detected ───────────────────────────
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastReset = state.lastResetDate;
+    if (lastReset && lastReset !== today) {
+      dispatch({ type: 'DAILY_RESET' });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
     <div className="app-wrapper">
       <Header
-        userName={auth.name}
-        onLogout={logout}
+        userName={userName}
+        onLogout={onLogout}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
         onOpenPomodoro={() => setPomodoroOpen(o => !o)}
       />
@@ -44,8 +73,11 @@ function AppInner() {
           <HabitTracker showToast={showToast} />
         </div>
 
-        {/* Right: Eisenhower matrix */}
-        <EisenhowerMatrix showToast={showToast} />
+        {/* Right: Eisenhower matrix + completed archive below */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          <EisenhowerMatrix showToast={showToast} />
+          <CompletedArchive />
+        </div>
       </main>
 
       {/* Modals & overlays */}

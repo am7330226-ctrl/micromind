@@ -33,6 +33,8 @@ function getEmptyState() {
     xp: 0,
     level: 1,
     badges: [],
+    lastResetDate: null, // ISO date string of last DAILY_RESET
+    completedArchive: [], // [{ id, text, category, completedAt, dueDate }]
   };
 }
 
@@ -84,6 +86,18 @@ function reducer(state, action) {
         newBadges.push('task-crusher');
       }
 
+      // Build updated archive
+      const prevArchive = state.completedArchive || [];
+      let newArchive;
+      if (isCompleting) {
+        newArchive = [...prevArchive, {
+          id: task.id, text: task.text, category: task.category,
+          completedAt: new Date().toISOString(), dueDate: task.dueDate || null,
+        }];
+      } else {
+        newArchive = prevArchive.filter(a => a.id !== task.id);
+      }
+
       return {
         ...state,
         xp: newXp,
@@ -95,6 +109,7 @@ function reducer(state, action) {
         completedTaskLog: isCompleting
           ? { ...state.completedTaskLog, [today]: todayCount }
           : { ...state.completedTaskLog, [today]: Math.max(0, todayCount) },
+        completedArchive: newArchive,
       };
     }
 
@@ -111,6 +126,22 @@ function reducer(state, action) {
         ...state,
         tasks: state.tasks.map(t =>
           t.id === action.id ? { ...t, aiSorting: action.value } : t
+        ),
+      };
+
+    case 'SET_TASK_DUE_DATE':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id ? { ...t, dueDate: action.dueDate } : t
+        ),
+      };
+
+    case 'SET_TASK_AI_REASON':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id ? { ...t, aiReason: action.reason } : t
         ),
       };
 
@@ -204,6 +235,8 @@ function reducer(state, action) {
         streak: newStreak,
         badges: newBadges,
         pomodoroSessions: 0,
+        lastResetDate: todayStr,
+        completedArchive: [],  // clear archive on daily reset
         focusSlots: Object.fromEntries(
           Object.entries(state.focusSlots).map(([k, v]) => {
             const taskStillExists = newTasks.find(t => t.id === v);
@@ -215,6 +248,9 @@ function reducer(state, action) {
 
     case 'CLEAR_COMPLETED_INBOX':
       return { ...state, tasks: state.tasks.filter(t => !(t.category === 'inbox' && t.completed)) };
+
+    case 'CLEAR_ARCHIVE':
+      return { ...state, completedArchive: [] };
 
     case 'LOAD_STATE':
       return { ...getEmptyState(), ...action.payload };
@@ -335,5 +371,7 @@ export function createTask(text, category = 'inbox') {
     completed: false,
     createdAt: Date.now(),
     aiSorting: false,
+    dueDate: null,   // ISO date string e.g. "2026-07-20"
+    aiReason: null,  // Human-readable AI classification reason
   };
 }
