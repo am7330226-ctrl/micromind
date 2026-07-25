@@ -313,9 +313,12 @@ const StateContext    = createContext(null);
 const DispatchContext = createContext(null);
 const AuthContext     = createContext(null);
 
+const LOCAL_STORAGE_KEY = 'micromind_local_state';
+const GUEST_STORAGE_KEY = 'micromind_guest_user';
+
 export function AppStateProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, getEmptyState());
-  const [auth, dispatchAuth] = useReducer(authReducer, { session: null, name: '', user: null });
+  const [auth, dispatchAuth] = useReducer(authReducer, { session: null, name: '', user: null, isGuest: false });
   const saveTimerRef = useRef(null);
 
   // ── Supabase: load user data from Postgres ─────────────────────────────────
@@ -326,8 +329,7 @@ export function AppStateProvider({ children }) {
       .eq('id', userId)
       .single();
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 = row not found (first time user), ignore it
-      console.warn('Could not load data:', error.message);
+      console.warn('Could not load data from Supabase:', error.message);
       return;
     }
     if (data?.data && typeof data.data === 'object') {
@@ -335,21 +337,63 @@ export function AppStateProvider({ children }) {
     }
   }, []);
 
-  // ── Supabase: debounced save to Postgres ───────────────────────────────────
+  // ── LocalStorage: load local state ──────────────────────────────────────────
+  const loadFromLocalStorage = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          dispatch({ type: 'LOAD_STATE', payload: parsed });
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load local state:', e);
+    }
+  }, []);
+
+  // ── Save state to LocalStorage and Supabase ────────────────────────────────
   useEffect(() => {
-    if (!auth.user?.id) return;
+    // Always save local backup
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn('Could not save to localStorage:', e);
+    }
+
+    // Save to Supabase if authenticated cloud user
+    if (!auth.user?.id || auth.isGuest) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
       const { error } = await supabase
         .from('user_data')
         .upsert({ id: auth.user.id, data: state, updated_at: new Date().toISOString() });
-      if (error) console.warn('Could not save data:', error.message);
+      if (error) console.warn('Could not save data to Supabase:', error.message);
     }, 800);
-  }, [state, auth.user?.id]);
+  }, [state, auth.user?.id, auth.isGuest]);
 
-  // ── Supabase: listen to auth state changes (login, logout, token refresh) ──
+  // ── Restore Auth session (Supabase or Guest) on mount ─────────────────────
   useEffect(() => {
-    // Get the current session immediately on mount
+    // Check for guest session first
+    try {
+      const savedGuest = localStorage.getItem(GUEST_STORAGE_KEY);
+      if (savedGuest) {
+        const guestData = JSON.parse(savedGuest);
+        const name = guestData.name || 'Guest';
+        dispatchAuth({
+          type: 'LOGIN_GUEST',
+          session: { access_token: 'guest-session-token' },
+          name,
+          user: { id: 'guest-local-user' },
+        });
+        loadFromLocalStorage();
+        return;
+      }
+    } catch (e) {
+      console.warn('Error checking guest session:', e);
+    }
+
+    // Get current Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         const name = session.user.user_metadata?.name
@@ -371,35 +415,51 @@ export function AppStateProvider({ children }) {
         dispatchAuth({ type: 'LOGIN', session, name, user: session.user });
         if (event === 'SIGNED_IN') loadFromSupabase(session.user.id);
       } else {
-        dispatchAuth({ type: 'LOGOUT' });
-        dispatch({ type: 'LOAD_STATE', payload: getEmptyState() });
+        const isGuestActive = localStorage.getItem(GUEST_STORAGE_KEY);
+        if (!isGuestActive) {
+          dispatchAuth({ type: 'LOGOUT' });
+          dispatch({ type: 'LOAD_STATE', payload: getEmptyState() });
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [loadFromSupabase]);
+  }, [loadFromSupabase, loadFromLocalStorage]);
 
   // ── Exposed helpers ────────────────────────────────────────────────────────
-  // Called by AuthModal after a successful email/password sign-in
   const login = useCallback((session, name) => {
+    localStorage.removeItem(GUEST_STORAGE_KEY);
     dispatchAuth({ type: 'LOGIN', session, name, user: session?.user });
     if (session?.user?.id) loadFromSupabase(session.user.id);
   }, [loadFromSupabase]);
 
+  const loginGuest = useCallback((guestName = 'Guest User') => {
+    const guestObj = { name: guestName };
+    localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(guestObj));
+    dispatchAuth({
+      type: 'LOGIN_GUEST',
+      session: { access_token: 'guest-session-token' },
+      name: guestName,
+      user: { id: 'guest-local-user' },
+    });
+    loadFromLocalStorage();
+  }, [loadFromLocalStorage]);
+
   const logout = useCallback(async () => {
+    localStorage.removeItem(GUEST_STORAGE_KEY);
     await supabase.auth.signOut();
-    // onAuthStateChange will fire SIGNED_OUT and reset the state automatically
+    dispatchAuth({ type: 'LOGOUT' });
+    dispatch({ type: 'LOAD_STATE', payload: getEmptyState() });
   }, []);
 
-  // Expose auth.token for any legacy code still reading it
   const authValue = {
     auth: {
       ...auth,
-      // Compatibility: expose the JWT access token as `token`
       token: auth.session?.access_token ?? null,
       name:  auth.name,
     },
     login,
+    loginGuest,
     logout,
   };
 
@@ -417,9 +477,10 @@ export function AppStateProvider({ children }) {
 // ── Auth sub-reducer ──────────────────────────────────────────────────────────
 function authReducer(state, action) {
   switch (action.type) {
-    case 'LOGIN':  return { session: action.session, name: action.name, user: action.user };
-    case 'LOGOUT': return { session: null, name: '', user: null };
-    default:       return state;
+    case 'LOGIN':       return { session: action.session, name: action.name, user: action.user, isGuest: false };
+    case 'LOGIN_GUEST': return { session: action.session, name: action.name, user: action.user, isGuest: true };
+    case 'LOGOUT':      return { session: null, name: '', user: null, isGuest: false };
+    default:            return state;
   }
 }
 

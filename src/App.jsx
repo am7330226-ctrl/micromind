@@ -19,14 +19,14 @@ import CompletedArchive from './components/CompletedArchive.jsx';
 import TaskDetailPanel from './components/TaskDetailPanel.jsx';
 
 function AppInner() {
-  const { auth, login, logout } = useAuth();
+  const { auth, login, loginGuest, logout } = useAuth();
   const { toasts, showToast }   = useToast();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [pomodoroOpen,  setPomodoroOpen]  = useState(false);
 
   // Show auth screen if no token
   if (!auth.token) {
-    return <AuthModal onAuthSuccess={login} />;
+    return <AuthModal onAuthSuccess={login} onGuestSuccess={loginGuest} />;
   }
 
   return (
@@ -62,6 +62,7 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
       <Header
         userName={userName}
         onLogout={onLogout}
+        showToast={showToast}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
         onOpenPomodoro={() => setPomodoroOpen(o => !o)}
       />

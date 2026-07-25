@@ -1,19 +1,34 @@
 /**
  * AuthModal.jsx — Login / Register modal that gates the app.
- * Uses Supabase Auth (email/password + Google OAuth).
+ * Modern Pastel SaaS & Violet Glassmorphism Design System.
  */
 
 import { useState } from 'react';
 import { supabase } from '../supabase.js';
 
-export default function AuthModal({ onAuthSuccess }) {
-  const [isLogin, setIsLogin]     = useState(true);
-  const [name, setName]           = useState('');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [error, setError]         = useState('');
-  const [loading, setLoading]     = useState(false);
+export default function AuthModal({ onAuthSuccess, onGuestSuccess }) {
+  const [isLogin, setIsLogin]       = useState(true);
+  const [name, setName]             = useState('');
+  const [email, setEmail]           = useState('');
+  const [password, setPassword]     = useState('');
+  const [error, setError]           = useState('');
+  const [loading, setLoading]       = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+
+  const formatErrorMessage = (msg) => {
+    if (!msg) return '';
+    const lower = msg.toLowerCase();
+    if (lower.includes('email not confirmed')) {
+      return 'Email not confirmed yet. Check your inbox or click "Continue as Guest" below to try the app instantly.';
+    }
+    if (lower.includes('invalid login credentials')) {
+      return 'Invalid email or password. Please check your credentials or click "Continue as Guest".';
+    }
+    if (lower.includes('unsupported provider') || lower.includes('provider is not enabled')) {
+      return 'Google sign-in is not enabled on this Supabase project. Use Email or Guest mode below.';
+    }
+    return msg;
+  };
 
   // ── Email / Password submit ────────────────────────────────────────────────
   const handleSubmit = async (e) => {
@@ -24,19 +39,33 @@ export default function AuthModal({ onAuthSuccess }) {
     try {
       if (isLogin) {
         const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
-        if (err) { setError(err.message); return; }
-        onAuthSuccess(data.session, data.user.user_metadata?.name || email.split('@')[0]);
+        if (err) {
+          setError(formatErrorMessage(err.message));
+          return;
+        }
+        if (data.session) {
+          onAuthSuccess(data.session, data.user?.user_metadata?.name || email.split('@')[0]);
+        } else {
+          setError('Sign-in failed. Please try again or use Guest mode.');
+        }
       } else {
-        const { error: err } = await supabase.auth.signUp({
+        const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { name } },
+          options: { data: { name: name || email.split('@')[0] } },
         });
-        if (err) { setError(err.message); return; }
-        setCheckEmail(true); // Supabase sends a confirmation email
+        if (err) {
+          setError(formatErrorMessage(err.message));
+          return;
+        }
+        if (data?.session) {
+          onAuthSuccess(data.session, name || email.split('@')[0]);
+        } else {
+          setCheckEmail(true);
+        }
       }
     } catch (ex) {
-      setError('Unexpected error. Please try again.');
+      setError('Unexpected network error. Try Guest mode to continue offline.');
     } finally {
       setLoading(false);
     }
@@ -45,12 +74,23 @@ export default function AuthModal({ onAuthSuccess }) {
   // ── Google OAuth ───────────────────────────────────────────────────────────
   const handleGoogle = async () => {
     setLoading(true);
+    setError('');
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
     });
-    if (err) { setError(err.message); setLoading(false); }
-    // On success, the page redirects — onAuthStateChange in store.jsx picks it up
+    if (err) {
+      setError(formatErrorMessage(err.message));
+      setLoading(false);
+    }
+  };
+
+  // ── Guest / Demo Mode ──────────────────────────────────────────────────────
+  const handleGuest = () => {
+    const guestName = name.trim() || (email ? email.split('@')[0] : 'Guest User');
+    if (onGuestSuccess) {
+      onGuestSuccess(guestName);
+    }
   };
 
   // ── "Check your email" screen ──────────────────────────────────────────────
@@ -60,15 +100,23 @@ export default function AuthModal({ onAuthSuccess }) {
         <div style={styles.card}>
           <div style={styles.logo}>📬</div>
           <h1 style={styles.title}>Check your email</h1>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: 8 }}>
-            We sent a confirmation link to <strong>{email}</strong>.<br />
-            Click it to activate your account, then come back and sign in.
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: 8, lineHeight: 1.5 }}>
+            We sent a confirmation link to <strong style={{ color: '#8b5cf6' }}>{email}</strong>.<br />
+            Click it to activate your account, then come back to sign in.
           </p>
+          
           <button
-            style={{ ...styles.submitBtn, marginTop: 24 }}
+            style={{ ...styles.submitBtn, marginTop: 20 }}
             onClick={() => { setCheckEmail(false); setIsLogin(true); }}
           >
             Back to Sign In
+          </button>
+
+          <button
+            style={{ ...styles.guestBtn, marginTop: 10 }}
+            onClick={handleGuest}
+          >
+            ⚡ Continue as Guest (Skip Email Verification)
           </button>
         </div>
       </div>
@@ -99,10 +147,12 @@ export default function AuthModal({ onAuthSuccess }) {
         {/* Tab switcher */}
         <div style={styles.tabs}>
           <button
+            type="button"
             style={{ ...styles.tab, ...(isLogin  ? styles.tabActive : {}) }}
             onClick={() => { setIsLogin(true); setError(''); }}
           >Sign In</button>
           <button
+            type="button"
             style={{ ...styles.tab, ...(!isLogin ? styles.tabActive : {}) }}
             onClick={() => { setIsLogin(false); setError(''); }}
           >Create Account</button>
@@ -144,6 +194,13 @@ export default function AuthModal({ onAuthSuccess }) {
           </button>
         </form>
 
+        <div style={styles.divider}><span>or test instantly</span></div>
+
+        {/* Guest / Demo button */}
+        <button style={styles.guestBtn} onClick={handleGuest} type="button">
+          ⚡ Continue as Guest (Offline Mode)
+        </button>
+
         <p style={styles.privacy}>
           🔒 Powered by Supabase — your data is secure and encrypted.
         </p>
@@ -155,50 +212,53 @@ export default function AuthModal({ onAuthSuccess }) {
 const styles = {
   overlay: {
     position: 'fixed', inset: 0,
-    background: 'linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #f0fdf4 100%)',
+    backgroundColor: '#e2e8e4',
+    backgroundImage: 'radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 75%)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     zIndex: 9999,
     fontFamily: "'Inter', system-ui, sans-serif",
   },
   card: {
-    background: 'white',
-    borderRadius: 24,
+    background: '#ffffff',
+    borderRadius: 28,
     padding: '40px 36px',
-    width: '100%', maxWidth: 400,
-    boxShadow: '0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(79,70,229,0.1)',
-    border: '1px solid rgba(79,70,229,0.1)',
+    width: '100%', maxWidth: 430,
+    boxShadow: '0 25px 70px -15px rgba(0, 0, 0, 0.08), 0 0 30px rgba(0, 0, 0, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+    color: '#0f172a',
   },
-  logo:     { fontSize: 48, marginBottom: 8, display: 'block' },
-  title:    { fontFamily: "'Outfit', sans-serif", fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', margin: '0 0 4px' },
-  subtitle: { fontSize: '0.85rem', color: '#94a3b8', margin: '0 0 24px' },
+  logo:     { fontSize: 44, marginBottom: 6, display: 'block' },
+  title:    { fontFamily: "'Outfit', sans-serif", fontSize: '2.1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 2px', letterSpacing: '-0.02em' },
+  subtitle: { fontSize: '0.85rem', color: '#64748b', margin: '0 0 20px' },
   googleBtn: {
     width: '100%',
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
     padding: '11px 0',
-    background: 'white',
+    background: '#ffffff',
     border: '1.5px solid #e2e8f0',
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: '0.9rem',
     fontWeight: 600,
-    color: '#1e293b',
+    color: '#0f172a',
     cursor: 'pointer',
     transition: '160ms ease',
     fontFamily: 'inherit',
     marginBottom: 4,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
   },
   divider: {
     display: 'flex', alignItems: 'center', gap: 12,
     margin: '16px 0',
-    color: '#cbd5e1',
-    fontSize: '0.8rem',
+    color: '#94a3b8',
+    fontSize: '0.78rem',
     fontWeight: 600,
   },
   tabs: {
     display: 'flex', gap: 4,
-    background: '#f1f5f9', borderRadius: 12,
+    background: '#f8fafc', borderRadius: 14,
     padding: 4, marginBottom: 16,
+    border: '1px solid #e2e8f0',
   },
   tab: {
     flex: 1, padding: '8px 0',
@@ -207,29 +267,41 @@ const styles = {
     cursor: 'pointer', background: 'transparent',
     color: '#64748b', transition: '120ms ease',
   },
-  tabActive: { background: 'white', color: '#4f46e5', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' },
+  tabActive: { background: '#8b5cf6', color: '#ffffff', boxShadow: '0 2px 10px rgba(139, 92, 246, 0.35)' },
   form:      { display: 'flex', flexDirection: 'column', gap: 12 },
   input: {
     padding: '12px 16px',
+    background: '#ffffff',
     border: '1.5px solid #e2e8f0',
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: '0.9rem',
     fontFamily: 'inherit',
     outline: 'none',
-    color: '#1e293b',
+    color: '#0f172a',
     transition: '180ms ease',
   },
   error: {
     color: '#dc2626', fontSize: '0.82rem',
     background: '#fef2f2', border: '1px solid #fecaca',
-    borderRadius: 8, padding: '8px 12px', margin: 0, textAlign: 'left',
+    borderRadius: 10, padding: '10px 12px', margin: 0, textAlign: 'left',
+    lineHeight: 1.4,
   },
   submitBtn: {
     marginTop: 4, padding: '13px 0',
-    background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-    color: 'white', border: 'none', borderRadius: 12,
+    background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    color: 'white', border: 'none', borderRadius: 14,
     fontSize: '0.95rem', fontWeight: 700,
     cursor: 'pointer', transition: '160ms ease', fontFamily: 'inherit',
+    boxShadow: '0 4px 14px rgba(139, 92, 246, 0.35)',
   },
-  privacy: { marginTop: 20, fontSize: '0.72rem', color: '#94a3b8' },
+  guestBtn: {
+    width: '100%', padding: '12px 0',
+    background: 'rgba(6, 182, 212, 0.1)',
+    border: '1px solid rgba(6, 182, 212, 0.3)',
+    borderRadius: 14,
+    color: '#0891b2',
+    fontSize: '0.9rem', fontWeight: 600,
+    cursor: 'pointer', transition: '160ms ease', fontFamily: 'inherit',
+  },
+  privacy: { marginTop: 18, fontSize: '0.72rem', color: '#94a3b8' },
 };

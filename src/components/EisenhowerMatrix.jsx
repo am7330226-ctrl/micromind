@@ -9,24 +9,28 @@ import TaskItem from './TaskItem.jsx';
 const QUADRANTS = [
   {
     id: 'q1',
+    num: '01',
     label: 'Do First',
     subtitle: 'Urgent & Important',
     emoji: '🔥',
   },
   {
     id: 'q2',
+    num: '02',
     label: 'Schedule',
     subtitle: 'Important, Not Urgent',
     emoji: '📅',
   },
   {
     id: 'q3',
+    num: '03',
     label: 'Delegate',
     subtitle: 'Urgent, Not Important',
     emoji: '🤝',
   },
   {
     id: 'q4',
+    num: '04',
     label: "Don't Do",
     subtitle: 'Not Urgent & Not Important',
     emoji: '🗑️',
@@ -74,15 +78,17 @@ function Quadrant({ quadrant, tasks, showToast }) {
       onDragLeave={() => setDragOver(false)}
     >
       <div className="quadrant-header">
-        <span className="quadrant-dot" />
-        <div>
-          <div className="quadrant-label">{quadrant.emoji} {quadrant.label}</div>
-          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '1px' }}>
-            {quadrant.subtitle}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="editorial-num">{quadrant.num}</span>
+          <div>
+            <div className="quadrant-title">{quadrant.emoji} {quadrant.label}</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '1px' }}>
+              {quadrant.subtitle}
+            </div>
           </div>
         </div>
         {quadrant.id === 'q1' && (
-          <span className={`wip-badge${tasks.filter(t => !t.completed).length >= Q1_LIMIT ? ' wip-full' : ''}`}>
+          <span className={`quadrant-count${tasks.filter(t => !t.completed).length >= Q1_LIMIT ? ' wip-full' : ''}`}>
             {tasks.filter(t => !t.completed).length}/{Q1_LIMIT}
           </span>
         )}

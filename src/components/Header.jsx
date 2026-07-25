@@ -44,7 +44,7 @@ function stopAmbientNoise() {
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
-export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomodoro }) {
+export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro }) {
   const dispatch = useDispatch();
   const state    = useAppState();
 
@@ -98,9 +98,8 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
 
   // ── Daily Reset ───────────────────────────────────────────────
   const handleReset = () => {
-    if (window.confirm('Perform daily reset? Completed tasks will be archived and habits reset.')) {
-      dispatch({ type: 'DAILY_RESET' });
-    }
+    dispatch({ type: 'DAILY_RESET' });
+    if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
   };
 
   // ── Progress (tasks) ──────────────────────────────────────────
@@ -120,14 +119,14 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
   const levelProgress = Math.max(0, Math.min(100, ((xp - xpBase) / (nextXp - xpBase)) * 100));
 
   const iconBtn = {
-    width: 34, height: 34,
-    borderRadius: '8px',
+    width: 36, height: 36,
+    borderRadius: '10px',
     border: '1px solid var(--color-border)',
-    background: 'var(--color-bg)',
-    color: 'var(--text-muted)',
+    background: 'rgba(15, 23, 42, 0.6)',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '0.9rem',
+    fontSize: '0.95rem',
     transition: 'var(--transition)',
     fontFamily: 'inherit',
   };
@@ -142,21 +141,21 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         {/* Date */}
         <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500 }}>
           {today}
         </span>
 
         {/* Progress ring */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title={`${done}/${total} tasks done`}>
-          <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="28" cy="28" r={R} fill="none" stroke="var(--color-border)" strokeWidth="4" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} title={`${done}/${total} tasks done`}>
+          <svg width="48" height="48" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
+            <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="4" />
             <circle
               id="progress-circle"
               cx="28" cy="28" r={R}
               fill="none"
-              stroke="var(--color-indigo)"
+              stroke="var(--color-indigo-light)"
               strokeWidth="4"
               strokeDasharray={circ}
               strokeDashoffset={offset}
@@ -165,21 +164,21 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
             />
           </svg>
           <div>
-            <div id="progress-percentage" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-indigo)', lineHeight: 1 }}>{pct}%</div>
-            <div id="task-ratio" style={{ fontSize: '0.65rem', color: 'var(--text-muted)', lineHeight: 1 }}>{done}/{total}</div>
+            <div id="progress-percentage" style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-indigo-light)', lineHeight: 1.1 }}>{pct}%</div>
+            <div id="task-ratio" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1 }}>{done}/{total}</div>
           </div>
         </div>
 
         {/* Streak */}
-        <div style={{ display:'flex', alignItems:'center', gap:'4px', background:'rgba(245,158,11,.1)', borderRadius:'999px', padding:'4px 10px', fontSize:'0.8rem', fontWeight:600, color:'#d97706' }} title="Day streak">
+        <div style={{ display:'flex', alignItems:'center', gap:'5px', background:'rgba(245,158,11,.15)', border: '1px solid rgba(245,158,11,.3)', borderRadius:'999px', padding:'4px 12px', fontSize:'0.82rem', fontWeight:700, color:'#fbbf24' }} title="Day streak">
           🔥 <span id="streak-count">{state.streak || 0}</span>
         </div>
 
         {/* Level & XP */}
-        <div className="level-badge" title={`${xp} XP total`}>
-          <div className="level-label">Lvl {level}</div>
-          <div className="level-xp-bar">
-            <div className="level-xp-fill" style={{ width: `${levelProgress}%` }}></div>
+        <div className="level-badge" title={`${xp} XP total`} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', padding: '4px 12px', borderRadius: '999px' }}>
+          <div className="level-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: '#a5b4fc' }}>Lvl {level}</div>
+          <div className="level-xp-bar" style={{ width: 44, height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
+            <div className="level-xp-fill" style={{ width: `${levelProgress}%`, height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7)', transition: 'width 0.4s ease' }}></div>
           </div>
         </div>
 
@@ -189,19 +188,19 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
           <button id="analytics-toggle-btn" style={iconBtn} onClick={onOpenAnalytics} title="Analytics">📊</button>
           <button
             id="theme-toggle-btn"
-            style={{ ...iconBtn, ...(lightMode ? { background: 'rgba(251,191,36,.12)', color: '#d97706', borderColor: 'rgba(251,191,36,.3)' } : {}) }}
+            style={{ ...iconBtn, ...(lightMode ? { background: 'rgba(251,191,36,.15)', color: '#fbbf24', borderColor: 'rgba(251,191,36,.3)' } : {}) }}
             onClick={() => setLightMode(m => !m)}
             title={lightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           >{lightMode ? '☀️' : '🌑'}</button>
           <button
             id="ambient-noise-btn"
-            style={{ ...iconBtn, ...(ambient ? { background: 'rgba(79,70,229,.12)', color: 'var(--color-indigo)', borderColor: 'rgba(79,70,229,.25)' } : {}) }}
+            style={{ ...iconBtn, ...(ambient ? { background: 'rgba(99,102,241,.2)', color: 'var(--color-indigo-light)', borderColor: 'rgba(99,102,241,.4)' } : {}) }}
             onClick={toggleAmbient}
             title={ambient ? 'Stop Ambient Noise' : 'Play Ambient Noise'}
           >🎧</button>
           <button
             id="zen-mode-btn"
-            style={{ ...iconBtn, ...(zenMode ? { background: 'rgba(79,70,229,.12)', color: 'var(--color-indigo)', borderColor: 'rgba(79,70,229,.25)' } : {}) }}
+            style={{ ...iconBtn, ...(zenMode ? { background: 'rgba(99,102,241,.2)', color: 'var(--color-indigo-light)', borderColor: 'rgba(99,102,241,.4)' } : {}) }}
             onClick={toggleZen}
             title={zenMode ? 'Exit Zen Mode' : 'Zen Mode'}
           >{zenMode ? '⊡' : '⊞'}</button>
@@ -215,13 +214,13 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
 
         {/* User */}
         {userName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 4 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-              color: 'white', fontWeight: 700, fontSize: '0.8rem',
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+              color: 'white', fontWeight: 700, fontSize: '0.85rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
+              flexShrink: 0, boxShadow: '0 2px 8px rgba(99,102,241,0.4)'
             }}>
               {userName.charAt(0).toUpperCase()}
             </div>
@@ -231,9 +230,9 @@ export default function Header({ userName, onLogout, onOpenAnalytics, onOpenPomo
             <button
               onClick={onLogout}
               style={{
-                padding: '5px 12px', fontSize: '0.78rem', fontWeight: 600,
-                color: 'var(--text-muted)', background: 'var(--color-bg)',
-                border: '1px solid var(--color-border)', borderRadius: '8px',
+                padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
+                color: '#fca5a5', background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px',
                 cursor: 'pointer', transition: 'var(--transition)', fontFamily: 'inherit',
               }}
             >Sign Out</button>

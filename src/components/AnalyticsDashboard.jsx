@@ -305,35 +305,35 @@ export default function AnalyticsDashboard({ open, onClose }) {
           </div>
 
           {/* Highlight cards */}
-          <div className="analytics-highlights">
-            <div className="highlight-card">
-              <span className="highlight-icon">🔥</span>
-              <div className="highlight-data">
-                <span className="highlight-value" id="hl-streak">{streak} days</span>
-                <span className="highlight-label">Longest Streak</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>🔥</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{streak} days</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Streak</span>
               </div>
             </div>
-            <div className="highlight-card">
-              <span className="highlight-icon">✅</span>
-              <div className="highlight-data">
-                <span className="highlight-value" id="hl-total-tasks">{totalCmp}</span>
-                <span className="highlight-label">Tasks Completed</span>
+            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>✅</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{totalCmp}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Completed</span>
               </div>
             </div>
-            <div className="highlight-card">
-              <span className="highlight-icon">🏆</span>
-              <div className="highlight-data">
-                <span className="highlight-value" id="hl-best-day">
+            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>🏆</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>
                   {best ? new Date(best.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}
                 </span>
-                <span className="highlight-label">Best Day</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Best Day</span>
               </div>
             </div>
-            <div className="highlight-card">
-              <span className="highlight-icon">😊</span>
-              <div className="highlight-data">
-                <span className="highlight-value" id="hl-avg-mood">{avgMood ? `${avgMood} ★` : '—'}</span>
-                <span className="highlight-label">Avg Mood</span>
+            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>😊</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{avgMood ? `${avgMood} ★` : '—'}</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Avg Mood</span>
               </div>
             </div>
           </div>
