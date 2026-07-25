@@ -1,6 +1,7 @@
 /**
  * BrainDump.jsx — The left-panel capture input and inbox task list.
- * Handles task creation, AI auto-sort triggering, and keyboard shortcuts.
+ * Handles task creation, AI auto-sort triggering, Web Speech API voice capture,
+ * and keyboard shortcuts.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -15,10 +16,13 @@ export default function BrainDump({ showToast }) {
   const dispatch = useDispatch();
   const inputRef = useRef(null);
   const workerRef = useRef(null);
-  const [inputValue, setInputValue] = useState('');
-  const [aiStatus, setAiStatus] = useState('loading'); // loading | ready | error
-  const [aiProgress, setAiProgress] = useState(0);
-  const [aiReady, setAiReady] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const [inputValue, setInputValue]   = useState('');
+  const [aiStatus, setAiStatus]       = useState('loading'); // loading | ready | error
+  const [aiProgress, setAiProgress]   = useState(0);
+  const [aiReady, setAiReady]         = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const inboxTasks = state.tasks.filter(t => t.category === 'inbox');
 
@@ -48,11 +52,9 @@ export default function BrainDump({ showToast }) {
         if (type === 'result' && taskId) {
           dispatch({ type: 'SET_TASK_AI_SORTING', id: taskId, value: false });
           if (!error && score >= CONFIDENCE_THRESHOLD && category) {
-            // Respect Q1 WIP limit
             const q1Active = state.tasks.filter(t => t.category === 'q1' && !t.completed).length;
             const targetCategory = (category === 'q1' && q1Active >= 3) ? 'inbox' : category;
             dispatch({ type: 'MOVE_TASK', id: taskId, category: targetCategory });
-            // Store AI reason on the task for the tooltip
             if (reason) dispatch({ type: 'SET_TASK_AI_REASON', id: taskId, reason });
             const taskText = state.tasks.find(t => t.id === taskId)?.text ?? '';
             if (targetCategory !== category) {
@@ -71,6 +73,66 @@ export default function BrainDump({ showToast }) {
       setAiStatus('error');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Web Speech API Integration ───────────────────────────────────────────
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => setIsListening(true);
+      rec.onend   = () => setIsListening(false);
+
+      rec.onerror = (event) => {
+        setIsListening(false);
+        if (event.error !== 'no-speech') {
+          showToast(`Voice input error: ${event.error}`, '🎙️');
+        }
+      };
+
+      rec.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInputValue(transcript);
+
+        if (event.results[0].isFinal && transcript.trim()) {
+          const text = transcript.trim();
+          const task = createTask(text);
+          dispatch({ type: 'ADD_TASK', payload: task });
+          setInputValue('');
+
+          if (workerRef.current && aiReady) {
+            dispatch({ type: 'SET_TASK_AI_SORTING', id: task.id, value: true });
+            workerRef.current.postMessage({ type: 'classify', taskId: task.id, text });
+          }
+          showToast(`Captured voice task: "${text.slice(0, 24)}…"`, '🎙️');
+        }
+      };
+
+      recognitionRef.current = rec;
+    }
+  }, [aiReady, dispatch, showToast]);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      showToast('Speech recognition is not supported in this browser.', '🎙️');
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        recognitionRef.current.stop();
+      }
+    }
+  };
 
   // ── Keyboard shortcut: / to focus input ─────────────────────────────────
   useEffect(() => {
@@ -93,7 +155,6 @@ export default function BrainDump({ showToast }) {
     dispatch({ type: 'ADD_TASK', payload: task });
     setInputValue('');
 
-    // Trigger AI auto-sort if model is ready
     if (workerRef.current && aiReady) {
       dispatch({ type: 'SET_TASK_AI_SORTING', id: task.id, value: true });
       workerRef.current.postMessage({ type: 'classify', taskId: task.id, text });
@@ -144,19 +205,28 @@ export default function BrainDump({ showToast }) {
         </div>
       )}
 
-      {/* Input */}
+      {/* Input & Voice Controls */}
       <div className="dump-input-container">
         <input
           ref={inputRef}
           id="dump-input"
           type="text"
-          placeholder="Type a task and hit Enter — AI will auto-sort it! (Press / to focus)"
+          placeholder={isListening ? "🎙️ Listening… Speak your task out loud" : "Type a task and hit Enter — AI will auto-sort it! (Press / to focus)"}
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           autoComplete="off"
         />
-        <button className="dump-submit-btn" onClick={handleAdd} aria-label="Add task">
+        <button
+          className={`mic-btn${isListening ? ' listening' : ''}`}
+          onClick={toggleListening}
+          title={isListening ? "Stop listening" : "Speak task out loud (Speech-to-Text)"}
+          type="button"
+          id="voice-input-btn"
+        >
+          🎙️
+        </button>
+        <button className="dump-submit-btn" onClick={handleAdd} aria-label="Add task" id="dump-submit-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
           </svg>
