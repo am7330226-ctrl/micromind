@@ -4,14 +4,14 @@
   "description": "MicroMind — Daily Mental Declutter (React + Vite)",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\" --names \"SERVER,VITE\" --prefix-colors \"yellow,cyan\"",
+    "dev": "vite",
     "server": "node server.js",
-    "client": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "cors": "^2.8.6",
     "express": "^4.21.2"
   },

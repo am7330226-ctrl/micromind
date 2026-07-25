@@ -4,6 +4,7 @@
  */
 
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
+import { supabase } from './supabase.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 export function generateId() {
@@ -314,68 +315,96 @@ const AuthContext     = createContext(null);
 
 export function AppStateProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, getEmptyState());
-  const [auth, dispatchAuth] = useReducer(authReducer, getInitialAuth());
+  const [auth, dispatchAuth] = useReducer(authReducer, { session: null, name: '', user: null });
   const saveTimerRef = useRef(null);
 
-  // ── Server sync ────────────────────────────────────────────────────────────
-  // Debounced save to server whenever state changes (and we have a token)
-  useEffect(() => {
-    if (!auth.token) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        await fetch('/api/data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': auth.token,
-          },
-          body: JSON.stringify(state),
-        });
-      } catch (e) {
-        console.warn('Could not sync to server:', e);
-      }
-    }, 800);
-  }, [state, auth.token]);
-
-  // Load from server on login
-  const loadFromServer = useCallback(async (token) => {
-    try {
-      const res = await fetch('/api/data', {
-        headers: { 'Authorization': token },
-      });
-      if (res.status === 401) {
-        dispatchAuth({ type: 'LOGOUT' });
-        return;
-      }
-      const { data } = await res.json();
-      if (data && typeof data === 'object') {
-        dispatch({ type: 'LOAD_STATE', payload: data });
-      }
-    } catch (e) {
-      console.warn('Could not load from server:', e);
+  // ── Supabase: load user data from Postgres ─────────────────────────────────
+  const loadFromSupabase = useCallback(async (userId) => {
+    const { data, error } = await supabase
+      .from('user_data')
+      .select('data')
+      .eq('id', userId)
+      .single();
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = row not found (first time user), ignore it
+      console.warn('Could not load data:', error.message);
+      return;
+    }
+    if (data?.data && typeof data.data === 'object') {
+      dispatch({ type: 'LOAD_STATE', payload: data.data });
     }
   }, []);
 
-  const login = useCallback((token, name) => {
-    dispatchAuth({ type: 'LOGIN', token, name });
-    loadFromServer(token);
-  }, [loadFromServer]);
+  // ── Supabase: debounced save to Postgres ───────────────────────────────────
+  useEffect(() => {
+    if (!auth.user?.id) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      const { error } = await supabase
+        .from('user_data')
+        .upsert({ id: auth.user.id, data: state, updated_at: new Date().toISOString() });
+      if (error) console.warn('Could not save data:', error.message);
+    }, 800);
+  }, [state, auth.user?.id]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('micromind_token');
-    localStorage.removeItem('micromind_user');
-    dispatchAuth({ type: 'LOGOUT' });
-    dispatch({ type: 'LOAD_STATE', payload: getEmptyState() });
+  // ── Supabase: listen to auth state changes (login, logout, token refresh) ──
+  useEffect(() => {
+    // Get the current session immediately on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const name = session.user.user_metadata?.name
+          || session.user.user_metadata?.full_name
+          || session.user.email?.split('@')[0]
+          || 'Friend';
+        dispatchAuth({ type: 'LOGIN', session, name, user: session.user });
+        loadFromSupabase(session.user.id);
+      }
+    });
+
+    // Subscribe to future auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const name = session.user.user_metadata?.name
+          || session.user.user_metadata?.full_name
+          || session.user.email?.split('@')[0]
+          || 'Friend';
+        dispatchAuth({ type: 'LOGIN', session, name, user: session.user });
+        if (event === 'SIGNED_IN') loadFromSupabase(session.user.id);
+      } else {
+        dispatchAuth({ type: 'LOGOUT' });
+        dispatch({ type: 'LOAD_STATE', payload: getEmptyState() });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadFromSupabase]);
+
+  // ── Exposed helpers ────────────────────────────────────────────────────────
+  // Called by AuthModal after a successful email/password sign-in
+  const login = useCallback((session, name) => {
+    dispatchAuth({ type: 'LOGIN', session, name, user: session?.user });
+    if (session?.user?.id) loadFromSupabase(session.user.id);
+  }, [loadFromSupabase]);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    // onAuthStateChange will fire SIGNED_OUT and reset the state automatically
   }, []);
 
-  // Auto-load on first mount if token exists
-  useEffect(() => {
-    if (auth.token) loadFromServer(auth.token);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Expose auth.token for any legacy code still reading it
+  const authValue = {
+    auth: {
+      ...auth,
+      // Compatibility: expose the JWT access token as `token`
+      token: auth.session?.access_token ?? null,
+      name:  auth.name,
+    },
+    login,
+    logout,
+  };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={authValue}>
       <StateContext.Provider value={state}>
         <DispatchContext.Provider value={dispatch}>
           {children}
@@ -386,21 +415,11 @@ export function AppStateProvider({ children }) {
 }
 
 // ── Auth sub-reducer ──────────────────────────────────────────────────────────
-function getInitialAuth() {
-  const token = localStorage.getItem('micromind_token');
-  let name = '';
-  try { name = JSON.parse(localStorage.getItem('micromind_user') || '{}').name || ''; } catch (_) {}
-  return { token: token || null, name };
-}
-
 function authReducer(state, action) {
   switch (action.type) {
-    case 'LOGIN':
-      return { token: action.token, name: action.name };
-    case 'LOGOUT':
-      return { token: null, name: '' };
-    default:
-      return state;
+    case 'LOGIN':  return { session: action.session, name: action.name, user: action.user };
+    case 'LOGOUT': return { session: null, name: '', user: null };
+    default:       return state;
   }
 }
 

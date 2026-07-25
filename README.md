@@ -1,45 +1,21 @@
 # 🧠 MicroMind — Daily Mental Declutter
 
-A **premium, dark-themed productivity dashboard** that solves daily mental overload by giving you a beautiful place to capture, sort, and act on tasks and micro-habits — every single day.
-
-🌐 **Live Demo**: [View on GitHub Pages](#) *(update with your link after deploy)*
+A **premium, dark-themed productivity dashboard** that solves daily mental overload by giving you a beautiful place to capture, sort, and act on tasks and micro-habits — powered by **React 19, Vite, local on-device AI**, and **Supabase**.
 
 ---
 
 ## ✨ Features
 
-- ⚡ **Brain Dump Inbox** — Instantly capture any task, thought, or distraction with zero friction
-- 🗂️ **Eisenhower Priority Matrix** — Drag tasks into *Do First / Schedule / Delegate / Eliminate* quadrants
-- 🎯 **Today's Focus Three** — Commit to just 3 high-impact priorities for the day
-- ✅ **Particle Burst Animations** — Satisfying canvas confetti explosion on task completion
-- 🌿 **Daily Micro-Habits** — 6 toggleable habit trackers that reset daily
-- 📈 **Progress Ring + Streak Counter** — Visual momentum tracking in the header
-- 💾 **LocalStorage Persistence** — All data survives page reloads, zero setup needed
-- 🌙 **Daily Reset** — Archives completed tasks, rolls over incomplete ones, increments your streak
-
----
-
-## 🚀 Getting Started
-
-### Option 1: Open directly (no install)
-Just open `index.html` in any modern browser. No build tools, no npm install.
-
-### Option 2: Local server
-```bash
-npx serve .
-```
-Then visit `http://localhost:3000`
-
----
-
-## 📁 Project Structure
-
-```
-micromind/
-├── index.html    # App structure & semantic HTML
-├── styles.css    # Dark glassmorphism theme (~650 lines)
-└── app.js        # All logic: tasks, drag & drop, habits, animations (~380 lines)
-```
+- ⚡ **Brain Dump Inbox** — Instantly capture any task, thought, or distraction with zero friction (press `/` to focus).
+- 🤖 **On-Device AI Auto-Sorting** — Local Web Worker (`ai-worker.js`) classifies tasks into Eisenhower quadrants via `@xenova/transformers` zero-shot NLI (`Xenova/nli-deberta-v3-small`) with zero main-thread lag.
+- 🗂️ **Eisenhower Priority Matrix** — Visual 4-quadrant organization (*Do First / Schedule / Delegate / Eliminate*).
+- 🎯 **Today's Focus Three** — Commit to 3 high-impact priorities with WIP limit enforcement.
+- 🎮 **Gamification & XP** — Earn XP, level up, maintain streaks, and unlock badges (*Task Crusher*, *7-Day Warrior*, *Focus Master*).
+- 🌿 **Daily Micro-Habits** — 6 toggleable habit trackers with smart daily resets.
+- ⏱️ **Pomodoro Focus Timer** — Integrated focus timer tracking sessions for productivity analytics.
+- 📊 **Analytics Dashboard** — Visual breakdown of quadrant distribution, habit history, and completion rates.
+- 🔐 **Supabase Cloud Sync & Local Fallback** — Real-time Postgres data persistence and auth via Supabase, with an Express (`server.js` + `db.json`) fallback option.
+- 🌙 **Smart Daily Reset** — Archives completed tasks while preserving recurring tags (`#daily`, `@weekly`, `@monday`).
 
 ---
 
@@ -47,28 +23,93 @@ micromind/
 
 | Technology | Usage |
 |---|---|
-| HTML5 | Semantic page structure |
-| Vanilla CSS | Glassmorphism dark theme, CSS variables, animations |
-| Vanilla JavaScript | State management, drag & drop, Canvas API |
-| Google Fonts | Inter + Outfit typefaces |
-| Lucide Icons | Consistent icon library |
-| localStorage | Client-side data persistence |
+| **React 19 & Vite 6** | Modern frontend framework & ultra-fast build engine |
+| **Transformers.js** | On-device zero-shot AI classification running in a Web Worker |
+| **Supabase JS** | User authentication & Postgres state synchronization |
+| **Express & Node.js** | Alternative local server fallback with JSON database |
+| **Vanilla CSS** | Glassmorphism dark theme, custom design tokens, & animations |
+| **Canvas Confetti** | Dynamic particle animations on task completion |
 
 ---
 
-## 🎨 Design Highlights
+## 📁 Project Structure
 
-- **Dark glassmorphism** with radial gradient nebula backgrounds
-- **CSS Custom Properties** token system for full design consistency
-- **Micro-animations** everywhere: task slide-in, checkbox pop, shine effect, button hover
-- **Fully responsive** — adapts from 2-column desktop to single-column mobile
+```
+micromind/
+├── index.html               # App entry point HTML
+├── vite.config.js           # Vite configuration
+├── ai-worker.js             # Web Worker for off-thread AI classification
+├── server.js                # Optional Express fallback server
+├── .env.example             # Environment variable template
+├── public/                  # Static assets & PWA manifest
+└── src/
+    ├── App.jsx              # Root component & page layout
+    ├── store.jsx            # State context, reducers & Supabase data sync
+    ├── supabase.js          # Supabase client setup
+    ├── index.css            # Design tokens & glassmorphism theme styles
+    ├── hooks/               # Custom React hooks (useToast)
+    └── components/          # App UI components
+        ├── AnalyticsDashboard.jsx
+        ├── AuthModal.jsx
+        ├── BrainDump.jsx
+        ├── EisenhowerMatrix.jsx
+        ├── HabitTracker.jsx
+        ├── Header.jsx
+        ├── MoodWidget.jsx
+        ├── PomodoroTimer.jsx
+        ├── TaskDetailPanel.jsx
+        ├── TaskItem.jsx
+        └── ToastContainer.jsx
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+
+### 2. Installation & Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/micromind.git
+cd micromind
+
+# Install dependencies
+npm install
+
+# Copy environment template
+cp .env.example .env
+```
+
+Set your Supabase credentials in `.env` (optional — defaults to built-in fallbacks):
+```env
+VITE_SUPABASE_URL=https://your-supabase-url.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### 3. Running Locally
+
+**Development Server (Frontend only):**
+```bash
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+**Local Express Server (Optional fallback):**
+```bash
+npm run server
+```
+
+**Production Build:**
+```bash
+npm run build
+npm run preview
+```
 
 ---
 
 ## 📄 License
 
 MIT — free to use, modify, and distribute.
-
----
-
-*Built with ❤️ as a modern solution to daily mental overload.*
