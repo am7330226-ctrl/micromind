@@ -51,26 +51,22 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   const [zenMode,   setZenMode]   = useState(false);
   const [ambient,   setAmbient]   = useState(false);
   const [lightMode, setLightMode] = useState(() => {
-    return localStorage.getItem('micromind_theme') === 'light';
+    const saved = localStorage.getItem('micromind_theme');
+    return saved === 'light';
   });
 
-  // Sync light mode class on mount and when it changes
+  // Sync light and dark mode classes on mount and when changed
   useEffect(() => {
     if (lightMode) {
       document.body.classList.add('light');
+      document.body.classList.remove('dark');
       localStorage.setItem('micromind_theme', 'light');
     } else {
+      document.body.classList.add('dark');
       document.body.classList.remove('light');
       localStorage.setItem('micromind_theme', 'dark');
     }
   }, [lightMode]);
-
-  // Apply saved theme on first load
-  useEffect(() => {
-    if (localStorage.getItem('micromind_theme') === 'light') {
-      document.body.classList.add('light');
-    }
-  }, []);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',

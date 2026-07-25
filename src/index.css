@@ -51,6 +51,79 @@
   --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ---- Dark Mode Theme Overrides ---- */
+body.dark {
+  --color-bg: #121212;
+  --color-surface: #1a1a1a;
+  --color-surface-subtle: #161616;
+  --color-surface-hover: #222222;
+
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-violet: rgba(168, 85, 247, 0.4);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
+  --color-violet: #a855f7;
+  --color-violet-hover: #9333ea;
+  --color-cyan: #22d3ee;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 36px -5px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 25px 70px -15px rgba(0, 0, 0, 0.85);
+
+  background-color: #121212;
+  background-image: radial-gradient(ellipse at 50% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 75%);
+}
+
+body.dark .app-wrapper {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lg);
+}
+
+body.dark .app-header,
+body.dark .task-item,
+body.dark .quadrant-panel,
+body.dark .habit-item,
+body.dark .mood-btn,
+body.dark .pomodoro-widget,
+body.dark .analytics-panel,
+body.dark .chart-card {
+  background: #121212;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+body.dark .stat-pill,
+body.dark .icon-action-btn,
+body.dark .pomo-mode-tabs,
+body.dark .pomo-secondary,
+body.dark .pomo-task-info,
+body.dark .pomo-slot-btn,
+body.dark .analytics-close,
+body.dark .analytics-tabs,
+body.dark .pomodoro-close {
+  background: #181818;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+}
+
+body.dark .dump-input-container input {
+  background: #121212;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+}
+body.dark .dump-input-container input::placeholder {
+  color: #64748b;
+}
+
+body.dark .quadrant-q1 { background: #1a1528; border-color: rgba(168, 85, 247, 0.35); }
+body.dark .quadrant-q2 { background: #0f232a; border-color: rgba(34, 211, 238, 0.35); }
+body.dark .quadrant-q3 { background: #261e12; border-color: rgba(245, 158, 11, 0.35); }
+body.dark .quadrant-q4 { background: #16181d; border-color: rgba(255, 255, 255, 0.12); }
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
