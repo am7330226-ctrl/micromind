@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
+import PwaInstallPrompt from './PwaInstallPrompt.jsx';
 
 // ── Ambient Noise helpers (Web Audio API) ──────────────────────────────────
 let audioCtx = null;
@@ -180,6 +181,7 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
 
         {/* Action buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <PwaInstallPrompt showToast={showToast} />
           <button id="pomodoro-toggle-btn" style={iconBtn} onClick={onOpenPomodoro} title="Pomodoro Timer">🍅</button>
           <button id="analytics-toggle-btn" style={iconBtn} onClick={onOpenAnalytics} title="Analytics">📊</button>
           <button
