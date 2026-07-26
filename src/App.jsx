@@ -3,7 +3,7 @@
  */
 
 import './index.css';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AppStateProvider, useAuth, useAppState, useDispatch } from './store.jsx';
 import { useToast } from './hooks/useToast.js';
 import { THEMES, getSavedThemeId, applyTheme } from './utils/themes.js';
