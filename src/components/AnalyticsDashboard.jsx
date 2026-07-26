@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppState } from '../store.jsx';
+import HabitHeatmap from './HabitHeatmap.jsx';
 
 const CHART_COLORS = {
   indigo:       '#4f46e5',
@@ -355,6 +356,11 @@ export default function AnalyticsDashboard({ open, onClose }) {
                 <span className="badge-name">Focus Master</span>
               </div>
             </div>
+          </div>
+
+          {/* 📅 GitHub-Style Activity Heatmap */}
+          <div className="chart-card chart-card-wide" style={{ marginTop: 'var(--space-4)' }}>
+            <HabitHeatmap />
           </div>
 
           {/* Charts */}

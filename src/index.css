@@ -2091,3 +2091,465 @@ body.dark .breakdown-btn { color: #f59e0b; }
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 .voice-ctrl-btn.stop:not(:disabled):hover { background: rgba(239, 68, 68, 0.2); }
+
+
+/* ==========================================================================
+   GAMIFICATION FEATURES — XP Theme Selector, Habit Heatmap, Ambient Player
+   ========================================================================== */
+
+/* ── 🎨 XP Theme Selector ───────────────────────────────────────────────── */
+.theme-selector-container {
+  position: relative;
+}
+
+.theme-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: clamp(260px, 90vw, 320px);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 20px rgba(139,92,246,0.12);
+  z-index: 9999;
+  overflow: hidden;
+  animation: panelSlideDown 0.2s ease;
+}
+
+.theme-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 1.2rem;
+}
+.theme-panel-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+.theme-panel-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.theme-grid {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  position: relative;
+  width: 100%;
+}
+.theme-card:hover { background: rgba(139,92,246,0.07); border-color: rgba(139,92,246,0.2); }
+.theme-card.active { border-color: var(--color-violet); background: rgba(139,92,246,0.08); }
+.theme-card.locked { opacity: 0.55; cursor: default; }
+.theme-card.locked:hover { background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.2); }
+
+.theme-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.theme-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.theme-card-emoji { font-size: 1.1rem; flex-shrink: 0; }
+.theme-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.theme-card-desc {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-active-check {
+  font-size: 0.85rem;
+  color: var(--color-violet);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.theme-lock-badge {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 7px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 20px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ef4444;
+  white-space: nowrap;
+}
+.theme-lock-badge.shake {
+  animation: shakeBadge 0.4s ease;
+}
+@keyframes shakeBadge {
+  0%   { transform: translateY(-50%) translateX(0); }
+  25%  { transform: translateY(-50%) translateX(-5px); }
+  50%  { transform: translateY(-50%) translateX(5px); }
+  75%  { transform: translateY(-50%) translateX(-3px); }
+  100% { transform: translateY(-50%) translateX(0); }
+}
+
+/* ── 📅 Habit Heatmap ───────────────────────────────────────────────────── */
+.heatmap-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heatmap-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.heatmap-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+.heatmap-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.heatmap-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+/* Day labels on left */
+.heatmap-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 20px; /* space for month row */
+  flex-shrink: 0;
+}
+.heatmap-day-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  line-height: 1;
+  height: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.heatmap-month-row {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.heatmap-month-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  width: calc((100% - 22px) / 12); /* approximate per-column width */
+  text-align: center;
+}
+
+.heatmap-columns {
+  display: flex;
+  gap: 2px;
+}
+
+.heatmap-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  flex-shrink: 0;
+}
+.heatmap-cell:hover {
+  transform: scale(1.4);
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(139,92,246,0.4);
+}
+.heatmap-cell.today {
+  box-shadow: 0 0 0 1.5px var(--color-violet);
+}
+
+/* Legend */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.heatmap-legend-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+.heatmap-legend-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+/* Floating tooltip */
+.heatmap-tooltip {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.heatmap-tooltip strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.heatmap-tooltip span {
+  color: var(--text-muted);
+}
+
+/* ── 🎧 Ambient Sound Player ─────────────────────────────────────────────── */
+.ambient-player-container {
+  position: relative;
+}
+
+.ambient-drawer {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: clamp(260px, 90vw, 320px);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 20px rgba(139,92,246,0.1);
+  z-index: 9999;
+  overflow: hidden;
+  animation: panelSlideDown 0.2s ease;
+}
+
+.ambient-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.ambient-drawer-icon { font-size: 1.2rem; }
+.ambient-drawer-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+.ambient-drawer-sub { font-size: 0.68rem; color: var(--text-muted); }
+.ambient-drawer-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.ambient-drawer-close:hover { background: rgba(139,92,246,0.1); color: var(--text-primary); }
+
+.ambient-track-list {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ambient-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  width: 100%;
+}
+.ambient-track:hover {
+  background: rgba(139,92,246,0.07);
+  border-color: rgba(139,92,246,0.2);
+}
+.ambient-track.playing {
+  background: rgba(139,92,246,0.1);
+  border-color: var(--color-violet);
+}
+
+.ambient-track-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.ambient-track-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.ambient-track-name { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
+.ambient-track-desc { font-size: 0.68rem; color: var(--text-muted); }
+
+.ambient-play-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Equalizer bars (playing state) */
+.ambient-eq-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.ambient-eq-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-violet);
+  animation: voiceWave 0.5s ease-in-out infinite alternate;
+}
+.ambient-eq-bars span:nth-child(1) { height: 7px;  animation-delay: 0s; }
+.ambient-eq-bars span:nth-child(2) { height: 13px; animation-delay: 0.12s; }
+.ambient-eq-bars span:nth-child(3) { height: 9px;  animation-delay: 0.06s; }
+.ambient-eq-bars span:nth-child(4) { height: 11px; animation-delay: 0.18s; }
+
+/* Volume controls */
+.ambient-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.ambient-mute-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+.ambient-mute-btn:hover { background: rgba(139,92,246,0.1); }
+.ambient-mute-btn.muted { opacity: 0.5; }
+
+.ambient-volume-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--color-violet) 0%, var(--color-border) 100%);
+  outline: none;
+  cursor: pointer;
+}
+.ambient-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-violet);
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(139,92,246,0.4);
+}
+
+.ambient-volume-pct {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Cyberpunk Neon theme overrides */
+body.theme-cyberpunk .glass-panel,
+body.theme-cyberpunk .task-item,
+body.theme-cyberpunk .quadrant {
+  border-color: rgba(0, 245, 255, 0.12) !important;
+}
+body.theme-cyberpunk .user-avatar-btn,
+body.theme-cyberpunk .utility-tool-btn.active-tool {
+  background: rgba(0, 245, 255, 0.15) !important;
+  border-color: rgba(0, 245, 255, 0.4) !important;
+  color: #00f5ff !important;
+}
+
+/* Deep Space Navy theme overrides */
+body.theme-deepspace .glass-panel {
+  border-color: rgba(96, 165, 250, 0.12) !important;
+}
+
+/* Sunset Pastel theme — warm card borders */
+body.theme-sunset .glass-panel {
+  border-color: rgba(224, 90, 106, 0.15) !important;
+}
+body.theme-sunset .task-item:hover {
+  border-color: rgba(224, 90, 106, 0.25) !important;
+}
+

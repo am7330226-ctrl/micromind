@@ -7,45 +7,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
 import PwaInstallPrompt from './PwaInstallPrompt.jsx';
 import VoiceBriefing from './VoiceBriefing.jsx';
+import AmbientSoundPlayer from './AmbientSoundPlayer.jsx';
+import ThemeSelector from './ThemeSelector.jsx';
 
-// ── Ambient Noise helpers (Web Audio API) ──────────────────────────────────
-let audioCtx = null;
-let ambientSource = null;
-let ambientGain = null;
-
-function startAmbientNoise() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  const sr = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 2, sr);
-  const out = buf.getChannelData(0);
-  for (let i = 0; i < sr * 2; i++) out[i] = Math.random() * 2 - 1;
-  ambientSource = audioCtx.createBufferSource();
-  ambientSource.buffer = buf;
-  ambientSource.loop = true;
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 400;
-  ambientGain = audioCtx.createGain();
-  ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
-  ambientGain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 2);
-  ambientSource.connect(filter);
-  filter.connect(ambientGain);
-  ambientGain.connect(audioCtx.destination);
-  ambientSource.start(0);
-}
-
-function stopAmbientNoise() {
-  if (ambientGain && ambientSource) {
-    const t = audioCtx.currentTime;
-    ambientGain.gain.setValueAtTime(ambientGain.gain.value, t);
-    ambientGain.gain.linearRampToValueAtTime(0, t + 1);
-    ambientSource.stop(t + 1);
-    setTimeout(() => { ambientSource = null; ambientGain = null; }, 1100);
-  }
-}
-
-// ── Component ─────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────
 export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro, lightMode, setLightMode }) {
   const dispatch = useDispatch();
   const state    = useAppState();
@@ -70,31 +35,17 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   }, [menuOpen]);
 
   const [zenMode, setZenMode] = useState(false);
-  const [ambient, setAmbient] = useState(false);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
-  // ── Zen Mode ──────────────────────────────────────────────────
+  // ── Zen Mode ───────────────────────────────
   const toggleZen = () => {
     const next = !zenMode;
     setZenMode(next);
     document.body.classList.toggle('zen-mode', next);
     if (showToast) showToast(next ? 'Zen Mode activated' : 'Zen Mode deactivated', '🧘');
-  };
-
-  // Toggle ambient noise
-  const toggleAmbient = () => {
-    if (ambient) {
-      stopAmbientNoise();
-      setAmbient(false);
-      if (showToast) showToast('Ambient noise stopped', '🎧');
-    } else {
-      startAmbientNoise();
-      setAmbient(true);
-      if (showToast) showToast('Brown noise audio playing', '🎧');
-    }
   };
 
   // Daily reset handler
@@ -225,37 +176,23 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
             id="analytics-toggle-btn"
             className="utility-tool-btn"
             onClick={onOpenAnalytics}
-            title="Analytics & Productivity Insights"
+            title="Analytics &amp; Productivity Insights"
           >
             <span>📊</span>
             <span>Stats</span>
           </button>
 
-          <button
-            id="ambient-noise-btn"
-            className={`utility-tool-btn${ambient ? ' active-tool' : ''}`}
-            onClick={toggleAmbient}
-            title={ambient ? 'Stop Ambient Noise' : 'Play Ambient Noise'}
-          >
-            <span>🎧</span>
-            <span>{ambient ? 'Audio Playing' : 'Audio'}</span>
-          </button>
+          {/* 🎧 Ambient Sound Player (replaces old single ambient btn) */}
+          <AmbientSoundPlayer showToast={showToast} />
 
-          <button
-            id="theme-toggle-btn"
-            className={`utility-tool-btn${lightMode ? ' active-tool' : ''}`}
-            onClick={() => setLightMode(m => !m)}
-            title={lightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >
-            <span>{lightMode ? '☀️' : '🌙'}</span>
-            <span>{lightMode ? 'Light' : 'Theme'}</span>
-          </button>
+          {/* 🎨 XP Theme Selector (replaces old light/dark toggle) */}
+          <ThemeSelector showToast={showToast} />
 
           <button
             id="daily-reset-btn"
             className="utility-tool-btn utility-reset-btn"
             onClick={handleReset}
-            title="Daily Reset — Archive completed tasks & reset habits"
+            title="Daily Reset — Archive completed tasks &amp; reset habits"
           >
             <span>⚡</span>
             <span>Reset</span>
