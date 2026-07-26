@@ -55,9 +55,9 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   };
 
   // ── Progress ratio ──────────────────────────────────────────────────────
-  const tasks = state.tasks || [];
+  const tasks = (state.tasks || []).filter(task => task && typeof task === 'object');
   const total = tasks.length;
-  const done  = tasks.filter(t => t.completed).length;
+  const done  = tasks.filter(task => task && task.completed).length;
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
   const R     = 20;
   const circ  = 2 * Math.PI * R;

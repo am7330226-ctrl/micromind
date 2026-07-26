@@ -54,14 +54,19 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       const { name, args } = call;
 
       if (name === 'addNewTask') {
-        const taskObj = createTask(args.title || 'New Task', args.priority || 'inbox');
+        const taskObj = {
+          completed: false,
+          text: args.title || 'New Task',
+          id: String(Date.now()),
+          ...createTask(args.title || 'New Task', args.priority || 'inbox'),
+        };
         if (args.duration) {
           taskObj.timeEstimate = {
             minutes: args.duration,
             label: args.duration >= 60 ? `${args.duration / 60}h` : `${args.duration}m`,
           };
         }
-        dispatch({ type: 'ADD_TASK', task: taskObj });
+        dispatch({ type: 'ADD_TASK', payload: taskObj, task: taskObj });
         if (showToast) showToast(`Added task: "${taskObj.text}"`, '✨');
         return `Added task "${taskObj.text}" to ${args.priority === 'q1' ? 'Do First' : 'Inbox'}`;
       }

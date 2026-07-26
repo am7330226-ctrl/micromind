@@ -49,8 +49,20 @@ function getLevel(xp) { return Math.floor(Math.sqrt(xp / 100)) + 1; }
 // ── Reducer ───────────────────────────────────────────────────────────────────
 function reducer(state, action) {
   switch (action.type) {
-    case 'ADD_TASK':
-      return { ...state, tasks: [...state.tasks, action.payload] };
+    case 'ADD_TASK': {
+      const rawTask = action.payload || action.task;
+      if (!rawTask || typeof rawTask !== 'object') return state;
+      const safeTask = {
+        id: rawTask.id || generateId(),
+        text: rawTask.text || 'New Task',
+        completed: Boolean(rawTask.completed),
+        category: rawTask.category || 'inbox',
+        createdAt: rawTask.createdAt || Date.now(),
+        ...rawTask,
+      };
+      const safeTasks = (state.tasks || []).filter(t => t && typeof t === 'object');
+      return { ...state, tasks: [...safeTasks, safeTask] };
+    }
 
     case 'DELETE_TASK':
       return {

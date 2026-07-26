@@ -85,18 +85,18 @@ const TOOL_DECLARATIONS = [
 
 // ── Context-Aware System Instructions ──────────────────────────────────────
 function buildSystemInstruction(appState, userName) {
-  const tasks = appState?.tasks || [];
+  const tasks = (appState?.tasks || []).filter(t => t && typeof t === 'object');
   const q1 = tasks.filter(t => t.category === 'q1' && !t.completed);
   const inbox = tasks.filter(t => t.category === 'inbox' && !t.completed);
-  const habits = appState?.habits || [];
+  const habits = (appState?.habits || []).filter(Boolean);
 
   return `You are MicroMind AI Copilot, an intelligent productivity assistant embedded inside the MicroMind web app.
 User Name: ${userName || 'Friend'}
 
 Current App Context:
 - Active Streak: ${appState?.streak || 0} days | Level: ${appState?.level || 1} | XP: ${appState?.xp || 0}
-- Q1 (Do First) Tasks: ${q1.map(t => `"${t.text}" [id:${t.id}]`).join(', ') || 'None'}
-- Unsorted Inbox Tasks: ${inbox.map(t => `"${t.text}" [id:${t.id}]`).join(', ') || 'None'}
+- Q1 (Do First) Tasks: ${q1.map(t => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
+- Unsorted Inbox Tasks: ${inbox.map(t => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
 - Total Active Tasks: ${tasks.filter(t => !t.completed).length} | Completed Today: ${tasks.filter(t => t.completed).length}
 - Habits Progress: ${habits.filter(h => h.done).length}/${habits.length} checked
 
