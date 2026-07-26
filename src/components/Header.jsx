@@ -3,7 +3,7 @@
  * daily reset, user info, and logout.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
 import PwaInstallPrompt from './PwaInstallPrompt.jsx';
 
@@ -49,6 +49,25 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   const dispatch = useDispatch();
   const state    = useAppState();
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [menuOpen]);
+
   const [zenMode,   setZenMode]   = useState(false);
   const [ambient,   setAmbient]   = useState(false);
   const [lightMode, setLightMode] = useState(() => {
@@ -77,36 +96,37 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   const toggleZen = () => {
     const next = !zenMode;
     setZenMode(next);
-    if (next) {
-      document.body.classList.add('zen-mode');
-      document.documentElement.requestFullscreen?.().catch(() => {});
+    document.body.classList.toggle('zen-mode', next);
+    if (showToast) showToast(next ? 'Zen Mode activated' : 'Zen Mode deactivated', '🧘');
+  };
+
+  // Toggle ambient noise
+  const toggleAmbient = () => {
+    if (ambient) {
+      stopAmbientNoise();
+      setAmbient(false);
+      if (showToast) showToast('Ambient noise stopped', '🎧');
     } else {
-      document.body.classList.remove('zen-mode');
-      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+      startAmbientNoise();
+      setAmbient(true);
+      if (showToast) showToast('Brown noise audio playing', '🎧');
     }
   };
 
-  // ── Ambient Noise ─────────────────────────────────────────────
-  const toggleAmbient = () => {
-    const next = !ambient;
-    setAmbient(next);
-    if (next) startAmbientNoise(); else stopAmbientNoise();
-  };
-
-  // ── Daily Reset ───────────────────────────────────────────────
+  // Daily reset handler
   const handleReset = () => {
     dispatch({ type: 'DAILY_RESET' });
     if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
   };
 
-  // ── Progress (tasks) ──────────────────────────────────────────
-  const allTasks  = state.tasks || [];
-  const done      = allTasks.filter(t => t.completed).length;
-  const total     = allTasks.length;
-  const pct       = total === 0 ? 0 : Math.round((done / total) * 100);
-  const R         = 24;
-  const circ      = 2 * Math.PI * R;
-  const offset    = circ - (pct / 100) * circ;
+  // ── Progress ratio ──────────────────────────────────────────────────────
+  const tasks = state.tasks || [];
+  const total = tasks.length;
+  const done  = tasks.filter(t => t.completed).length;
+  const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
+  const R     = 20;
+  const circ  = 2 * Math.PI * R;
+  const offset = circ - (pct / 100) * circ;
 
   // ── Gamification (XP & Level) ──────────────────────────────────
   const xp = state.xp || 0;
@@ -114,19 +134,6 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   const xpBase = (level - 1) * (level - 1) * 100;
   const nextXp = level * level * 100;
   const levelProgress = Math.max(0, Math.min(100, ((xp - xpBase) / (nextXp - xpBase)) * 100));
-
-  const iconBtn = {
-    width: 36, height: 36,
-    borderRadius: '10px',
-    border: '1px solid var(--color-border)',
-    background: 'rgba(15, 23, 42, 0.6)',
-    color: 'var(--text-secondary)',
-    cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '0.95rem',
-    transition: 'var(--transition)',
-    fontFamily: 'inherit',
-  };
 
   return (
     <header className="app-header two-tier-header">
@@ -141,14 +148,53 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
         </div>
 
         <div className="header-top-right">
-          <PwaInstallPrompt showToast={showToast} />
+          <div className="desktop-pwa-install">
+            <PwaInstallPrompt showToast={showToast} />
+          </div>
+
           {userName && (
-            <div className="header-user">
-              <div className="user-avatar" title={`Signed in as ${userName}`}>
+            <div className="avatar-menu-container" ref={menuRef}>
+              <button
+                className="user-avatar-btn"
+                onClick={() => setMenuOpen(o => !o)}
+                title={`Signed in as ${userName}. Tap for options`}
+                aria-label="User Account Menu"
+              >
                 {userName.charAt(0).toUpperCase()}
+              </button>
+
+              <div className="header-user desktop-user-info">
+                <span className="user-name">{userName.split(' ')[0]}</span>
+                <button className="signout-btn" onClick={onLogout}>Sign Out</button>
               </div>
-              <span className="user-name">{userName.split(' ')[0]}</span>
-              <button className="signout-btn" onClick={onLogout}>Sign Out</button>
+
+              {menuOpen && (
+                <div className="user-popover-menu">
+                  <div className="popover-user-info">
+                    <div className="popover-avatar">{userName.charAt(0).toUpperCase()}</div>
+                    <div>
+                      <div className="popover-name">{userName}</div>
+                      <div className="popover-status">Active Session</div>
+                    </div>
+                  </div>
+
+                  <div className="popover-divider" />
+
+                  <div className="popover-item">
+                    <PwaInstallPrompt showToast={showToast} />
+                  </div>
+
+                  <div className="popover-divider" />
+
+                  <button
+                    className="popover-signout-btn"
+                    onClick={() => { setMenuOpen(false); onLogout(); }}
+                  >
+                    <span>🚪</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

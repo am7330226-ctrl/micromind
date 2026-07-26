@@ -293,6 +293,126 @@ body {
   color: var(--color-violet);
 }
 
+/* ---- Avatar Menu & Popover Dropdown ---- */
+.avatar-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.4);
+  transition: var(--transition);
+  font-family: inherit;
+}
+.user-avatar-btn:hover, .user-avatar-btn:active {
+  transform: scale(1.08);
+  box-shadow: 0 5px 18px rgba(168, 85, 247, 0.6);
+}
+
+.user-popover-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15), 0 0 20px rgba(139, 92, 246, 0.2);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: popoverFadeIn 180ms ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.dark .user-popover-menu {
+  background: rgba(26, 26, 26, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.popover-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 8px;
+}
+.popover-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.popover-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.popover-status {
+  font-size: 0.72rem;
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.popover-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 2px 0;
+}
+body.dark .popover-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.popover-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.popover-signout-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
 /* Dark mode overrides for Two-Tier Header */
 body.dark .two-tier-header {
   background: #1a1a1a;
@@ -1475,8 +1595,8 @@ body.dark .mobile-bottom-dock, body.dark .bottom-nav-bar {
 
 /* 1. MOBILE RULES (Default / Small Screens < 640px) */
 @media (max-width: 639px) {
-  /* Hide the redundant tool buttons from the top header on mobile */
-  .utility-right, .top-header-tools {
+  /* Hide the redundant tool buttons and desktop user elements on mobile */
+  .utility-right, .top-header-tools, .desktop-user-info, .desktop-pwa-install {
     display: none !important;
   }
 
