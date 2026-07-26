@@ -148,102 +148,102 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
           )}
         </div>
 
-        {/* ── Time Estimate Badge ──────────────────────────────────────────── */}
-        {timeLabel && !task.completed && (
-          editingTime ? (
-            <form
-              className="time-edit-form"
-              onSubmit={handleTimeSubmit}
-              onClick={e => e.stopPropagation()}
-            >
-              <input
-                type="number"
-                className="time-edit-input"
-                value={timeInputVal}
-                min={1}
-                max={480}
-                autoFocus
-                onChange={e => setTimeInputVal(e.target.value)}
-                onKeyDown={handleTimeKeyDown}
-                onBlur={handleTimeSubmit}
-                aria-label="Edit time estimate in minutes"
-                placeholder="min"
-              />
-              <span className="time-edit-unit">min</span>
-            </form>
-          ) : (
-            <button
-              className="time-estimate-badge"
-              onClick={handleTimeBadgeClick}
-              title="Click to edit time estimate"
-              aria-label={`Estimated time: ${timeLabel}. Click to edit.`}
-            >
-              ⏱ {timeLabel}
-            </button>
-          )
-        )}
-
-        {/* AI sorting badge */}
-        {task.aiSorting && (
-          <span className="ai-badge sorting">✨ AI sorting…</span>
-        )}
-
-        {/* AI reason tooltip */}
-        {task.aiReason && !task.aiSorting && (
-          <span className="ai-reason-tip" title={task.aiReason}>ⓘ</span>
-        )}
-
-        {/* ✨ Breakdown Button (shown when showBreakdown prop is true, i.e. Q1 tasks) */}
-        {showBreakdown && !task.completed && (
-          <button
-            className={`breakdown-btn${task.breakdownLoading ? ' loading' : ''}${hasSubtasks ? ' has-subtasks' : ''}`}
-            onClick={handleBreakdown}
-            title={hasSubtasks ? 'Toggle subtasks' : 'AI: Break into sub-tasks'}
-            aria-label={hasSubtasks ? 'Toggle subtasks' : 'Generate AI subtasks'}
-          >
-            {task.breakdownLoading ? (
-              <span className="breakdown-spinner" />
-            ) : hasSubtasks ? (
-              <span>{subtasksOpen ? '▾' : '▸'} {subtasks.length} steps</span>
+        {/* ── Right-side Metadata & Actions Container ───────────────────────── */}
+        <div className="task-actions" onClick={e => e.stopPropagation()}>
+          {/* ── Time Estimate Badge ──────────────────────────────────────────── */}
+          {timeLabel && !task.completed && (
+            editingTime ? (
+              <form
+                className="time-edit-form"
+                onSubmit={handleTimeSubmit}
+                onClick={e => e.stopPropagation()}
+              >
+                <input
+                  type="number"
+                  className="time-edit-input"
+                  value={timeInputVal}
+                  min={1}
+                  max={480}
+                  autoFocus
+                  onChange={e => setTimeInputVal(e.target.value)}
+                  onKeyDown={handleTimeKeyDown}
+                  onBlur={handleTimeSubmit}
+                  aria-label="Edit time estimate in minutes"
+                  placeholder="min"
+                />
+                <span className="time-edit-unit">min</span>
+              </form>
             ) : (
-              <span>✨ Breakdown</span>
-            )}
+              <button
+                className="time-estimate-badge"
+                onClick={handleTimeBadgeClick}
+                title="Click to edit time estimate"
+                aria-label={`Estimated time: ${timeLabel}. Click to edit.`}
+              >
+                ⏱ {timeLabel}
+              </button>
+            )
+          )}
+
+          {/* AI sorting badge */}
+          {task.aiSorting && (
+            <span className="ai-badge sorting">✨ AI sorting…</span>
+          )}
+
+          {/* AI reason tooltip */}
+          {task.aiReason && !task.aiSorting && (
+            <span className="ai-reason-tip" title={task.aiReason}>ⓘ</span>
+          )}
+
+          {/* ✨ Breakdown Button */}
+          {showBreakdown && !task.completed && (
+            <button
+              className={`breakdown-btn${task.breakdownLoading ? ' loading' : ''}${hasSubtasks ? ' has-subtasks' : ''}`}
+              onClick={handleBreakdown}
+              title={hasSubtasks ? 'Toggle subtasks' : 'AI: Break into sub-tasks'}
+              aria-label={hasSubtasks ? 'Toggle subtasks' : 'Generate AI subtasks'}
+            >
+              {task.breakdownLoading ? (
+                <span className="breakdown-spinner" />
+              ) : hasSubtasks ? (
+                <span>{subtasksOpen ? '▾' : '▸'} {subtasks.length} steps</span>
+              ) : (
+                <span>✨ Breakdown</span>
+              )}
+            </button>
+          )}
+
+          {/* Compact Pill Date Picker Button */}
+          <button
+            className="task-date-btn"
+            title="Set due date"
+            onClick={e => { e.stopPropagation(); dateInputRef.current?.showPicker?.(); dateInputRef.current?.click(); }}
+            aria-label="Set due date"
+          >
+            <span>📅</span>
+            <span className="task-date-label">{task.dueDate || 'Date'}</span>
+            <input
+              ref={dateInputRef}
+              type="date"
+              className="task-date-input"
+              value={task.dueDate || ''}
+              onChange={handleDateChange}
+              onClick={e => e.stopPropagation()}
+              tabIndex={-1}
+              aria-label="Due date"
+            />
           </button>
-        )}
 
-        {/* Due date picker */}
-        <button
-          className="task-date-btn"
-          title="Set due date"
-          onClick={e => { e.stopPropagation(); dateInputRef.current?.showPicker?.(); dateInputRef.current?.click(); }}
-          aria-label="Set due date"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          <input
-            ref={dateInputRef}
-            type="date"
-            className="task-date-input"
-            value={task.dueDate || ''}
-            onChange={handleDateChange}
-            onClick={e => e.stopPropagation()}
-            tabIndex={-1}
-            aria-label="Due date"
-          />
-        </button>
-
-        {/* Delete */}
-        <button
-          className="task-delete-btn"
-          onClick={handleDelete}
-          aria-label="Delete task"
-          title="Delete task"
-        >
-          ✕
-        </button>
+          {/* Delete Button */}
+          <button
+            className="task-delete-btn"
+            onClick={handleDelete}
+            aria-label="Delete task"
+            title="Delete task"
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       {/* ── Subtask Accordion ──────────────────────────────────────────────── */}
