@@ -17,6 +17,7 @@ import ToastContainer from './components/ToastContainer.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import CompletedArchive from './components/CompletedArchive.jsx';
 import TaskDetailPanel from './components/TaskDetailPanel.jsx';
+import MobileBottomDock from './components/MobileBottomDock.jsx';
 
 function AppInner() {
   const { auth, login, loginGuest, logout } = useAuth();
@@ -93,6 +94,16 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
         onClose={() => setAnalyticsOpen(false)}
       />
       <TaskDetailPanel />
+
+      <MobileBottomDock
+        onOpenPomodoro={() => setPomodoroOpen(o => !o)}
+        onOpenAnalytics={() => setAnalyticsOpen(true)}
+        onReset={() => {
+          dispatch({ type: 'DAILY_RESET' });
+          if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
+        }}
+        showToast={showToast}
+      />
 
       <ToastContainer toasts={toasts} />
     </div>

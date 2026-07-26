@@ -47,6 +47,13 @@
   --shadow-md: 0 12px 36px -5px rgba(0, 0, 0, 0.06), 0 0 20px rgba(139, 92, 246, 0.04);
   --shadow-lg: 0 25px 70px -15px rgba(0, 0, 0, 0.08), 0 0 35px rgba(139, 92, 246, 0.1);
 
+  /* Fluid Scalable Typography & Spacing System */
+  --font-size-title: clamp(1.4rem, 2.5vw + 0.8rem, 2.2rem);
+  --font-size-h2: clamp(1.1rem, 1.5vw + 0.7rem, 1.6rem);
+  --font-size-body: clamp(0.85rem, 0.5vw + 0.75rem, 0.95rem);
+  --padding-app: clamp(12px, 3vw, 36px);
+  --radius-app: clamp(0px, 2vw, 28px);
+
   /* Transitions */
   --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1302,3 +1309,93 @@ html, body {
 .badge-item.locked .badge-name {
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   MOBILE FLOATING BOTTOM DOCK & HOVER USABILITY RULES
+   ========================================================================== */
+
+.mobile-bottom-dock {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-bottom-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    padding: 6px 12px;
+    z-index: 9990;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 0 20px rgba(139, 92, 246, 0.15);
+  }
+  body.dark .mobile-bottom-dock {
+    background: rgba(26, 26, 26, 0.88);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.2);
+  }
+
+  .dock-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-family: inherit;
+    border-radius: 12px;
+    transition: var(--transition);
+  }
+  .dock-btn span:first-child {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .dock-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-top: 2px;
+    color: var(--text-muted);
+  }
+  .dock-btn:active {
+    transform: scale(0.92);
+    background: rgba(139, 92, 246, 0.15);
+  }
+
+  /* Body bottom padding to prevent content overlap */
+  body {
+    padding-bottom: 78px;
+  }
+}
+
+/* Guard Desktop Hover State Micro-Animations */
+@media (hover: hover) {
+  .task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .quadrant-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .dump-submit-btn:hover {
+    transform: scale(1.05);
+  }
+  .icon-action-btn:hover {
+    transform: translateY(-1px);
+  }
+}
+
