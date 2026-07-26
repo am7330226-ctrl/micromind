@@ -45,7 +45,7 @@ function stopAmbientNoise() {
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
-export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro }) {
+export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro, lightMode, setLightMode }) {
   const dispatch = useDispatch();
   const state    = useAppState();
 
@@ -68,25 +68,8 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
     };
   }, [menuOpen]);
 
-  const [zenMode,   setZenMode]   = useState(false);
-  const [ambient,   setAmbient]   = useState(false);
-  const [lightMode, setLightMode] = useState(() => {
-    const saved = localStorage.getItem('micromind_theme');
-    return saved === 'light';
-  });
-
-  // Sync light and dark mode classes on mount and when changed
-  useEffect(() => {
-    if (lightMode) {
-      document.body.classList.add('light');
-      document.body.classList.remove('dark');
-      localStorage.setItem('micromind_theme', 'light');
-    } else {
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
-      localStorage.setItem('micromind_theme', 'dark');
-    }
-  }, [lightMode]);
+  const [zenMode, setZenMode] = useState(false);
+  const [ambient, setAmbient] = useState(false);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',

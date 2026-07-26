@@ -49,6 +49,24 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
   const state    = useAppState();
   const dispatch = useDispatch();
 
+  const [lightMode, setLightMode] = useState(() => {
+    const saved = localStorage.getItem('micromind_theme');
+    return saved === 'light';
+  });
+
+  // Sync light and dark mode classes on mount and when changed
+  useEffect(() => {
+    if (lightMode) {
+      document.body.classList.add('light');
+      document.body.classList.remove('dark');
+      localStorage.setItem('micromind_theme', 'light');
+    } else {
+      document.body.classList.add('dark');
+      document.body.classList.remove('light');
+      localStorage.setItem('micromind_theme', 'dark');
+    }
+  }, [lightMode]);
+
   // ── Auto daily reset when a new day is detected ───────────────────────────
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -66,6 +84,8 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
         showToast={showToast}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
         onOpenPomodoro={() => setPomodoroOpen(o => !o)}
+        lightMode={lightMode}
+        setLightMode={setLightMode}
       />
 
       <main className="app-main">
@@ -102,6 +122,8 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
           dispatch({ type: 'DAILY_RESET' });
           if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
         }}
+        lightMode={lightMode}
+        setLightMode={setLightMode}
         showToast={showToast}
       />
 

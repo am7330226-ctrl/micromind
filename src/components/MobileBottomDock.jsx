@@ -52,13 +52,19 @@ export default function MobileBottomDock({
       </button>
 
       <button
-        className="dock-btn"
-        onClick={() => setLightMode(m => !m)}
+        className={`dock-btn${lightMode ? ' active' : ''}`}
+        onClick={(e) => {
+          e.currentTarget.blur();
+          if (typeof setLightMode === 'function') {
+            setLightMode(m => !m);
+            if (showToast) showToast(lightMode ? 'Switched to Dark Mode 🌙' : 'Switched to Light Mode ☀️', '🎨');
+          }
+        }}
         title="Toggle Theme"
         aria-label="Toggle Theme"
       >
-        <span>{lightMode ? '☀️' : '🌑'}</span>
-        <span className="dock-label">Theme</span>
+        <span>{lightMode ? '☀️' : '🌙'}</span>
+        <span className="dock-label">{lightMode ? 'Light' : 'Theme'}</span>
       </button>
 
       <button
