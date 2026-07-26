@@ -138,49 +138,51 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div className="header-controls-wrap">
         {/* Date */}
-        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+        <span className="header-date">
           {today}
         </span>
 
-        {/* Progress ring */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} title={`${done}/${total} tasks done`}>
-          <svg width="48" height="48" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="4" />
-            <circle
-              id="progress-circle"
-              cx="28" cy="28" r={R}
-              fill="none"
-              stroke="var(--color-indigo-light)"
-              strokeWidth="4"
-              strokeDasharray={circ}
-              strokeDashoffset={offset}
-              strokeLinecap="round"
-              style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-            />
-          </svg>
-          <div>
-            <div id="progress-percentage" style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-indigo-light)', lineHeight: 1.1 }}>{pct}%</div>
-            <div id="task-ratio" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1 }}>{done}/{total}</div>
+        {/* Progress ring & stats */}
+        <div className="header-stats">
+          <div className="stat-circle-wrap" title={`${done}/${total} tasks done`}>
+            <svg width="40" height="40" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
+              <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="4" />
+              <circle
+                id="progress-circle"
+                cx="28" cy="28" r={R}
+                fill="none"
+                stroke="var(--color-indigo-light)"
+                strokeWidth="4"
+                strokeDasharray={circ}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+              />
+            </svg>
+            <div>
+              <div id="progress-percentage" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--color-indigo-light)', lineHeight: 1.1 }}>{pct}%</div>
+              <div id="task-ratio" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1 }}>{done}/{total}</div>
+            </div>
           </div>
-        </div>
 
-        {/* Streak */}
-        <div style={{ display:'flex', alignItems:'center', gap:'5px', background:'rgba(245,158,11,.15)', border: '1px solid rgba(245,158,11,.3)', borderRadius:'999px', padding:'4px 12px', fontSize:'0.82rem', fontWeight:700, color:'#fbbf24' }} title="Day streak">
-          🔥 <span id="streak-count">{state.streak || 0}</span>
-        </div>
+          {/* Streak */}
+          <div className="streak-badge" title="Day streak">
+            🔥 <span id="streak-count">{state.streak || 0}</span>
+          </div>
 
-        {/* Level & XP */}
-        <div className="level-badge" title={`${xp} XP total`} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', padding: '4px 12px', borderRadius: '999px' }}>
-          <div className="level-label" style={{ fontSize: '0.8rem', fontWeight: 700, color: '#a5b4fc' }}>Lvl {level}</div>
-          <div className="level-xp-bar" style={{ width: 44, height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
-            <div className="level-xp-fill" style={{ width: `${levelProgress}%`, height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7)', transition: 'width 0.4s ease' }}></div>
+          {/* Level & XP */}
+          <div className="level-badge" title={`${xp} XP total`}>
+            <div className="level-label">Lvl {level}</div>
+            <div className="level-xp-bar">
+              <div className="level-xp-fill" style={{ width: `${levelProgress}%` }}></div>
+            </div>
           </div>
         </div>
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="header-actions">
           <PwaInstallPrompt showToast={showToast} />
           <button id="pomodoro-toggle-btn" style={iconBtn} onClick={onOpenPomodoro} title="Pomodoro Timer">🍅</button>
           <button id="analytics-toggle-btn" style={iconBtn} onClick={onOpenAnalytics} title="Analytics">📊</button>
@@ -212,28 +214,14 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
 
         {/* User */}
         {userName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 4 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-              color: 'white', fontWeight: 700, fontSize: '0.85rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 2px 8px rgba(99,102,241,0.4)'
-            }}>
+          <div className="header-user">
+            <div className="user-avatar">
               {userName.charAt(0).toUpperCase()}
             </div>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            <span className="user-name">
               {userName.split(' ')[0]}
             </span>
-            <button
-              onClick={onLogout}
-              style={{
-                padding: '6px 12px', fontSize: '0.78rem', fontWeight: 600,
-                color: '#fca5a5', background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px',
-                cursor: 'pointer', transition: 'var(--transition)', fontFamily: 'inherit',
-              }}
-            >Sign Out</button>
+            <button className="signout-btn" onClick={onLogout}>Sign Out</button>
           </div>
         )}
       </div>
