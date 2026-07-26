@@ -129,101 +129,105 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
   };
 
   return (
-    <header className="app-header">
-      <div className="brand">
-        <div className="brand-icon">🧠</div>
-        <div>
-          <span className="brand-name">MicroMind</span>
-          <span className="brand-tagline"> · Daily Mental Declutter</span>
+    <header className="app-header two-tier-header">
+      {/* TOP ROW: Brand identity + User avatar & PWA Install */}
+      <div className="header-top-row">
+        <div className="brand">
+          <div className="brand-icon">🧠</div>
+          <div>
+            <span className="brand-name">MicroMind</span>
+            <span className="brand-tagline"> · Daily Mental Declutter</span>
+          </div>
+        </div>
+
+        <div className="header-top-right">
+          <PwaInstallPrompt showToast={showToast} />
+          {userName && (
+            <div className="header-user">
+              <div className="user-avatar" title={`Signed in as ${userName}`}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <span className="user-name">{userName.split(' ')[0]}</span>
+              <button className="signout-btn" onClick={onLogout}>Sign Out</button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="header-controls-wrap">
-        {/* Date */}
-        <span className="header-date">
-          {today}
-        </span>
-
-        {/* Progress ring & stats */}
-        <div className="header-stats">
-          <div className="stat-circle-wrap" title={`${done}/${total} tasks done`}>
-            <svg width="40" height="40" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="28" cy="28" r={R} fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="4" />
-              <circle
-                id="progress-circle"
-                cx="28" cy="28" r={R}
-                fill="none"
-                stroke="var(--color-indigo-light)"
-                strokeWidth="4"
-                strokeDasharray={circ}
-                strokeDashoffset={offset}
-                strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-              />
-            </svg>
-            <div>
-              <div id="progress-percentage" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--color-indigo-light)', lineHeight: 1.1 }}>{pct}%</div>
-              <div id="task-ratio" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1 }}>{done}/{total}</div>
-            </div>
-          </div>
-
-          {/* Streak */}
+      {/* BOTTOM ROW: Compact Utility Toolbar */}
+      <div className="header-bottom-row">
+        {/* Left: Productivity Metrics */}
+        <div className="utility-left">
+          <span className="header-date">{today}</span>
+          <span className="utility-divider">•</span>
           <div className="streak-badge" title="Day streak">
             🔥 <span id="streak-count">{state.streak || 0}</span>
           </div>
-
-          {/* Level & XP */}
+          <span className="utility-divider">•</span>
           <div className="level-badge" title={`${xp} XP total`}>
-            <div className="level-label">Lvl {level}</div>
+            <span className="level-label">Lvl {level}</span>
             <div className="level-xp-bar">
               <div className="level-xp-fill" style={{ width: `${levelProgress}%` }}></div>
             </div>
           </div>
+          <span className="utility-divider">•</span>
+          <div className="progress-badge" title={`${done}/${total} tasks completed`}>
+            <span>Progress: <strong>{pct}%</strong></span>
+          </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="header-actions">
-          <PwaInstallPrompt showToast={showToast} />
-          <button id="pomodoro-toggle-btn" style={iconBtn} onClick={onOpenPomodoro} title="Pomodoro Timer">🍅</button>
-          <button id="analytics-toggle-btn" style={iconBtn} onClick={onOpenAnalytics} title="Analytics">📊</button>
+        {/* Right: Toolbox Buttons */}
+        <div className="utility-right">
           <button
-            id="theme-toggle-btn"
-            style={{ ...iconBtn, ...(lightMode ? { background: 'rgba(251,191,36,.15)', color: '#fbbf24', borderColor: 'rgba(251,191,36,.3)' } : {}) }}
-            onClick={() => setLightMode(m => !m)}
-            title={lightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >{lightMode ? '☀️' : '🌑'}</button>
+            id="pomodoro-toggle-btn"
+            className="utility-tool-btn"
+            onClick={onOpenPomodoro}
+            title="Pomodoro Focus Timer"
+          >
+            <span>🍓</span>
+            <span>Pomodoro</span>
+          </button>
+
+          <button
+            id="analytics-toggle-btn"
+            className="utility-tool-btn"
+            onClick={onOpenAnalytics}
+            title="Analytics & Productivity Insights"
+          >
+            <span>📊</span>
+            <span>Stats</span>
+          </button>
+
           <button
             id="ambient-noise-btn"
-            style={{ ...iconBtn, ...(ambient ? { background: 'rgba(99,102,241,.2)', color: 'var(--color-indigo-light)', borderColor: 'rgba(99,102,241,.4)' } : {}) }}
+            className={`utility-tool-btn${ambient ? ' active-tool' : ''}`}
             onClick={toggleAmbient}
             title={ambient ? 'Stop Ambient Noise' : 'Play Ambient Noise'}
-          >🎧</button>
+          >
+            <span>🎧</span>
+            <span>{ambient ? 'Audio Playing' : 'Audio'}</span>
+          </button>
+
           <button
-            id="zen-mode-btn"
-            style={{ ...iconBtn, ...(zenMode ? { background: 'rgba(99,102,241,.2)', color: 'var(--color-indigo-light)', borderColor: 'rgba(99,102,241,.4)' } : {}) }}
-            onClick={toggleZen}
-            title={zenMode ? 'Exit Zen Mode' : 'Zen Mode'}
-          >{zenMode ? '⊡' : '⊞'}</button>
+            id="theme-toggle-btn"
+            className={`utility-tool-btn${lightMode ? ' active-tool' : ''}`}
+            onClick={() => setLightMode(m => !m)}
+            title={lightMode ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            <span>{lightMode ? '☀️' : '🌙'}</span>
+            <span>{lightMode ? 'Light' : 'Theme'}</span>
+          </button>
+
           <button
             id="daily-reset-btn"
-            style={{ ...iconBtn }}
+            className="utility-tool-btn utility-reset-btn"
             onClick={handleReset}
-            title="Daily Reset"
-          >🌙</button>
+            title="Daily Reset — Archive completed tasks & reset habits"
+          >
+            <span>⚡</span>
+            <span>Reset</span>
+          </button>
         </div>
-
-        {/* User */}
-        {userName && (
-          <div className="header-user">
-            <div className="user-avatar">
-              {userName.charAt(0).toUpperCase()}
-            </div>
-            <span className="user-name">
-              {userName.split(' ')[0]}
-            </span>
-            <button className="signout-btn" onClick={onLogout}>Sign Out</button>
-          </div>
-        )}
       </div>
     </header>
   );
