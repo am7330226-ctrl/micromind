@@ -1,17 +1,29 @@
 /**
  * aiCopilotService.js — MicroMind AI Copilot Engine
  *
- * Integrates with Google Gemini API (gemini-1.5-flash) for context-aware chat,
- * function calling (addNewTask, moveTask, startPomodoroTimer, answerHowToQuestion),
- * and intelligent client-side fallback parsing.
+ * Configured for Google Gemini 1.5 Flash API with tool declarations
+ * (addNewTask, moveTask, startPomodoroTimer, answerHowToQuestion),
+ * explicit error logging, and resilient offline fallback parsing.
  */
 
-const GEMINI_API_KEY =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
-  (typeof window !== 'undefined' && window.__GEMINI_API_KEY__) ||
-  '';
+// ── API Key Resolution ───────────────────────────────────────────────────────
+export function getApiKey() {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+    return import.meta.env.VITE_GEMINI_API_KEY;
+  }
+  if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
+    return process.env.GEMINI_API_KEY;
+  }
+  if (typeof window !== 'undefined' && window.__GEMINI_API_KEY__) {
+    return window.__GEMINI_API_KEY__;
+  }
+  return '';
+}
 
-const getGeminiUrl = () => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+function getGeminiUrl() {
+  const apiKey = getApiKey();
+  return `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+}
 
 // ── Gemini Function Declarations ─────────────────────────────────────────────
 const TOOL_DECLARATIONS = [
@@ -19,7 +31,7 @@ const TOOL_DECLARATIONS = [
     functionDeclarations: [
       {
         name: 'addNewTask',
-        description: 'Add a new task to MicroMind with description, category, and estimated duration.',
+        description: 'Add a new task to MicroMind with title, priority category, and duration estimate.',
         parameters: {
           type: 'OBJECT',
           properties: {
@@ -71,37 +83,37 @@ const TOOL_DECLARATIONS = [
   },
 ];
 
-// ── Build Context-Aware System Instructions ─────────────────────────────────
+// ── Context-Aware System Instructions ──────────────────────────────────────
 function buildSystemInstruction(appState, userName) {
   const tasks = appState?.tasks || [];
   const q1 = tasks.filter(t => t.category === 'q1' && !t.completed);
   const inbox = tasks.filter(t => t.category === 'inbox' && !t.completed);
   const habits = appState?.habits || [];
 
-  return `You are MicroMind AI Copilot, a helpful productivity assistant embedded inside the MicroMind web app.
+  return `You are MicroMind AI Copilot, an intelligent productivity assistant embedded inside the MicroMind web app.
 User Name: ${userName || 'Friend'}
 
-App State Context:
+Current App Context:
 - Active Streak: ${appState?.streak || 0} days | Level: ${appState?.level || 1} | XP: ${appState?.xp || 0}
 - Q1 (Do First) Tasks: ${q1.map(t => `"${t.text}" [id:${t.id}]`).join(', ') || 'None'}
 - Unsorted Inbox Tasks: ${inbox.map(t => `"${t.text}" [id:${t.id}]`).join(', ') || 'None'}
 - Total Active Tasks: ${tasks.filter(t => !t.completed).length} | Completed Today: ${tasks.filter(t => t.completed).length}
 - Habits Progress: ${habits.filter(h => h.done).length}/${habits.length} checked
 
-Capabilities:
+Capabilities & Tools:
 1. Add tasks using 'addNewTask' function.
 2. Reorganize/move tasks using 'moveTask' function.
 3. Start focus sessions using 'startPomodoroTimer' function.
 4. Provide step-by-step actionable advice using 'answerHowToQuestion'.
 
-Always be concise (< 3 sentences unless explaining a topic), friendly, and proactive.`;
+Guidelines: Always be concise (< 3 sentences unless explaining a topic), warm, and encouraging.`;
 }
 
-// ── Client-Side Fallback Intent Parser (Robustness Layer) ────────────────────
+// ── Client-Side Intent Parser (Fallback Execution) ───────────────────────────
 function parseClientIntent(messageText, appState) {
   const text = messageText.toLowerCase();
 
-  // Match "add task ..." or "create task ..."
+  // Match "add task ..."
   if (text.includes('add task') || text.includes('create task') || text.startsWith('add ') || text.startsWith('new task')) {
     let clean = messageText.replace(/^(add task|create task|add new task|add|new task)\s*:?/i, '').trim();
     let priority = 'inbox';
@@ -153,21 +165,36 @@ function parseClientIntent(messageText, appState) {
 }
 
 /**
- * Send user message to Gemini API with tool declarations and return response + executed actions.
+ * Send user message to Gemini API with function calling, logging, and error handling.
  *
  * @param {string} userMessage
- * @param {Array} chatHistory - Previous message objects [{ role: 'user'|'model', parts: [{ text }] }]
+ * @param {Array} chatHistory
  * @param {object} appState
  * @param {string} userName
- * @returns {Promise<{ responseText: string, toolCalls: Array }>}
+ * @returns {Promise<{ responseText: string, toolCalls: Array, error: string|null }>}
  */
 export async function sendCopilotMessage(userMessage, chatHistory = [], appState = {}, userName = 'Friend') {
-  // Check client fallback first if offline/simple intent
   const fallbackIntent = parseClientIntent(userMessage, appState);
+  const apiKey = getApiKey();
 
   try {
-    const systemInstruction = buildSystemInstruction(appState, userName);
+    if (!apiKey) {
+      console.warn('AI Copilot Warning: No Gemini API Key configured in env. Using smart client-side execution.');
+      if (fallbackIntent) {
+        return {
+          responseText: fallbackIntent.text,
+          toolCalls: [{ name: fallbackIntent.name, args: fallbackIntent.args }],
+          error: null,
+        };
+      }
+      return {
+        responseText: `I'm in **Smart Offline Mode**. You currently have **${(appState?.tasks || []).filter(t => !t.completed).length} active tasks**. You can ask me to *"Add task..."* or *"Start timer"*!`,
+        toolCalls: [],
+        error: null,
+      };
+    }
 
+    const systemInstruction = buildSystemInstruction(appState, userName);
     const contents = [
       ...chatHistory.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -191,7 +218,8 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API HTTP ${response.status}`);
+      const errText = await response.text().catch(() => '');
+      throw new Error(`Gemini API HTTP ${response.status}: ${errText || response.statusText}`);
     }
 
     const data = await response.json();
@@ -208,7 +236,7 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
       responseText = candidate.text;
     }
 
-    // If fallback intent was detected and no API tool calls returned, attach fallback
+    // Attach fallback intent if API gave plain text without tool calls for action commands
     if (toolCalls.length === 0 && fallbackIntent) {
       toolCalls.push({ name: fallbackIntent.name, args: fallbackIntent.args });
       if (!responseText) responseText = fallbackIntent.text;
@@ -218,20 +246,20 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
       responseText = "I'm ready to help you manage your tasks and focus time!";
     }
 
-    return { responseText, toolCalls };
-  } catch (err) {
-    console.warn('Gemini API call warning/fallback:', err.message);
+    return { responseText, toolCalls, error: null };
+  } catch (error) {
+    console.error('AI Copilot Error:', error);
 
-    // Use graceful fallback when API key/network fails
+    // If client fallback parser can handle action (e.g. add task, pomodoro)
     if (fallbackIntent) {
       return {
         responseText: fallbackIntent.text,
         toolCalls: [{ name: fallbackIntent.name, args: fallbackIntent.args }],
+        error: error.message,
       };
     }
 
-    // Default intelligent response
-    const defaultText = `I'm here to assist! You currently have **${(appState?.tasks || []).filter(t => !t.completed).length} active tasks**. Ask me to add tasks, start focus timers, or break down work!`;
-    return { responseText: defaultText, toolCalls: [] };
+    const defaultText = `Copilot is currently offline or rate-limited (${error.message}). Ask me to add tasks or start timers using standard commands!`;
+    return { responseText: defaultText, toolCalls: [], error: error.message };
   }
 }

@@ -5,7 +5,7 @@
  * 1. Floating Bot Button (FAB) at bottom-right.
  * 2. Glassmorphism Chat Drawer widget.
  * 3. App Control & Function Calling Execution (addNewTask, moveTask, startPomodoroTimer, answerHowToQuestion).
- * 4. Context Awareness & Quick Action Prompt Chips.
+ * 4. Explicit Error Logging & Toast Notifications.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -34,7 +34,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
   const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages or loading state
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,42 +50,47 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
   // ── Execute App Function Calls ─────────────────────────────────────────────
   const executeToolCall = async (call) => {
-    const { name, args } = call;
+    try {
+      const { name, args } = call;
 
-    if (name === 'addNewTask') {
-      const taskObj = createTask(args.title || 'New Task', args.priority || 'inbox');
-      if (args.duration) {
-        taskObj.timeEstimate = {
-          minutes: args.duration,
-          label: args.duration >= 60 ? `${args.duration / 60}h` : `${args.duration}m`,
-        };
+      if (name === 'addNewTask') {
+        const taskObj = createTask(args.title || 'New Task', args.priority || 'inbox');
+        if (args.duration) {
+          taskObj.timeEstimate = {
+            minutes: args.duration,
+            label: args.duration >= 60 ? `${args.duration / 60}h` : `${args.duration}m`,
+          };
+        }
+        dispatch({ type: 'ADD_TASK', task: taskObj });
+        if (showToast) showToast(`Added task: "${taskObj.text}"`, '✨');
+        return `Added task "${taskObj.text}" to ${args.priority === 'q1' ? 'Do First' : 'Inbox'}`;
       }
-      dispatch({ type: 'ADD_TASK', task: taskObj });
-      if (showToast) showToast(`Added task: "${taskObj.text}"`, '✨');
-      return `Added task "${taskObj.text}" to ${args.priority === 'q1' ? 'Do First' : 'Inbox'}`;
-    }
 
-    if (name === 'moveTask') {
-      const tasks = state.tasks || [];
-      const match = tasks.find(t => t.id === args.taskId || t.text.toLowerCase().includes(String(args.taskId).toLowerCase()));
-      if (match) {
-        dispatch({ type: 'MOVE_TASK', id: match.id, category: args.newPriority || 'q1' });
-        if (showToast) showToast(`Moved "${match.text}"`, '⚡');
-        return `Moved "${match.text}" to ${args.newPriority || 'Q1'}`;
+      if (name === 'moveTask') {
+        const tasks = state.tasks || [];
+        const match = tasks.find(t => t.id === args.taskId || t.text.toLowerCase().includes(String(args.taskId).toLowerCase()));
+        if (match) {
+          dispatch({ type: 'MOVE_TASK', id: match.id, category: args.newPriority || 'q1' });
+          if (showToast) showToast(`Moved "${match.text}"`, '⚡');
+          return `Moved "${match.text}" to ${args.newPriority || 'Q1'}`;
+        }
       }
-    }
 
-    if (name === 'startPomodoroTimer') {
-      if (onOpenPomodoro) onOpenPomodoro();
-      if (showToast) showToast(`Pomodoro Timer opened (${args.minutes || 25}m)`, '🍓');
-      return `Started ${args.minutes || 25}m Pomodoro session`;
-    }
+      if (name === 'startPomodoroTimer') {
+        if (onOpenPomodoro) onOpenPomodoro();
+        if (showToast) showToast(`Pomodoro Timer opened (${args.minutes || 25}m)`, '🍓');
+        return `Started ${args.minutes || 25}m Pomodoro session`;
+      }
 
-    if (name === 'answerHowToQuestion') {
-      return `Guidance for ${args.topic}: ${args.advice}`;
-    }
+      if (name === 'answerHowToQuestion') {
+        return `Guidance for ${args.topic}: ${args.advice}`;
+      }
 
-    return null;
+      return null;
+    } catch (err) {
+      console.error('AI Copilot Tool Execution Error:', err);
+      return null;
+    }
   };
 
   // ── Handle Send Message ───────────────────────────────────────────────────
@@ -105,12 +110,16 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
     setLoading(true);
 
     try {
-      const { responseText, toolCalls } = await sendCopilotMessage(
+      const { responseText, toolCalls, error } = await sendCopilotMessage(
         text,
         messages.slice(-6),
         state,
         auth.name
       );
+
+      if (error && showToast) {
+        showToast('Copilot offline mode active', '⚠️');
+      }
 
       const executedActions = [];
       for (const call of toolCalls) {
@@ -141,13 +150,16 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       };
 
       setMessages(prev => [...prev, botMsg]);
-    } catch {
+    } catch (err) {
+      console.error('AI Copilot Error:', err);
+      if (showToast) showToast('Copilot is currently offline. Check your API key.', '⚠️');
+
       setMessages(prev => [
         ...prev,
         {
           id: String(Date.now() + 1),
           role: 'assistant',
-          content: "I'm experiencing a momentary glitch, but I've noted your request!",
+          content: "Copilot is currently offline. You can still ask me to add tasks or start timers!",
           timestamp: Date.now(),
         },
       ]);
@@ -280,6 +292,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
               onChange={e => setInput(e.target.value)}
               placeholder="Ask Copilot or command: 'add task...', 'timer'..."
               aria-label="AI Copilot input"
+              disabled={loading}
             />
             <button
               type="submit"
