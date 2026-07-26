@@ -1,0 +1,297 @@
+/**
+ * AiCopilot.jsx — Interactive MicroMind AI Copilot Chat Drawer
+ *
+ * Features:
+ * 1. Floating Bot Button (FAB) at bottom-right.
+ * 2. Glassmorphism Chat Drawer widget.
+ * 3. App Control & Function Calling Execution (addNewTask, moveTask, startPomodoroTimer, answerHowToQuestion).
+ * 4. Context Awareness & Quick Action Prompt Chips.
+ */
+
+import { useState, useEffect, useRef } from 'react';
+import { useAppState, useDispatch, useAuth, createTask } from '../store.jsx';
+import { sendCopilotMessage } from '../utils/aiCopilotService.js';
+import { generateSubtasks } from '../utils/aiBreakdown.js';
+
+export default function AiCopilot({ showToast, onOpenPomodoro }) {
+  const state    = useAppState();
+  const dispatch = useDispatch();
+  const { auth } = useAuth();
+
+  const [isOpen, setIsOpen]     = useState(false);
+  const [input, setInput]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      content: `Hi ${auth.name || 'there'}! I'm your **MicroMind AI Copilot**. I can manage your tasks, trigger focus timers, and break down complex goals. What shall we tackle today?`,
+      action: null,
+      timestamp: Date.now(),
+    },
+  ]);
+
+  const messagesEndRef = useRef(null);
+  const inputRef       = useRef(null);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isOpen, loading]);
+
+  // Focus input when drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [isOpen]);
+
+  // ── Execute App Function Calls ─────────────────────────────────────────────
+  const executeToolCall = async (call) => {
+    const { name, args } = call;
+
+    if (name === 'addNewTask') {
+      const taskObj = createTask(args.title || 'New Task', args.priority || 'inbox');
+      if (args.duration) {
+        taskObj.timeEstimate = {
+          minutes: args.duration,
+          label: args.duration >= 60 ? `${args.duration / 60}h` : `${args.duration}m`,
+        };
+      }
+      dispatch({ type: 'ADD_TASK', task: taskObj });
+      if (showToast) showToast(`Added task: "${taskObj.text}"`, '✨');
+      return `Added task "${taskObj.text}" to ${args.priority === 'q1' ? 'Do First' : 'Inbox'}`;
+    }
+
+    if (name === 'moveTask') {
+      const tasks = state.tasks || [];
+      const match = tasks.find(t => t.id === args.taskId || t.text.toLowerCase().includes(String(args.taskId).toLowerCase()));
+      if (match) {
+        dispatch({ type: 'MOVE_TASK', id: match.id, category: args.newPriority || 'q1' });
+        if (showToast) showToast(`Moved "${match.text}"`, '⚡');
+        return `Moved "${match.text}" to ${args.newPriority || 'Q1'}`;
+      }
+    }
+
+    if (name === 'startPomodoroTimer') {
+      if (onOpenPomodoro) onOpenPomodoro();
+      if (showToast) showToast(`Pomodoro Timer opened (${args.minutes || 25}m)`, '🍓');
+      return `Started ${args.minutes || 25}m Pomodoro session`;
+    }
+
+    if (name === 'answerHowToQuestion') {
+      return `Guidance for ${args.topic}: ${args.advice}`;
+    }
+
+    return null;
+  };
+
+  // ── Handle Send Message ───────────────────────────────────────────────────
+  const handleSend = async (textToSend) => {
+    const text = (textToSend || input).trim();
+    if (!text || loading) return;
+
+    const userMsg = {
+      id: String(Date.now()),
+      role: 'user',
+      content: text,
+      timestamp: Date.now(),
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    if (!textToSend) setInput('');
+    setLoading(true);
+
+    try {
+      const { responseText, toolCalls } = await sendCopilotMessage(
+        text,
+        messages.slice(-6),
+        state,
+        auth.name
+      );
+
+      const executedActions = [];
+      for (const call of toolCalls) {
+        const result = await executeToolCall(call);
+        if (result) executedActions.push(result);
+      }
+
+      // Check if user asked to break down tasks
+      if (text.toLowerCase().includes('break down') || text.toLowerCase().includes('breakdown')) {
+        const q1Tasks = (state.tasks || []).filter(t => t.category === 'q1' && !t.completed);
+        if (q1Tasks.length > 0) {
+          for (const task of q1Tasks.slice(0, 2)) {
+            const subtasks = await generateSubtasks(task.text);
+            subtasks.forEach(subtext => {
+              dispatch({ type: 'ADD_SUBTASK', id: task.id, text: subtext });
+            });
+          }
+          executedActions.push(`Generated sub-tasks for Do First priority items`);
+        }
+      }
+
+      const botMsg = {
+        id: String(Date.now() + 1),
+        role: 'assistant',
+        content: responseText,
+        executedActions,
+        timestamp: Date.now(),
+      };
+
+      setMessages(prev => [...prev, botMsg]);
+    } catch {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: String(Date.now() + 1),
+          role: 'assistant',
+          content: "I'm experiencing a momentary glitch, but I've noted your request!",
+          timestamp: Date.now(),
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickPrompt = (promptText) => {
+    handleSend(promptText);
+  };
+
+  return (
+    <>
+      {/* 🤖 Floating AI Assistant Button (FAB) */}
+      <button
+        id="copilot-fab-btn"
+        className={`copilot-fab${isOpen ? ' active' : ''}`}
+        onClick={() => setIsOpen(o => !o)}
+        title="MicroMind AI Copilot"
+        aria-label="Open AI Copilot"
+      >
+        <span className="fab-sparkle">✨</span>
+        <span className="fab-icon">🤖</span>
+        <span className="fab-label">Copilot</span>
+        <span className="fab-pulse-dot" />
+      </button>
+
+      {/* ── Slide-over AI Copilot Drawer ─────────────────────────────────── */}
+      {isOpen && (
+        <div className="copilot-drawer" role="dialog" aria-label="MicroMind AI Copilot">
+          {/* Header */}
+          <div className="copilot-header">
+            <div className="copilot-header-info">
+              <div className="copilot-avatar">
+                <span>🤖</span>
+                <span className="copilot-online-dot" />
+              </div>
+              <div>
+                <div className="copilot-title">MicroMind AI Copilot</div>
+                <div className="copilot-subtitle">Context-Aware App Assistant</div>
+              </div>
+            </div>
+            <div className="copilot-header-actions">
+              <button
+                className="copilot-icon-btn"
+                onClick={() => setMessages([
+                  {
+                    id: String(Date.now()),
+                    role: 'assistant',
+                    content: "Chat cleared! How can I assist you with your tasks?",
+                    timestamp: Date.now(),
+                  },
+                ])}
+                title="Clear Chat"
+                aria-label="Clear chat"
+              >🗑️</button>
+              <button
+                className="copilot-close-btn"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close AI Copilot"
+              >✕</button>
+            </div>
+          </div>
+
+          {/* Quick Action Prompt Chips */}
+          <div className="copilot-quick-chips">
+            <button className="copilot-chip" onClick={() => handleQuickPrompt("➕ Add task: Learn React (45m)")}>
+              ➕ Add React Task
+            </button>
+            <button className="copilot-chip" onClick={() => handleQuickPrompt("✨ Break down my Do First tasks")}>
+              ✨ Breakdown Q1
+            </button>
+            <button className="copilot-chip" onClick={() => handleQuickPrompt("⏱️ Start 25m Pomodoro timer")}>
+              ⏱️ 25m Timer
+            </button>
+          </div>
+
+          {/* Messages Body */}
+          <div className="copilot-messages">
+            {messages.map(msg => (
+              <div key={msg.id} className={`copilot-msg-row ${msg.role}`}>
+                {msg.role === 'assistant' && (
+                  <div className="msg-avatar">🤖</div>
+                )}
+                <div className="msg-content-wrapper">
+                  <div
+                    className="msg-bubble"
+                    dangerouslySetInnerHTML={{
+                      __html: msg.content
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br/>'),
+                    }}
+                  />
+
+                  {/* Executed Action Badges */}
+                  {msg.executedActions && msg.executedActions.length > 0 && (
+                    <div className="copilot-action-badges">
+                      {msg.executedActions.map((act, i) => (
+                        <div key={i} className="action-badge">
+                          <span>⚡ Executed:</span> {act}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="copilot-msg-row assistant">
+                <div className="msg-avatar">🤖</div>
+                <div className="msg-bubble loading-bubble">
+                  <span className="dot" /><span className="dot" /><span className="dot" />
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Form */}
+          <form className="copilot-input-form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+            <input
+              ref={inputRef}
+              type="text"
+              className="copilot-input"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Ask Copilot or command: 'add task...', 'timer'..."
+              aria-label="AI Copilot input"
+            />
+            <button
+              type="submit"
+              className="copilot-send-btn"
+              disabled={!input.trim() || loading}
+              aria-label="Send message"
+            >
+              ➔
+            </button>
+          </form>
+        </div>
+      )}
+    </>
+  );
+}

@@ -19,6 +19,7 @@ import AuthModal from './components/AuthModal.jsx';
 import CompletedArchive from './components/CompletedArchive.jsx';
 import TaskDetailPanel from './components/TaskDetailPanel.jsx';
 import MobileBottomDock from './components/MobileBottomDock.jsx';
+import AiCopilot from './components/AiCopilot.jsx';
 
 function AppInner() {
   const { auth, login, loginGuest, logout } = useAuth();
@@ -112,6 +113,11 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
           if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
         }}
         showToast={showToast}
+      />
+
+      <AiCopilot
+        showToast={showToast}
+        onOpenPomodoro={() => setPomodoroOpen(true)}
       />
 
       <ToastContainer toasts={toasts} />
