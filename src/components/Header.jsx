@@ -11,7 +11,7 @@ import AmbientSoundPlayer from './AmbientSoundPlayer.jsx';
 import ThemeSelector from './ThemeSelector.jsx';
 
 // ── Component ─────────────────────────────────────────────────────
-export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro, lightMode, setLightMode }) {
+export default function Header({ userName, onLogout, showToast, onOpenAnalytics, onOpenPomodoro }) {
   const dispatch = useDispatch();
   const state    = useAppState();
 

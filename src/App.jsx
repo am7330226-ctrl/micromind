@@ -3,9 +3,10 @@
  */
 
 import './index.css';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { AppStateProvider, useAuth, useAppState, useDispatch } from './store.jsx';
 import { useToast } from './hooks/useToast.js';
+import { THEMES, getSavedThemeId, applyTheme } from './utils/themes.js';
 import Header from './components/Header.jsx';
 import BrainDump from './components/BrainDump.jsx';
 import EisenhowerMatrix from './components/EisenhowerMatrix.jsx';
@@ -49,23 +50,13 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
   const state    = useAppState();
   const dispatch = useDispatch();
 
-  const [lightMode, setLightMode] = useState(() => {
-    const saved = localStorage.getItem('micromind_theme');
-    return saved === 'light';
-  });
-
-  // Sync light and dark mode classes on mount and when changed
+  // Apply the saved theme from ThemeSelector on first mount
+  // This ensures the correct body class + CSS vars are set before first paint.
   useEffect(() => {
-    if (lightMode) {
-      document.body.classList.add('light');
-      document.body.classList.remove('dark');
-      localStorage.setItem('micromind_theme', 'light');
-    } else {
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
-      localStorage.setItem('micromind_theme', 'dark');
-    }
-  }, [lightMode]);
+    const savedId = getSavedThemeId();
+    const theme   = THEMES.find(t => t.id === savedId) || THEMES[0];
+    applyTheme(theme);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto daily reset when a new day is detected ───────────────────────────
   useEffect(() => {
@@ -84,8 +75,6 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
         showToast={showToast}
         onOpenAnalytics={() => setAnalyticsOpen(true)}
         onOpenPomodoro={() => setPomodoroOpen(o => !o)}
-        lightMode={lightMode}
-        setLightMode={setLightMode}
       />
 
       <main className="app-main">
@@ -122,8 +111,6 @@ function AppContent({ showToast, toasts, analyticsOpen, setAnalyticsOpen, pomodo
           dispatch({ type: 'DAILY_RESET' });
           if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
         }}
-        lightMode={lightMode}
-        setLightMode={setLightMode}
         showToast={showToast}
       />
 
