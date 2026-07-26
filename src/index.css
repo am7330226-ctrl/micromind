@@ -833,13 +833,18 @@ body.dark .utility-tool-btn:hover {
   gap: var(--space-2);
   min-height: 40px;
 }
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 40px;
+}
 .task-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -847,6 +852,7 @@ body.dark .utility-tool-btn:hover {
   cursor: grab;
   position: relative;
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 .task-item:hover {
   background: var(--color-surface);
@@ -858,6 +864,16 @@ body.dark .utility-tool-btn:hover {
   opacity: 0.6;
   background: var(--color-surface-subtle);
 }
+
+/* Row 1: Checkbox + Task Text */
+.task-item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
 .task-checkbox {
   width: 18px;
   height: 18px;
@@ -869,39 +885,63 @@ body.dark .utility-tool-btn:hover {
   justify-content: center;
   transition: var(--transition);
   flex-shrink: 0;
+  margin-top: 2px;
 }
 .task-item.completed .task-checkbox {
   background: var(--color-violet);
   border-color: var(--color-violet);
   color: white;
 }
+
 .task-body {
   flex: 1;
   min-width: 0;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   overflow: hidden;
 }
+
 .task-text {
   flex: 1;
   min-width: 0;
-  font-size: 0.9rem;
+  width: 100%;
+  font-size: 0.88rem;
+  line-height: 1.4;
   color: var(--text-primary);
   word-break: break-word;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 .task-item.completed .task-text {
   text-decoration: line-through;
   color: var(--text-muted);
 }
 
-/* Right-side metadata & action buttons container */
+/* Row 2: Metadata & Action Badges Toolbar */
 .task-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: 28px;
+  margin-top: 2px;
+  width: calc(100% - 28px);
+}
+
+/* Compact action badges styling */
+.time-estimate-badge,
+.breakdown-btn,
+.task-date-btn,
+.due-badge,
+.ai-badge {
   flex-shrink: 0;
+  font-size: 11px;
+  height: 24px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  line-height: 1;
 }
 
 /* Styled compact date picker button */
@@ -910,10 +950,6 @@ body.dark .utility-tool-btn:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 28px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--color-surface-subtle);
@@ -942,12 +978,8 @@ body.dark .utility-tool-btn:hover {
 
 /* Due date badges */
 .due-badge {
-  font-size: 0.7rem;
   font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 6px;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 .due-today {
   background: rgba(245, 158, 11, 0.15);
@@ -970,22 +1002,24 @@ body.dark .utility-tool-btn:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 6px;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.15s ease;
   opacity: 0.6;
+  margin-left: auto;
 }
 .task-delete-btn:hover {
   opacity: 1;
   background: rgba(239, 68, 68, 0.12);
   color: #ef4444;
 }
+
 
 
 .empty-state {

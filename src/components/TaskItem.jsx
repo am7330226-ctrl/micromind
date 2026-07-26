@@ -117,7 +117,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
 
   return (
     <div className={`task-item-wrapper${task.completed ? ' completed' : ''}`}>
-      {/* ── Main Task Row ──────────────────────────────────────────────────── */}
+      {/* ── Main Task Card ─────────────────────────────────────────────────── */}
       <div
         className={`task-item${task.completed ? ' completed' : ''}`}
         data-id={task.id}
@@ -126,31 +126,32 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
         onClick={handleRowClick}
         style={{ cursor: 'pointer' }}
       >
-        {/* Checkbox */}
-        <div
-          className={`task-checkbox${task.completed ? ' checked' : ''}`}
-          onClick={handleToggle}
-          role="checkbox"
-          aria-checked={task.completed}
-          tabIndex={0}
-          onKeyDown={e => e.key === ' ' && handleToggle(e)}
-        />
-
-        {/* Task body: text + due date badge */}
-        <div className="task-body">
-          <span
-            className="task-text"
-            dangerouslySetInnerHTML={{ __html: parseRichText(task.text) }}
-            onClick={e => { if (e.target.tagName === 'A') return; }}
+        {/* Row 1: Checkbox + Task Text Body */}
+        <div className="task-item-header">
+          <div
+            className={`task-checkbox${task.completed ? ' checked' : ''}`}
+            onClick={handleToggle}
+            role="checkbox"
+            aria-checked={task.completed}
+            tabIndex={0}
+            onKeyDown={e => e.key === ' ' && handleToggle(e)}
           />
-          {dueMeta && (
-            <span className={`due-badge ${dueMeta.cls}`}>{dueMeta.label}</span>
-          )}
+
+          <div className="task-body">
+            <span
+              className="task-text"
+              dangerouslySetInnerHTML={{ __html: parseRichText(task.text) }}
+              onClick={e => { if (e.target.tagName === 'A') return; }}
+            />
+            {dueMeta && (
+              <span className={`due-badge ${dueMeta.cls}`}>{dueMeta.label}</span>
+            )}
+          </div>
         </div>
 
-        {/* ── Right-side Metadata & Actions Container ───────────────────────── */}
+        {/* Row 2: Actions & Badges Toolbar */}
         <div className="task-actions" onClick={e => e.stopPropagation()}>
-          {/* ── Time Estimate Badge ──────────────────────────────────────────── */}
+          {/* Time Estimate Badge */}
           {timeLabel && !task.completed && (
             editingTime ? (
               <form
