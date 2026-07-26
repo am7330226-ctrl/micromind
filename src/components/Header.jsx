@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
 import PwaInstallPrompt from './PwaInstallPrompt.jsx';
+import VoiceBriefing from './VoiceBriefing.jsx';
 
 // ── Ambient Noise helpers (Web Audio API) ──────────────────────────────────
 let audioCtx = null;
@@ -207,6 +208,9 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
 
         {/* Right: Toolbox Buttons */}
         <div className="utility-right">
+          {/* 🔊 Voice AI Briefing */}
+          <VoiceBriefing showToast={showToast} />
+
           <button
             id="pomodoro-toggle-btn"
             className="utility-tool-btn"

@@ -1688,3 +1688,406 @@ body.dark .mobile-bottom-dock, body.dark .bottom-nav-bar {
   }
 }
 
+
+/* ==========================================================================
+   AI FEATURES — Time Estimator, Sub-Task Breakdown, Voice Briefing
+   ========================================================================== */
+
+/* ── Task Item Wrapper (for accordion) ────────────────────────────────────── */
+.task-item-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── ⏱ Time Estimate Badge ──────────────────────────────────────────────── */
+.time-estimate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 7px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-violet);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+.time-estimate-badge:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  transform: scale(1.05);
+}
+body.light .time-estimate-badge {
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.2);
+  color: #6d28d9;
+}
+
+/* Time edit form */
+.time-edit-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.time-edit-input {
+  width: 42px;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--color-violet);
+  border-radius: 8px;
+  color: var(--color-violet);
+  outline: none;
+  font-family: inherit;
+}
+.time-edit-input::-webkit-inner-spin-button,
+.time-edit-input::-webkit-outer-spin-button { opacity: 0.5; }
+.time-edit-unit {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── Q1 Total Focus Time Badge ──────────────────────────────────────────── */
+.q1-focus-time-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--color-violet);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+body.light .q1-focus-time-badge {
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.2);
+  color: #6d28d9;
+}
+
+/* ── ✨ AI Breakdown Button ──────────────────────────────────────────────── */
+.breakdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d97706;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+.breakdown-btn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: scale(1.04);
+}
+.breakdown-btn.has-subtasks {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: var(--color-violet);
+}
+.breakdown-btn.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+body.dark .breakdown-btn { color: #f59e0b; }
+
+/* Spinner inside breakdown button */
+.breakdown-spinner {
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-top-color: #f59e0b;
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Subtask Accordion ──────────────────────────────────────────────────── */
+.subtask-accordion {
+  margin-left: 28px;
+  margin-top: 4px;
+  border-left: 2px solid rgba(139, 92, 246, 0.2);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: accordionOpen 0.2s ease;
+}
+@keyframes accordionOpen {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.04);
+  transition: background 0.15s ease;
+  min-height: 32px;
+}
+.subtask-item:hover { background: rgba(139, 92, 246, 0.08); }
+.subtask-item.completed .subtask-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* Subtask checkbox (mini version) */
+.subtask-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.subtask-checkbox:hover { border-color: var(--color-violet); }
+.subtask-checkbox.checked {
+  background: var(--color-violet);
+  border-color: var(--color-violet);
+}
+.subtask-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.subtask-text {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.subtask-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.subtask-item:hover .subtask-delete-btn { opacity: 0.7; }
+.subtask-delete-btn:hover { opacity: 1 !important; color: #ef4444; }
+
+/* Loading skeletons */
+.subtask-skeleton {
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.05) 25%, rgba(139, 92, 246, 0.12) 50%, rgba(139, 92, 246, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+.subtask-skeleton.short { width: 70%; }
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ── 🔊 Voice Briefing Component ──────────────────────────────────────── */
+.voice-briefing-container {
+  position: relative;
+}
+
+/* Trigger button (inherits utility-tool-btn styles + active state) */
+.voice-briefing-trigger.voice-active {
+  background: rgba(139, 92, 246, 0.15) !important;
+  color: var(--color-violet) !important;
+}
+
+/* Animated waveform icon in trigger button */
+.voice-wave-icon {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.voice-wave-icon span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-violet);
+  animation: voiceWave 0.6s ease-in-out infinite alternate;
+}
+.voice-wave-icon span:nth-child(1) { height: 6px;  animation-delay: 0s;    }
+.voice-wave-icon span:nth-child(2) { height: 12px; animation-delay: 0.1s;  }
+.voice-wave-icon span:nth-child(3) { height: 8px;  animation-delay: 0.2s;  }
+.voice-wave-icon span:nth-child(4) { height: 14px; animation-delay: 0.15s; }
+@keyframes voiceWave {
+  from { transform: scaleY(0.5); opacity: 0.6; }
+  to   { transform: scaleY(1);   opacity: 1;   }
+}
+
+/* Briefing Panel */
+.voice-briefing-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: clamp(280px, 90vw, 400px);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 20px rgba(139, 92, 246, 0.1);
+  z-index: 9999;
+  overflow: hidden;
+  animation: panelSlideDown 0.2s ease;
+}
+@keyframes panelSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.voice-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.voice-panel-icon { font-size: 1.3rem; }
+.voice-panel-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+.voice-panel-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.voice-panel-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.voice-panel-close:hover { background: rgba(139, 92, 246, 0.1); color: var(--text-primary); }
+
+/* Script Preview */
+.voice-script-preview {
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-height: 130px;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--color-border);
+  font-style: italic;
+  transition: color 0.2s ease;
+}
+.voice-script-preview.speaking { color: var(--text-primary); }
+
+/* Status Bar */
+.voice-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(139, 92, 246, 0.06);
+  border-bottom: 1px solid var(--color-border);
+}
+.voice-status-bar.paused { background: rgba(245, 158, 11, 0.06); }
+.voice-status-text { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+/* Pulsing Audio Waveform in status bar */
+.audio-pulse-indicator {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+.audio-pulse-indicator span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-violet);
+  animation: audioPulse 0.8s ease-in-out infinite alternate;
+}
+.audio-pulse-indicator span:nth-child(1) { height: 5px;  animation-delay: 0s;    }
+.audio-pulse-indicator span:nth-child(2) { height: 14px; animation-delay: 0.12s; }
+.audio-pulse-indicator span:nth-child(3) { height: 8px;  animation-delay: 0.24s; }
+.audio-pulse-indicator span:nth-child(4) { height: 12px; animation-delay: 0.1s;  }
+.audio-pulse-indicator span:nth-child(5) { height: 6px;  animation-delay: 0.18s; }
+@keyframes audioPulse {
+  from { transform: scaleY(0.4); opacity: 0.5; }
+  to   { transform: scaleY(1);   opacity: 1;   }
+}
+
+/* Control Buttons */
+.voice-controls {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.voice-ctrl-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+.voice-ctrl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.voice-ctrl-btn.play {
+  background: var(--color-violet);
+  color: white;
+}
+.voice-ctrl-btn.play:not(:disabled):hover { background: var(--color-violet-dark, #7c3aed); }
+.voice-ctrl-btn.pause {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.voice-ctrl-btn.pause:not(:disabled):hover { background: rgba(245, 158, 11, 0.2); }
+.voice-ctrl-btn.stop {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.voice-ctrl-btn.stop:not(:disabled):hover { background: rgba(239, 68, 68, 0.2); }

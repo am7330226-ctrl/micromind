@@ -4,6 +4,7 @@
  */
 
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
+import { estimateTaskTime } from './utils/estimateTaskTime.js';
 import { supabase } from './supabase.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -189,6 +190,28 @@ function reducer(state, action) {
         tasks: state.tasks.map(t =>
           t.id === action.id
             ? { ...t, subtasks: (t.subtasks || []).filter(s => s.id !== action.subtaskId) }
+            : t
+        ),
+      };
+
+    // ── AI Time Estimate: SET or OVERRIDE the task time estimate ────────────
+    case 'SET_TASK_TIME_ESTIMATE':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id
+            ? { ...t, timeEstimate: action.estimate }
+            : t
+        ),
+      };
+
+    // ── AI Breakdown Loading State (show spinner on task card) ───────────────
+    case 'SET_TASK_BREAKDOWN_LOADING':
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.id
+            ? { ...t, breakdownLoading: action.loading }
             : t
         ),
       };
@@ -491,6 +514,8 @@ export function useAuth()      { return useContext(AuthContext); }
 
 // ── Action Creators ───────────────────────────────────────────────────────────
 export function createTask(text, category = 'inbox') {
+  // Auto-estimate time from task text complexity
+  const timeEstimate = estimateTaskTime(text.trim());
   return {
     id: generateId(),
     text: text.trim(),
@@ -498,9 +523,11 @@ export function createTask(text, category = 'inbox') {
     completed: false,
     createdAt: Date.now(),
     aiSorting: false,
-    dueDate: null,   // ISO date string e.g. "2026-07-20"
-    aiReason: null,  // Human-readable AI classification reason
+    dueDate: null,      // ISO date string e.g. "2026-07-20"
+    aiReason: null,     // Human-readable AI classification reason
     notes: '',
     subtasks: [],
+    timeEstimate,       // { minutes: number, label: string }
+    breakdownLoading: false,
   };
 }

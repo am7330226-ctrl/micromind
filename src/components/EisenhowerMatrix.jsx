@@ -1,9 +1,11 @@
 /**
  * EisenhowerMatrix.jsx — The 2×2 priority matrix with drag-and-drop support.
+ * Enhanced with AI Total Focus Time display in Q1 (Do First) header.
  */
 
 import { useState, useCallback } from 'react';
 import { useAppState, useDispatch } from '../store.jsx';
+import { sumFocusTime } from '../utils/estimateTaskTime.js';
 import TaskItem from './TaskItem.jsx';
 
 const QUADRANTS = [
@@ -63,12 +65,14 @@ function Quadrant({ quadrant, tasks, showToast }) {
     showToast(`Moved to ${quadrant.label}`, quadrant.emoji);
   }, [dispatch, quadrant, showToast, tasks]);
 
-
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOver(true);
   };
+
+  // ── Total Focus Time for Q1 ────────────────────────────────────────────────
+  const focusTime = quadrant.id === 'q1' ? sumFocusTime(tasks) : null;
 
   return (
     <div
@@ -87,11 +91,23 @@ function Quadrant({ quadrant, tasks, showToast }) {
             </div>
           </div>
         </div>
-        {quadrant.id === 'q1' && (
-          <span className={`quadrant-count${tasks.filter(t => !t.completed).length >= Q1_LIMIT ? ' wip-full' : ''}`}>
-            {tasks.filter(t => !t.completed).length}/{Q1_LIMIT}
-          </span>
-        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {/* Total Focus Time badge for Q1 */}
+          {quadrant.id === 'q1' && focusTime?.label && (
+            <span
+              className="q1-focus-time-badge"
+              title={`Estimated total focus time: ${focusTime.label}`}
+            >
+              ⏱ {focusTime.label}
+            </span>
+          )}
+          {quadrant.id === 'q1' && (
+            <span className={`quadrant-count${tasks.filter(t => !t.completed).length >= Q1_LIMIT ? ' wip-full' : ''}`}>
+              {tasks.filter(t => !t.completed).length}/{Q1_LIMIT}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="task-list">
@@ -102,7 +118,11 @@ function Quadrant({ quadrant, tasks, showToast }) {
           </div>
         ) : (
           tasks.map(task => (
-            <TaskItem key={task.id} task={task} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              showBreakdown={quadrant.id === 'q1'}
+            />
           ))
         )}
       </div>
