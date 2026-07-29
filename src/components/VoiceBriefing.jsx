@@ -112,10 +112,12 @@ export default function VoiceBriefing({ showToast }) {
     <div className="voice-briefing-container" ref={panelRef}>
       {/* Trigger Button */}
       <button
+        type="button"
         className={`utility-tool-btn voice-briefing-trigger${status === 'speaking' ? ' voice-active' : ''}`}
         onClick={() => setPanelOpen(o => !o)}
         title="Daily AI Voice Briefing"
         aria-label="Voice Briefing"
+        aria-expanded={panelOpen}
       >
         {status === 'speaking' ? (
           <span className="voice-wave-icon" aria-hidden="true">
@@ -140,6 +142,7 @@ export default function VoiceBriefing({ showToast }) {
               <div className="voice-panel-subtitle">Your AI-powered morning summary</div>
             </div>
             <button
+              type="button"
               className="voice-panel-close"
               onClick={() => { handleStop(); setPanelOpen(false); }}
               aria-label="Close briefing panel"
@@ -170,6 +173,7 @@ export default function VoiceBriefing({ showToast }) {
           {/* Controls */}
           <div className="voice-controls">
             <button
+              type="button"
               className={`voice-ctrl-btn play${status === 'speaking' ? ' disabled' : ''}`}
               onClick={handlePlay}
               disabled={status === 'speaking'}
@@ -180,6 +184,7 @@ export default function VoiceBriefing({ showToast }) {
             </button>
 
             <button
+              type="button"
               className="voice-ctrl-btn pause"
               onClick={handlePause}
               disabled={status !== 'speaking'}
@@ -190,6 +195,7 @@ export default function VoiceBriefing({ showToast }) {
             </button>
 
             <button
+              type="button"
               className="voice-ctrl-btn stop"
               onClick={handleStop}
               disabled={status === 'idle'}

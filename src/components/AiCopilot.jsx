@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState, useDispatch, useAuth, createTask } from '../store.jsx';
 import { sendCopilotMessage } from '../utils/aiCopilotService.js';
 import { generateSubtasks } from '../utils/aiBreakdown.js';
@@ -181,11 +182,13 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
     <>
       {/* 🤖 Floating AI Assistant Button (FAB) */}
       <button
+        type="button"
         id="copilot-fab-btn"
         className={`copilot-fab${isOpen ? ' active' : ''}`}
         onClick={() => setIsOpen(o => !o)}
         title="MicroMind AI Copilot"
-        aria-label="Open AI Copilot"
+        aria-label="Toggle AI Copilot Drawer"
+        aria-expanded={isOpen}
       >
         <span className="fab-sparkle">✨</span>
         <span className="fab-icon">🤖</span>
@@ -194,122 +197,134 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       </button>
 
       {/* ── Slide-over AI Copilot Drawer ─────────────────────────────────── */}
-      {isOpen && (
-        <div className="copilot-drawer" role="dialog" aria-label="MicroMind AI Copilot">
-          {/* Header */}
-          <div className="copilot-header">
-            <div className="copilot-header-info">
-              <div className="copilot-avatar">
-                <span>🤖</span>
-                <span className="copilot-online-dot" />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="copilot-drawer"
+            role="dialog"
+            aria-label="MicroMind AI Copilot Chat"
+          >
+            {/* Header */}
+            <div className="copilot-header">
+              <div className="copilot-header-info">
+                <div className="copilot-avatar">
+                  <span>🤖</span>
+                  <span className="copilot-online-dot" />
+                </div>
+                <div>
+                  <div className="copilot-title">MicroMind AI Copilot</div>
+                  <div className="copilot-subtitle">Context-Aware App Assistant</div>
+                </div>
               </div>
-              <div>
-                <div className="copilot-title">MicroMind AI Copilot</div>
-                <div className="copilot-subtitle">Context-Aware App Assistant</div>
+              <div className="copilot-header-actions">
+                <button
+                  type="button"
+                  className="copilot-icon-btn"
+                  onClick={() => setMessages([
+                    {
+                      id: String(Date.now()),
+                      role: 'assistant',
+                      content: "Chat cleared! How can I assist you with your tasks?",
+                      timestamp: Date.now(),
+                    },
+                  ])}
+                  title="Clear Chat"
+                  aria-label="Clear chat messages"
+                >🗑️</button>
+                <button
+                  type="button"
+                  className="copilot-close-btn"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close AI Copilot Drawer"
+                >✕</button>
               </div>
             </div>
-            <div className="copilot-header-actions">
-              <button
-                className="copilot-icon-btn"
-                onClick={() => setMessages([
-                  {
-                    id: String(Date.now()),
-                    role: 'assistant',
-                    content: "Chat cleared! How can I assist you with your tasks?",
-                    timestamp: Date.now(),
-                  },
-                ])}
-                title="Clear Chat"
-                aria-label="Clear chat"
-              >🗑️</button>
-              <button
-                className="copilot-close-btn"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close AI Copilot"
-              >✕</button>
+
+            {/* Quick Action Prompt Chips */}
+            <div className="copilot-quick-chips">
+              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("➕ Add task: Learn React (45m)")}>
+                ➕ Add React Task
+              </button>
+              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("✨ Break down my Do First tasks")}>
+                ✨ Breakdown Q1
+              </button>
+              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("⏱️ Start 25m Pomodoro timer")}>
+                ⏱️ 25m Timer
+              </button>
             </div>
-          </div>
 
-          {/* Quick Action Prompt Chips */}
-          <div className="copilot-quick-chips">
-            <button className="copilot-chip" onClick={() => handleQuickPrompt("➕ Add task: Learn React (45m)")}>
-              ➕ Add React Task
-            </button>
-            <button className="copilot-chip" onClick={() => handleQuickPrompt("✨ Break down my Do First tasks")}>
-              ✨ Breakdown Q1
-            </button>
-            <button className="copilot-chip" onClick={() => handleQuickPrompt("⏱️ Start 25m Pomodoro timer")}>
-              ⏱️ 25m Timer
-            </button>
-          </div>
-
-          {/* Messages Body */}
-          <div className="copilot-messages">
-            {messages.map(msg => (
-              <div key={msg.id} className={`copilot-msg-row ${msg.role}`}>
-                {msg.role === 'assistant' && (
-                  <div className="msg-avatar">🤖</div>
-                )}
-                <div className="msg-content-wrapper">
-                  <div
-                    className="msg-bubble"
-                    dangerouslySetInnerHTML={{
-                      __html: msg.content
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\n/g, '<br/>'),
-                    }}
-                  />
-
-                  {/* Executed Action Badges */}
-                  {msg.executedActions && msg.executedActions.length > 0 && (
-                    <div className="copilot-action-badges">
-                      {msg.executedActions.map((act, i) => (
-                        <div key={i} className="action-badge">
-                          <span>⚡ Executed:</span> {act}
-                        </div>
-                      ))}
-                    </div>
+            {/* Messages Body */}
+            <div className="copilot-messages">
+              {messages.map(msg => (
+                <div key={msg.id} className={`copilot-msg-row ${msg.role}`}>
+                  {msg.role === 'assistant' && (
+                    <div className="msg-avatar">🤖</div>
                   )}
+                  <div className="msg-content-wrapper">
+                    <div
+                      className="msg-bubble"
+                      dangerouslySetInnerHTML={{
+                        __html: msg.content
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\n/g, '<br/>'),
+                      }}
+                    />
+
+                    {/* Executed Action Badges */}
+                    {msg.executedActions && msg.executedActions.length > 0 && (
+                      <div className="copilot-action-badges">
+                        {msg.executedActions.map((act, i) => (
+                          <div key={i} className="action-badge">
+                            <span>⚡ Executed:</span> {act}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="copilot-msg-row assistant">
-                <div className="msg-avatar">🤖</div>
-                <div className="msg-bubble loading-bubble">
-                  <span className="dot" /><span className="dot" /><span className="dot" />
+              {/* Loading Indicator */}
+              {loading && (
+                <div className="copilot-msg-row assistant">
+                  <div className="msg-avatar">🤖</div>
+                  <div className="msg-bubble loading-bubble">
+                    <span className="dot" /><span className="dot" /><span className="dot" />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div ref={messagesEndRef} />
-          </div>
+              <div ref={messagesEndRef} />
+            </div>
 
-          {/* Input Form */}
-          <form className="copilot-input-form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
-            <input
-              ref={inputRef}
-              type="text"
-              className="copilot-input"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Ask Copilot or command: 'add task...', 'timer'..."
-              aria-label="AI Copilot input"
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              className="copilot-send-btn"
-              disabled={!input.trim() || loading}
-              aria-label="Send message"
-            >
-              ➔
-            </button>
-          </form>
-        </div>
-      )}
+            {/* Input Form */}
+            <form className="copilot-input-form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+              <input
+                ref={inputRef}
+                type="text"
+                className="copilot-input"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Ask Copilot or command: 'add task...', 'timer'..."
+                aria-label="AI Copilot input"
+                disabled={loading}
+              />
+              <button
+                type="submit"
+                className="copilot-send-btn"
+                disabled={!input.trim() || loading}
+                aria-label="Send message"
+              >
+                ➔
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

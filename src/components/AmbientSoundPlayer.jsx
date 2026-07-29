@@ -287,11 +287,13 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
     <div className="ambient-player-container" ref={panelRef}>
       {/* Trigger element — rendered by Header via render prop / cloneElement */}
       <button
+        type="button"
         id="ambient-noise-btn"
         className={`utility-tool-btn${isPlaying ? ' active-tool' : ''}`}
         onClick={() => setOpen(o => !o)}
         title="Ambient Soundscapes"
         aria-label="Ambient Sound Player"
+        aria-expanded={open}
       >
         <span>{isPlaying ? '🎵' : '🎧'}</span>
         <span>{isPlaying ? 'Playing' : 'Audio'}</span>
@@ -307,6 +309,7 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
               <div className="ambient-drawer-sub">Focus-enhancing background loops</div>
             </div>
             <button
+              type="button"
               className="ambient-drawer-close"
               onClick={() => setOpen(false)}
               aria-label="Close audio player"
@@ -319,6 +322,7 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
               const playing = activeId === track.id;
               return (
                 <button
+                  type="button"
                   key={track.id}
                   className={`ambient-track${playing ? ' playing' : ''}`}
                   onClick={() => handleTrack(track.id)}
@@ -345,6 +349,7 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
           {/* Volume Controls */}
           <div className="ambient-controls">
             <button
+              type="button"
               className={`ambient-mute-btn${muted ? ' muted' : ''}`}
               onClick={handleMute}
               title={muted ? 'Unmute' : 'Mute'}

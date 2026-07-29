@@ -90,21 +90,24 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
           {userName && (
             <div className="avatar-menu-container" ref={menuRef}>
               <button
+                type="button"
                 className="user-avatar-btn"
                 onClick={() => setMenuOpen(o => !o)}
                 title={`Signed in as ${userName}. Tap for options`}
                 aria-label="User Account Menu"
+                aria-expanded={menuOpen}
+                aria-haspopup="true"
               >
                 {userName.charAt(0).toUpperCase()}
               </button>
 
               <div className="header-user desktop-user-info">
                 <span className="user-name">{userName.split(' ')[0]}</span>
-                <button className="signout-btn" onClick={onLogout}>Sign Out</button>
+                <button type="button" className="signout-btn" onClick={onLogout} aria-label="Sign out">Sign Out</button>
               </div>
 
               {menuOpen && (
-                <div className="user-popover-menu">
+                <div className="user-popover-menu" role="menu" aria-label="User profile options">
                   <div className="popover-user-info">
                     <div className="popover-avatar">{userName.charAt(0).toUpperCase()}</div>
                     <div>
@@ -122,8 +125,11 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
                   <div className="popover-divider" />
 
                   <button
+                    type="button"
                     className="popover-signout-btn"
                     onClick={() => { setMenuOpen(false); onLogout(); }}
+                    aria-label="Sign Out"
+                    role="menuitem"
                   >
                     <span>🚪</span>
                     <span>Sign Out</span>
@@ -141,18 +147,18 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
         <div className="utility-left">
           <span className="header-date">{today}</span>
           <span className="utility-divider">•</span>
-          <div className="streak-badge" title="Day streak">
+          <div className="streak-badge" title="Day streak" aria-label={`Current streak: ${state.streak || 0} days`}>
             🔥 <span id="streak-count">{state.streak || 0}</span>
           </div>
           <span className="utility-divider">•</span>
-          <div className="level-badge" title={`${xp} XP total`}>
+          <div className="level-badge" title={`${xp} XP total`} aria-label={`Level ${level}, ${Math.round(levelProgress)}% to next level`}>
             <span className="level-label">Lvl {level}</span>
             <div className="level-xp-bar">
               <div className="level-xp-fill" style={{ width: `${levelProgress}%` }}></div>
             </div>
           </div>
           <span className="utility-divider">•</span>
-          <div className="progress-badge" title={`${done}/${total} tasks completed`}>
+          <div className="progress-badge" title={`${done}/${total} tasks completed`} aria-label={`Daily progress: ${pct}% (${done} of ${total} tasks completed)`}>
             <span>Progress: <strong>{pct}%</strong></span>
           </div>
         </div>
@@ -163,36 +169,42 @@ export default function Header({ userName, onLogout, showToast, onOpenAnalytics,
           <VoiceBriefing showToast={showToast} />
 
           <button
+            type="button"
             id="pomodoro-toggle-btn"
             className="utility-tool-btn"
             onClick={onOpenPomodoro}
             title="Pomodoro Focus Timer"
+            aria-label="Open Pomodoro Focus Timer"
           >
             <span>🍓</span>
             <span>Pomodoro</span>
           </button>
 
           <button
+            type="button"
             id="analytics-toggle-btn"
             className="utility-tool-btn"
             onClick={onOpenAnalytics}
-            title="Analytics &amp; Productivity Insights"
+            title="Analytics & Productivity Insights"
+            aria-label="Open Analytics & Productivity Insights"
           >
             <span>📊</span>
             <span>Stats</span>
           </button>
 
-          {/* 🎧 Ambient Sound Player (replaces old single ambient btn) */}
+          {/* 🎧 Ambient Sound Player */}
           <AmbientSoundPlayer showToast={showToast} />
 
-          {/* 🎨 XP Theme Selector (replaces old light/dark toggle) */}
+          {/* 🎨 XP Theme Selector */}
           <ThemeSelector showToast={showToast} />
 
           <button
+            type="button"
             id="daily-reset-btn"
             className="utility-tool-btn utility-reset-btn"
             onClick={handleReset}
-            title="Daily Reset — Archive completed tasks &amp; reset habits"
+            title="Daily Reset — Archive completed tasks & reset habits"
+            aria-label="Perform Daily Reset to archive tasks and reset habits"
           >
             <span>⚡</span>
             <span>Reset</span>

@@ -60,11 +60,13 @@ export default function ThemeSelector({ showToast }) {
     <div className="theme-selector-container" ref={panelRef}>
       {/* Trigger button */}
       <button
+        type="button"
         id="theme-toggle-btn"
         className={`utility-tool-btn${panelOpen ? ' active-tool' : ''}`}
         onClick={() => setPanelOpen(o => !o)}
         title="Choose Theme"
         aria-label="Theme Selector"
+        aria-expanded={panelOpen}
       >
         <span>{activeTheme.emoji}</span>
         <span>Theme</span>
@@ -89,6 +91,7 @@ export default function ThemeSelector({ showToast }) {
 
               return (
                 <button
+                  type="button"
                   key={theme.id}
                   className={`theme-card${isActive ? ' active' : ''}${isLocked ? ' locked' : ''}`}
                   onClick={() => handleSelect(theme)}

@@ -3081,4 +3081,75 @@ body.theme-sunset .task-item:hover {
   }
 }
 
+/* ==========================================================================
+   📱 RESPONSIVE BREAKPOINTS (375px, 768px, 1280px) & 44px TAP TARGETS
+   ========================================================================== */
+
+/* Mobile Pass (< 640px / 375px) */
+@media (max-width: 640px) {
+  /* 44x44px Minimum Touch Targets on Mobile */
+  .utility-tool-btn,
+  .user-avatar-btn,
+  .icon-action-btn,
+  .bottom-nav-item,
+  .copilot-fab,
+  .copilot-chip,
+  .mood-btn,
+  .habit-item,
+  .task-checkbox,
+  .mic-btn,
+  .theme-card-option {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Single Column Matrix Layout */
+  .matrix-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* App Wrapper Padding for Mobile */
+  .app-wrapper {
+    margin: 0 !important;
+    padding: 12px 14px 85px 14px !important;
+    border-radius: 0 !important;
+  }
+
+  /* Full Width Header Layout */
+  .two-tier-header {
+    padding: 12px 14px !important;
+  }
+
+  /* Task Item Row Spacing */
+  .task-actions {
+    margin-left: 0 !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Tablet Pass (640px - 1024px / 768px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .app-wrapper {
+    margin: 16px auto !important;
+    padding: 20px 24px !important;
+  }
+
+  .matrix-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* Desktop Pass (> 1024px / 1280px) */
+@media (min-width: 1025px) {
+  .app-wrapper {
+    max-width: 1360px;
+    margin: 32px auto;
+    padding: 32px 40px;
+  }
+}
+
+
 

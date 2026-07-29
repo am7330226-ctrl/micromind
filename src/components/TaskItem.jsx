@@ -176,6 +176,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
               </form>
             ) : (
               <button
+                type="button"
                 className="time-estimate-badge"
                 onClick={handleTimeBadgeClick}
                 title="Click to edit time estimate"
@@ -199,6 +200,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
           {/* ✨ Breakdown Button */}
           {showBreakdown && !task.completed && (
             <button
+              type="button"
               className={`breakdown-btn${task.breakdownLoading ? ' loading' : ''}${hasSubtasks ? ' has-subtasks' : ''}`}
               onClick={handleBreakdown}
               title={hasSubtasks ? 'Toggle subtasks' : 'AI: Break into sub-tasks'}
@@ -216,6 +218,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
 
           {/* Compact Pill Date Picker Button */}
           <button
+            type="button"
             className="task-date-btn"
             title="Set due date"
             onClick={e => { e.stopPropagation(); dateInputRef.current?.showPicker?.(); dateInputRef.current?.click(); }}
@@ -237,6 +240,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
 
           {/* Delete Button */}
           <button
+            type="button"
             className="task-delete-btn"
             onClick={handleDelete}
             aria-label="Delete task"
@@ -266,6 +270,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false }) {
               />
               <span className="subtask-text">{subtask.text}</span>
               <button
+                type="button"
                 className="subtask-delete-btn"
                 onClick={e => handleSubtaskDelete(e, subtask.id)}
                 aria-label={`Delete subtask: ${subtask.text}`}

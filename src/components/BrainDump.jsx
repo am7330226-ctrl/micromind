@@ -218,15 +218,16 @@ export default function BrainDump({ showToast }) {
           autoComplete="off"
         />
         <button
+          type="button"
           className={`mic-btn${isListening ? ' listening' : ''}`}
           onClick={toggleListening}
           title={isListening ? "Stop listening" : "Speak task out loud (Speech-to-Text)"}
-          type="button"
+          aria-label={isListening ? "Stop voice listening" : "Start voice speech-to-text input"}
           id="voice-input-btn"
         >
           🎙️
         </button>
-        <button className="dump-submit-btn" onClick={handleAdd} aria-label="Add task" id="dump-submit-btn">
+        <button type="button" className="dump-submit-btn" onClick={handleAdd} aria-label="Add task to inbox" id="dump-submit-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
           </svg>
@@ -237,7 +238,7 @@ export default function BrainDump({ showToast }) {
       <div className="inbox-header">
         <h3>Unsorted Thoughts ({inboxTasks.length})</h3>
         {inboxTasks.some(t => t.completed) && (
-          <button className="text-btn" onClick={handleClearCompleted}>Clear Completed</button>
+          <button type="button" className="text-btn" onClick={handleClearCompleted} aria-label="Clear completed inbox tasks">Clear Completed</button>
         )}
       </div>
 
