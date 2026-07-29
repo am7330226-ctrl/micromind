@@ -307,34 +307,37 @@ export default function AnalyticsDashboard({ open, onClose }) {
 
           {/* Highlight cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.4rem' }}>🔥</span>
+            <div className="analytics-stat-card">
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🔥</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{streak} days</span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Streak</span>
+                <span className="analytics-stat-val">{streak} days</span>
+                <span className="analytics-stat-lbl">Streak</span>
               </div>
             </div>
-            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.4rem' }}>✅</span>
+
+            <div className="analytics-stat-card">
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>✅</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{totalCmp}</span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Completed</span>
+                <span className="analytics-stat-val">{totalCmp}</span>
+                <span className="analytics-stat-lbl">Completed</span>
               </div>
             </div>
-            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.4rem' }}>🏆</span>
+
+            <div className="analytics-stat-card">
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🏆</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>
+                <span className="analytics-stat-val" style={{ fontSize: '16px' }}>
                   {best ? new Date(best.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}
                 </span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Best Day</span>
+                <span className="analytics-stat-lbl">Best Day</span>
               </div>
             </div>
-            <div style={{ background: '#121212', border: '1px solid rgba(217,119,6,0.25)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.4rem' }}>😊</span>
+
+            <div className="analytics-stat-card">
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>😊</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: 'var(--color-gold-bright)', lineHeight: 1.1 }}>{avgMood ? `${avgMood} ★` : '—'}</span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Avg Mood</span>
+                <span className="analytics-stat-val">{avgMood ? `${avgMood} ★` : '—'}</span>
+                <span className="analytics-stat-lbl">Avg Mood</span>
               </div>
             </div>
           </div>

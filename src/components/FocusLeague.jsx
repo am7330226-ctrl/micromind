@@ -1,7 +1,7 @@
 /**
  * FocusLeague.jsx — Gamification leaderboard card (Stitch "Card F")
  * Shows user rank, friends' XP, and next-reward milestone.
- * Wired to store for live xp + level data.
+ * Styled with theme-aware classes for dark mode glass surfaces.
  */
 
 import { useAppState } from '../store.jsx';
@@ -24,50 +24,73 @@ export default function FocusLeague() {
   const pct = Math.min(100, Math.round((userXp / NEXT_REWARD_XP) * 100));
 
   return (
-    <div className="bento-card h-full flex flex-col">
+    <div className="bento-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <span className="material-symbols-outlined text-[#a04100]">leaderboard</span>
-        <h3 className="text-[20px] font-semibold font-headline">Focus League</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <span className="material-symbols-outlined" style={{ color: '#a04100', fontSize: '24px' }}>leaderboard</span>
+        <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0, fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+          Focus League
+        </h3>
       </div>
 
       {/* #1 — The user */}
-      <div className="flex items-center gap-4 p-3 bg-[#eaddff]/30 rounded-2xl border border-[#630ed4]/10 mb-2">
-        <div className="w-10 h-10 rounded-full bg-[#630ed4] flex items-center justify-center text-white font-bold text-sm shrink-0">
+      <div className="leaderboard-item user-rank-card" style={{
+        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+        backgroundColor: 'rgba(99, 14, 212, 0.15)', borderRadius: '16px',
+        border: '1px solid rgba(99, 14, 212, 0.3)', marginBottom: '12px'
+      }}>
+        <div style={{
+          width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#630ed4',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white',
+          fontWeight: '700', fontSize: '14px', flexShrink: 0, lineHeight: '36px', textAlign: 'center'
+        }}>
           1
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-medium text-[#111c2d] truncate">{userName} (You)</p>
-          <div className="w-full h-1.5 bg-[#e7eeff] rounded-full mt-1 overflow-hidden">
-            <div className="h-full bg-[#630ed4] rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {userName} (You)
+          </div>
+          <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(99, 14, 212, 0.2)', borderRadius: '6px', marginTop: '6px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', backgroundColor: '#630ed4', borderRadius: '6px', width: `${pct}%`, transition: 'width 0.5s ease' }} />
           </div>
         </div>
-        <span className="font-bold text-[#630ed4] shrink-0 text-sm">{userXp} XP</span>
+        <span style={{ fontWeight: '700', color: '#8b5cf6', fontSize: '14px', flexShrink: 0 }}>{userXp} XP</span>
       </div>
 
       {/* Other players */}
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {MOCK_LEADERBOARD.map(p => (
-          <div key={p.rank} className="flex items-center gap-4 p-3 hover:bg-[#f0f3ff] rounded-2xl transition-colors">
-            <div className="w-10 h-10 rounded-full bg-[#e7eeff] text-[#4a4455] flex items-center justify-center font-bold text-sm shrink-0">
+          <div key={p.rank} className="leaderboard-item" style={{
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+            borderRadius: '16px', transition: 'all 0.2s ease'
+          }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(99, 14, 212, 0.1)',
+              color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: '700', fontSize: '14px', flexShrink: 0, lineHeight: '36px', textAlign: 'center'
+            }}>
               {p.rank}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-medium text-[#4a4455] truncate">{p.name}</p>
-              <p className="text-[12px] text-[#4a4455]/60">Lvl {p.level} · 🔥{p.streak}d</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {p.name}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Lvl {p.level} · 🔥{p.streak}d
+              </div>
             </div>
-            <span className="font-bold text-[#4a4455]/50 shrink-0 text-sm">{p.xp} XP</span>
+            <span style={{ fontWeight: '700', color: 'var(--text-secondary)', fontSize: '14px', flexShrink: 0 }}>{p.xp} XP</span>
           </div>
         ))}
       </div>
 
       {/* Next reward */}
-      <div className="mt-auto pt-6">
-        <div className="p-4 bg-[#f0f3ff] rounded-2xl border border-dashed border-[#ccc3d8]">
-          <p className="text-[12px] text-center text-[#4a4455] mb-1">
+      <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+        <div className="reward-box" style={{ padding: '14px', borderRadius: '16px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 4px 0' }}>
             Next reward at {NEXT_REWARD_XP} XP — {NEXT_REWARD_XP - userXp > 0 ? `${NEXT_REWARD_XP - userXp} to go!` : 'Unlocked!'}
           </p>
-          <p className="text-center font-bold text-[#630ed4] text-sm">{NEXT_REWARD_LABEL}</p>
+          <p style={{ fontWeight: '700', color: '#8b5cf6', fontSize: '14px', margin: 0 }}>{NEXT_REWARD_LABEL}</p>
         </div>
       </div>
     </div>

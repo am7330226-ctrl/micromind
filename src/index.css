@@ -1,43 +1,32 @@
 /* Google Fonts — must be first */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
-/* Tailwind CSS Base */
-@tailwind base;
+/* Tailwind: skip 'base' reset layer to avoid breaking existing CSS design system.
+   Use only components + utilities so Tailwind helpers work alongside MicroMind CSS. */
 @tailwind components;
 @tailwind utilities;
 
 /* MicroMind — Modern Pastel SaaS & Violet Glassmorphism Design System */
 
 :root {
-  /* Pastel Palette — Soft Sage Canvas & Electric Violet/Cyan */
-  --color-bg:             #e8edf2;
-  --color-surface:        #ffffff;
-  --color-surface-subtle: #f8fafc;
-  --color-surface-hover:  #f1f5f9;
+  /* LIGHT THEME DEFAULT */
+  --bg-main: #f4f6fc;
+  --bg-sidebar: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
 
-  /* Aliases used by ThemeSelector engine */
-  --bg-app:    #e8edf2;
-  --bg-card:   #ffffff;
-  --bg-card-alt: #f8fafc;
+  --color-bg: var(--bg-main);
+  --color-surface: var(--bg-card);
+  --color-surface-subtle: var(--bg-card);
+  --color-border: var(--border-color);
 
-  --color-border:        #e2e8f0;
-  --color-border-violet: rgba(139, 92, 246, 0.3);
-
-  --text-primary:   #0f172a;
-  --text-secondary: #475569;
-  --text-muted:     #94a3b8;
-
-  /* Signature Accents */
-  --color-violet:       #8b5cf6;
-  --color-violet-hover: #7c3aed;
-  --color-cyan:         #06b6d4;
-  --color-rose:         #f43f5e;
-  --color-emerald:      #10b981;
-  --color-amber:        #f59e0b;
-
-  /* Fonts */
   --font-serif: 'Outfit', sans-serif;
   --font-sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --color-violet: #7c3aed;
+  --color-violet-hover: #6d28d9;
 
   /* Spacing */
   --space-1: 4px;
@@ -70,35 +59,20 @@
   --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---- Dark Mode Theme Overrides ---- */
-body.dark {
-  --color-bg:             #121212;
-  --color-surface:        #1a1a1a;
-  --color-surface-subtle: #161616;
-  --color-surface-hover:  #222222;
+/* DARK THEME OVERRIDES */
+[data-theme="dark"], body.dark {
+  --bg-main: #0f172a;       /* Dark slate main canvas */
+  --bg-sidebar: #1e293b;    /* Dark sidebar */
+  --bg-header: rgba(30, 41, 59, 0.85); /* Dark glass header */
+  --bg-card: #1e293b;       /* Dark card background */
+  --text-primary: #f8fafc;  /* Clean white primary text */
+  --text-secondary: #94a3b8;/* Light slate subtext */
+  --border-color: #334155;  /* Dark border */
 
-  /* Aliases */
-  --bg-app:     #121212;
-  --bg-card:    #1a1a1a;
-  --bg-card-alt:#161616;
-
-  --color-border:        rgba(255, 255, 255, 0.12);
-  --color-border-violet: rgba(168, 85, 247, 0.4);
-
-  --text-primary:   #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted:     #64748b;
-
-  --color-violet:       #a855f7;
-  --color-violet-hover: #9333ea;
-  --color-cyan:         #22d3ee;
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 12px 36px -5px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 25px 70px -15px rgba(0, 0, 0, 0.85);
-
-  background-color: #121212;
-  background-image: radial-gradient(ellipse at 50% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 75%);
+  --color-bg: var(--bg-main);
+  --color-surface: var(--bg-card);
+  --color-surface-subtle: var(--bg-card);
+  --color-border: var(--border-color);
 }
 
 /* ---- Light Mode explicit reset (when body.light is applied by ThemeSelector) ---- */
@@ -188,12 +162,10 @@ body.dark .quadrant-q4 { background: #16181d; border-color: rgba(255, 255, 255, 
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-bg);
-  background-image: radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 75%);
-  background-attachment: fixed;
+  background-color: var(--bg-main);
   color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
   min-height: 100vh;
-  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -3201,3 +3173,120 @@ body .app-wrapper {
 .overflow-y-auto::-webkit-scrollbar { width: 5px; }
 .overflow-y-auto::-webkit-scrollbar-track { background: transparent; }
 .overflow-y-auto::-webkit-scrollbar-thumb { background: #d8e3fb; border-radius: 10px; }
+
+/* ── Sidebar Layout (pure CSS — no Tailwind base needed) ────────────────── */
+
+/* On desktop, push main content right by sidebar width */
+@media (min-width: 768px) {
+  .main-with-sidebar {
+    margin-left: 260px;
+  }
+  /* Hide the hamburger on desktop */
+  .mobile-sidebar-toggle {
+    display: none !important;
+  }
+}
+
+/* On mobile the sidebar is off-screen by default */
+@media (max-width: 767px) {
+  .sidebar-panel {
+    transform: translateX(-100%);
+  }
+  .sidebar-panel.open {
+    transform: translateX(0);
+  }
+  .sidebar-backdrop {
+    display: block !important;
+  }
+}
+
+/* Dark mode bento card */
+body.dark .bento-card {
+  background-color: #1a1a1a;
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* ── Analytics Modal Stat Cards ─────────────────────────────────────────── */
+.analytics-stat-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.analytics-stat-val {
+  color: #0f172a !important;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.analytics-stat-lbl {
+  color: #64748b !important;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Dark mode for Analytics Stat Cards */
+body.dark .analytics-stat-card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark .analytics-stat-val {
+  color: #f8fafc !important;
+}
+
+body.dark .analytics-stat-lbl {
+  color: #94a3b8 !important;
+}
+
+/* ── Dark Mode Child Component Glass Surfaces ────────────────────────────── */
+.leaderboard-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.leaderboard-item:hover {
+  background: #f1f5f9;
+}
+
+.reward-box {
+  background: #f0f3ff;
+  border: 1px dashed #ccc3d8;
+}
+
+body.dark .leaderboard-item,
+body.dark .reward-box,
+body.dark .task-row-item,
+body.dark .badge-container,
+[data-theme="dark"] .leaderboard-item,
+[data-theme="dark"] .reward-box,
+[data-theme="dark"] .task-row-item,
+[data-theme="dark"] .badge-container {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+body.dark .leaderboard-item:hover,
+[data-theme="dark"] .leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .reward-box,
+[data-theme="dark"] .reward-box {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+}
+
+
+
+

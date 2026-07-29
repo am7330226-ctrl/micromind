@@ -1,6 +1,7 @@
 /**
  * FocusAnalytics.jsx — Weekly focus bar chart + stats (Stitch "Card C")
  * Derives data from completed tasks in the store.
+ * Uses explicit inline styles for responsive bar chart rendering.
  */
 
 import { useMemo } from 'react';
@@ -12,11 +13,9 @@ export default function FocusAnalytics() {
   const state = useAppState();
   const tasks = (state.tasks || []).filter(t => t && typeof t === 'object');
 
-  // Aggregate time estimates per weekday for completed tasks
   const weekData = useMemo(() => {
     const today = new Date();
     const todayDow = today.getDay(); // 0=Sun … 6=Sat
-    // Build an array indexed Mon→Sun
     const buckets = new Array(7).fill(0);
     tasks.forEach(t => {
       if (!t.completed || !t.completedAt) return;
@@ -24,7 +23,6 @@ export default function FocusAnalytics() {
       const dow = (d.getDay() + 6) % 7; // shift so Mon=0
       buckets[dow] += t.timeEstimate?.minutes || 30;
     });
-    // Highlight today (Mon=0 … Sun=6)
     const todayIdx = (todayDow + 6) % 7;
     return buckets.map((mins, i) => ({
       label: DAY_LABELS[i],
@@ -41,35 +39,35 @@ export default function FocusAnalytics() {
   const ratio     = total ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="bento-card flex flex-col">
+    <div className="bento-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <span className="material-symbols-outlined text-[#630ed4]">monitoring</span>
-        <h3 className="text-[20px] font-semibold font-headline">Focus Analytics</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+        <span className="material-symbols-outlined" style={{ color: '#630ed4', fontSize: '24px' }}>monitoring</span>
+        <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0, fontFamily: 'Outfit, sans-serif', color: '#111c2d' }}>
+          Focus Analytics
+        </h3>
       </div>
 
       {/* Bar chart */}
-      <div className="flex items-end justify-between gap-2 mb-6" style={{ height: '12rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px', height: '160px', marginBottom: '20px' }}>
         {weekData.map(({ label, mins, isToday }) => {
-          const heightPct = maxMins > 0 ? Math.round((mins / maxMins) * 100) : 5;
+          const heightPct = maxMins > 0 ? Math.max(12, Math.round((mins / maxMins) * 100)) : 12;
           return (
-            <div key={label} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-              <div className="w-full bg-[#f0f3ff] rounded-t-lg relative flex-1 max-h-[160px]">
+            <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end' }}>
+              <div style={{ width: '100%', backgroundColor: '#f0f3ff', borderRadius: '8px 8px 0 0', position: 'relative', flex: 1, maxHeight: '130px', display: 'flex', alignItems: 'flex-end' }}>
                 <div
-                  className={[
-                    'absolute bottom-0 w-full rounded-t-lg transition-all duration-500',
-                    isToday
-                      ? 'bg-[#630ed4] shadow-lg shadow-[#630ed4]/20'
-                      : 'bg-[#630ed4]/35 hover:bg-[#630ed4]/60',
-                  ].join(' ')}
-                  style={{ height: `${heightPct}%` }}
+                  style={{
+                    width: '100%',
+                    height: `${heightPct}%`,
+                    backgroundColor: isToday ? '#630ed4' : 'rgba(99, 14, 212, 0.35)',
+                    borderRadius: '6px 6px 0 0',
+                    transition: 'all 0.3s ease',
+                    boxShadow: isToday ? '0 4px 12px rgba(99, 14, 212, 0.25)' : 'none'
+                  }}
                   title={`${(mins / 60).toFixed(1)}h`}
                 />
               </div>
-              <span className={[
-                'text-[10px] font-bold',
-                isToday ? 'text-[#630ed4]' : 'text-[#4a4455]',
-              ].join(' ')}>
+              <span style={{ fontSize: '10px', fontWeight: '700', color: isToday ? '#630ed4' : '#4a4455' }}>
                 {isToday ? 'TODAY' : label}
               </span>
             </div>
@@ -77,19 +75,15 @@ export default function FocusAnalytics() {
         })}
       </div>
 
-      {/* Stat pills */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-3 bg-[#f0f3ff] rounded-xl">
-          <p className="text-[10px] uppercase font-bold text-[#4a4455]">Total Hours</p>
-          <p className="text-xl font-bold text-[#111c2d]">{totalHrs}h</p>
+      {/* Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ padding: '12px', backgroundColor: '#f0f3ff', borderRadius: '14px' }}>
+          <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: '700', color: '#4a4455', margin: '0 0 4px 0' }}>Total Hours</p>
+          <p style={{ fontSize: '20px', fontWeight: '700', color: '#111c2d', margin: 0 }}>{totalHrs}h</p>
         </div>
-        <div className="p-3 bg-[#f0f3ff] rounded-xl">
-          <p className="text-[10px] uppercase font-bold text-[#4a4455]">Task Ratio</p>
-          <p className="text-xl font-bold text-[#630ed4]">{ratio}%</p>
-        </div>
-        <div className="p-3 bg-[#f0f3ff] rounded-xl col-span-2">
-          <p className="text-[10px] uppercase font-bold text-[#4a4455]">Today's Focus</p>
-          <p className="text-xl font-bold text-[#111c2d]">{(todayMins / 60).toFixed(1)}h</p>
+        <div style={{ padding: '12px', backgroundColor: '#f0f3ff', borderRadius: '14px' }}>
+          <p style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: '700', color: '#4a4455', margin: '0 0 4px 0' }}>Task Ratio</p>
+          <p style={{ fontSize: '20px', fontWeight: '700', color: '#630ed4', margin: 0 }}>{ratio}%</p>
         </div>
       </div>
     </div>

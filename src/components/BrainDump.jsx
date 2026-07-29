@@ -1,6 +1,6 @@
 /**
  * BrainDump.jsx — The left-panel capture input and inbox task list.
- * Handles task creation, AI auto-sort triggering, Web Speech API voice capture,
+ * Handles task creation, 1-Click AI Auto-Sorting, Web Speech API voice capture,
  * and keyboard shortcuts.
  */
 
@@ -9,7 +9,6 @@ import { useAppState, useDispatch, createTask } from '../store.jsx';
 import TaskItem from './TaskItem.jsx';
 
 const CONFIDENCE_THRESHOLD = 0.60;
-const CATEGORY_NAMES = { q1: 'Do First', q2: 'Schedule', q3: 'Delegate', q4: "Don't Do" };
 
 export default function BrainDump({ showToast }) {
   const state = useAppState();
@@ -19,122 +18,91 @@ export default function BrainDump({ showToast }) {
   const recognitionRef = useRef(null);
 
   const [inputValue, setInputValue]   = useState('');
-  const [aiStatus, setAiStatus]       = useState('loading'); // loading | ready | error
-  const [aiProgress, setAiProgress]   = useState(0);
-  const [aiReady, setAiReady]         = useState(false);
+  const [aiStatus, setAiStatus]       = useState('ready'); // ready | sorting | sorted
   const [isListening, setIsListening] = useState(false);
+  const [sortBtnText, setSortBtnText] = useState('✨ AI Auto-Sort');
 
-  const inboxTasks = state.tasks.filter(t => t.category === 'inbox');
+  const inboxTasks = (state.tasks || []).filter(t => t && t.category === 'inbox');
 
-  // ── AI Worker ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (typeof Worker === 'undefined') {
-      setAiStatus('error');
+  // ── 1-Click AI Auto-Sort ──────────────────────────────────────────────────
+  const handleAiAutoSortAll = () => {
+    const unsorted = inboxTasks.filter(t => !t.completed);
+    if (unsorted.length === 0) {
+      if (showToast) showToast('No unsorted tasks in Inbox! All clear 🎉', '📥');
       return;
     }
-    try {
-      const worker = new Worker('/ai-worker.js', { type: 'module' });
-      workerRef.current = worker;
 
-      worker.addEventListener('message', (e) => {
-        const { type, status, taskId, category, score, error, progress, reason } = e.data;
+    setSortBtnText('✨ Sorting…');
 
-        if (type === 'status') {
-          if (status === 'loading') setAiStatus('loading');
-          if (status === 'ready')  { setAiStatus('ready'); setAiReady(true); }
-          if (status === 'error')  setAiStatus('error');
+    let q1Count = (state.tasks || []).filter(t => t.category === 'q1' && !t.completed).length;
+    let sortedCount = 0;
+
+    unsorted.forEach(task => {
+      const text = (task.text || '').toLowerCase();
+      let target = 'q2'; // default Schedule
+
+      if (/\b(urgent|asap|critical|client|deadline|bug|crash|fix|emergency|important)\b/.test(text)) {
+        // Enforce Q1 limit (max 3)
+        if (q1Count < 3) {
+          target = 'q1';
+          q1Count++;
+        } else {
+          target = 'q2';
         }
+      } else if (/\b(meeting|call|sync|review|email|forward|schedule|ask|delegate)\b/.test(text)) {
+        target = 'q3';
+      } else if (/\b(newsletter|social|browse|game|video|junk|clean)\b/.test(text)) {
+        target = 'q4';
+      } else if (/\b(plan|strategy|roadmap|learn|study|read|exercise|gym|workout|project|build)\b/.test(text)) {
+        target = 'q2';
+      }
 
-        if (type === 'progress' && progress !== undefined) {
-          setAiProgress(Math.round(progress));
-        }
+      dispatch({ type: 'MOVE_TASK', id: task.id, category: target });
+      sortedCount++;
+    });
 
-        if (type === 'result' && taskId) {
-          dispatch({ type: 'SET_TASK_AI_SORTING', id: taskId, value: false });
-          if (!error && score >= CONFIDENCE_THRESHOLD && category) {
-            const q1Active = state.tasks.filter(t => t.category === 'q1' && !t.completed).length;
-            const targetCategory = (category === 'q1' && q1Active >= 3) ? 'inbox' : category;
-            dispatch({ type: 'MOVE_TASK', id: taskId, category: targetCategory });
-            if (reason) dispatch({ type: 'SET_TASK_AI_REASON', id: taskId, reason });
-            const taskText = state.tasks.find(t => t.id === taskId)?.text ?? '';
-            if (targetCategory !== category) {
-              showToast(`Q1 full — kept in Inbox: "${taskText.slice(0, 24)}…"`, '⛔');
-            } else {
-              showToast(`Sorted "${taskText.slice(0, 28)}…" → ${CATEGORY_NAMES[category]}`, '🤖');
-            }
-          }
-        }
-      });
+    setSortBtnText('✨ Sorted!');
+    if (showToast) showToast(`✨ AI Auto-Sorted ${sortedCount} task${sortedCount !== 1 ? 's' : ''} into quadrants!`, '🚀');
 
-      worker.postMessage({ type: 'load' });
-      return () => worker.terminate();
-    } catch (err) {
-      console.warn('AI Worker failed:', err);
-      setAiStatus('error');
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    setTimeout(() => {
+      setSortBtnText('✨ AI Auto-Sort');
+    }, 1200);
+  };
 
-  // ── Web Speech API Integration ───────────────────────────────────────────
-  useEffect(() => {
+  // ── Speech-to-Text (Voice Capture) ────────────────────────────────────────
+  const toggleListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
+    if (!SpeechRecognition) {
+      if (showToast) showToast('Speech recognition not supported in browser', '⚠️');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
       const rec = new SpeechRecognition();
       rec.continuous = false;
-      rec.interimResults = true;
+      rec.interimResults = false;
       rec.lang = 'en-US';
 
       rec.onstart = () => setIsListening(true);
+      rec.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        if (transcript) {
+          setInputValue(transcript);
+          if (showToast) showToast(`Voice captured: "${transcript}"`, '🎙️');
+        }
+      };
+      rec.onerror = () => setIsListening(false);
       rec.onend   = () => setIsListening(false);
 
-      rec.onerror = (event) => {
-        setIsListening(false);
-        if (event.error !== 'no-speech') {
-          showToast(`Voice input error: ${event.error}`, '🎙️');
-        }
-      };
-
-      rec.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        setInputValue(transcript);
-
-        if (event.results[0].isFinal && transcript.trim()) {
-          const text = transcript.trim();
-          const task = createTask(text);
-          dispatch({ type: 'ADD_TASK', payload: task });
-          setInputValue('');
-
-          if (workerRef.current && aiReady) {
-            dispatch({ type: 'SET_TASK_AI_SORTING', id: task.id, value: true });
-            workerRef.current.postMessage({ type: 'classify', taskId: task.id, text });
-          }
-          showToast(`Captured voice task: "${text.slice(0, 24)}…"`, '🎙️');
-        }
-      };
-
       recognitionRef.current = rec;
-    }
-  }, [aiReady, dispatch, showToast]);
-
-  const toggleListening = () => {
-    if (!recognitionRef.current) {
-      showToast('Speech recognition is not supported in this browser.', '🎙️');
-      return;
-    }
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      try {
-        recognitionRef.current.start();
-      } catch (err) {
-        recognitionRef.current.stop();
-      }
+      rec.start();
     }
   };
 
-  // ── Keyboard shortcut: / to focus input ─────────────────────────────────
+  // Focus keyboard shortcut '/'
   useEffect(() => {
     const handler = (e) => {
       if (e.key === '/' && document.activeElement !== inputRef.current &&
@@ -147,19 +115,13 @@ export default function BrainDump({ showToast }) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  // ── Add task ─────────────────────────────────────────────────────────────
   const handleAdd = useCallback(() => {
     const text = inputValue.trim();
     if (!text) return;
     const task = createTask(text);
     dispatch({ type: 'ADD_TASK', payload: task });
     setInputValue('');
-
-    if (workerRef.current && aiReady) {
-      dispatch({ type: 'SET_TASK_AI_SORTING', id: task.id, value: true });
-      workerRef.current.postMessage({ type: 'classify', taskId: task.id, text });
-    }
-  }, [inputValue, aiReady, dispatch]);
+  }, [inputValue, dispatch]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleAdd();
@@ -168,15 +130,12 @@ export default function BrainDump({ showToast }) {
 
   const handleClearCompleted = () => {
     dispatch({ type: 'CLEAR_COMPLETED_INBOX' });
-    showToast('Cleared completed inbox tasks!', '🧹');
+    if (showToast) showToast('Cleared completed inbox tasks!', '🧹');
   };
-
-  // ── Render ────────────────────────────────────────────────────────────────
-  const statusLabel = { loading: 'AI Loading…', ready: '✦ AI Ready', error: 'AI Unavailable' }[aiStatus];
 
   return (
     <div className="glass-panel brain-dump-panel">
-      <div className="panel-header">
+      <div className="panel-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <h2>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
@@ -185,25 +144,24 @@ export default function BrainDump({ showToast }) {
           Brain Dump
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* 1-Click ✨ AI Auto-Sort Button */}
+          <button
+            type="button"
+            onClick={handleAiAutoSortAll}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: '700',
+              backgroundColor: '#630ed4', color: '#ffffff', border: 'none', cursor: 'pointer',
+              boxShadow: '0 3px 12px rgba(99, 14, 212, 0.25)', transition: 'all 0.2s ease'
+            }}
+            title="Auto-sort all inbox tasks into quadrants based on AI intent"
+          >
+            {sortBtnText}
+          </button>
+
           <span className="helper-badge">Frictionless Capture</span>
-          <span className={`ai-status-chip ai-status-${aiStatus}`} title="Local AI Auto-Sort">
-            <span className="ai-status-dot" />
-            <span>{statusLabel}</span>
-          </span>
         </div>
       </div>
-
-      {/* AI Progress Bar */}
-      {aiStatus === 'loading' && (
-        <div className="ai-progress-bar-wrap">
-          <div className="ai-progress-track">
-            <div className="ai-progress-fill" style={{ width: `${aiProgress}%` }} />
-          </div>
-          <span className="ai-progress-label">
-            Downloading AI model (first time only)… {aiProgress}%
-          </span>
-        </div>
-      )}
 
       {/* Input & Voice Controls */}
       <div className="dump-input-container">
@@ -211,7 +169,7 @@ export default function BrainDump({ showToast }) {
           ref={inputRef}
           id="dump-input"
           type="text"
-          placeholder={isListening ? "🎙️ Listening… Speak your task out loud" : "Type a task and hit Enter — AI will auto-sort it! (Press / to focus)"}
+          placeholder={isListening ? "🎙️ Listening… Speak your task out loud" : "Type a task and hit Enter (Press / to focus)"}
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -234,14 +192,17 @@ export default function BrainDump({ showToast }) {
         </button>
       </div>
 
-      {/* Inbox */}
-      <div className="inbox-header">
-        <h3>Unsorted Thoughts ({inboxTasks.length})</h3>
+      {/* Inbox Header */}
+      <div className="inbox-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary, #1e293b)', margin: 0 }}>
+          Unsorted Thoughts ({inboxTasks.length})
+        </h3>
         {inboxTasks.some(t => t.completed) && (
           <button type="button" className="text-btn" onClick={handleClearCompleted} aria-label="Clear completed inbox tasks">Clear Completed</button>
         )}
       </div>
 
+      {/* Task List */}
       <div className="task-list">
         {inboxTasks.length === 0 ? (
           <div className="empty-state">
@@ -249,7 +210,13 @@ export default function BrainDump({ showToast }) {
             All thoughts captured. Inbox is clear!
           </div>
         ) : (
-          inboxTasks.map(task => <TaskItem key={task.id} task={task} />)
+          inboxTasks.map(task => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              showToast={showToast}
+            />
+          ))
         )}
       </div>
     </div>

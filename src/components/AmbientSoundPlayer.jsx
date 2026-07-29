@@ -1,242 +1,25 @@
 /**
- * AmbientSoundPlayer.jsx — Ambient Soundscapes Modal
- *
- * Provides 4 ambient sound loops using Web Audio API synthesis.
- * Includes: Rain 🌧️, Forest 🌲, Cozy Cafe ☕, Brown Noise 🌊
- * Controls: Play/Stop per track, master volume slider, mute toggle.
- *
- * All sounds are generated via Web Audio API — no external files needed.
+ * AmbientSoundPlayer.jsx — Ambient Soundscapes Drawer
+ * Connected to soundEngine.js for real Web Audio API synthesis.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { soundEngine } from '../utils/soundEngine.js';
 
-// ── Web Audio Engine ──────────────────────────────────────────────────────────
-class AmbientEngine {
-  constructor() {
-    this.ctx       = null;
-    this.gainNode  = null;
-    this.nodes     = [];  // currently playing oscillators/sources
-    this.muted     = false;
-    this.volume    = 0.6;
-  }
-
-  _ensureCtx() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-    if (!this.gainNode) {
-      this.gainNode = this.ctx.createGain();
-      this.gainNode.gain.setValueAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime);
-      this.gainNode.connect(this.ctx.destination);
-    }
-    return this.ctx;
-  }
-
-  setVolume(v) {
-    this.volume = v;
-    if (this.gainNode) {
-      this.gainNode.gain.setTargetAtTime(this.muted ? 0 : v, this.ctx.currentTime, 0.1);
-    }
-  }
-
-  setMute(muted) {
-    this.muted = muted;
-    if (this.gainNode) {
-      this.gainNode.gain.setTargetAtTime(muted ? 0 : this.volume, this.ctx.currentTime, 0.1);
-    }
-  }
-
-  stop() {
-    this.nodes.forEach(n => { try { n.stop(); } catch(_) {} });
-    this.nodes = [];
-  }
-
-  // Brown noise (all frequencies equal power in log scale → deep, soothing)
-  playBrownNoise() {
-    const ctx = this._ensureCtx();
-    const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = buf.getChannelData(ch);
-      let last = 0;
-      for (let i = 0; i < bufSize; i++) {
-        const white = Math.random() * 2 - 1;
-        data[i] = (last + 0.02 * white) / 1.02;
-        last = data[i];
-        data[i] *= 3.5; // amplify brown noise
-      }
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop   = true;
-    const lp   = ctx.createBiquadFilter();
-    lp.type    = 'lowpass';
-    lp.frequency.value = 300;
-    src.connect(lp);
-    lp.connect(this.gainNode);
-    src.start();
-    this.nodes.push(src);
-  }
-
-  // Rain: high-freq white noise + gentle low rumble
-  playRain() {
-    const ctx = this._ensureCtx();
-    // White noise base
-    const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = buf.getChannelData(ch);
-      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop   = true;
-    // Band-pass to get that rain "hiss"
-    const bp   = ctx.createBiquadFilter();
-    bp.type    = 'bandpass';
-    bp.frequency.value = 1200;
-    bp.Q.value = 0.8;
-    src.connect(bp);
-    bp.connect(this.gainNode);
-    src.start();
-    this.nodes.push(src);
-
-    // LFO for rainfall rhythm
-    const lfo    = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(0.3 + Math.random() * 0.2, ctx.currentTime);
-    lfoGain.gain.value = 0.25;
-    lfo.connect(lfoGain);
-    lfoGain.connect(bp.frequency);
-    lfo.start();
-    this.nodes.push(lfo);
-  }
-
-  // Forest: gentle wind (low brown) + crickets (high-freq pulses)
-  playForest() {
-    const ctx = this._ensureCtx();
-    // Wind
-    const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = buf.getChannelData(ch);
-      let last = 0;
-      for (let i = 0; i < bufSize; i++) {
-        const w = Math.random() * 2 - 1;
-        d[i] = (last + 0.03 * w) / 1.03;
-        last = d[i];
-        d[i] *= 2;
-      }
-    }
-    const wind   = ctx.createBufferSource();
-    wind.buffer  = buf;
-    wind.loop    = true;
-    const lp     = ctx.createBiquadFilter();
-    lp.type      = 'lowpass';
-    lp.frequency.value = 500;
-    wind.connect(lp);
-    lp.connect(this.gainNode);
-    wind.start();
-    this.nodes.push(wind);
-
-    // Crickets: amplitude-modulated sine
-    const osc     = ctx.createOscillator();
-    const oscGain = ctx.createGain();
-    osc.type      = 'sine';
-    osc.frequency.value = 3200;
-    oscGain.gain.value  = 0.05;
-    const lfo     = ctx.createOscillator();
-    const lfoG    = ctx.createGain();
-    lfo.type      = 'sine';
-    lfo.frequency.value = 14;
-    lfoG.gain.value = 0.05;
-    lfo.connect(lfoG);
-    lfoG.connect(oscGain.gain);
-    osc.connect(oscGain);
-    oscGain.connect(this.gainNode);
-    osc.start();
-    lfo.start();
-    this.nodes.push(osc, lfo);
-  }
-
-  // Cozy cafe: low ambient murmur + gentle clinking
-  playCafe() {
-    const ctx = this._ensureCtx();
-    // Background chatter: bandpass-filtered noise
-    const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = buf.getChannelData(ch);
-      for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.loop   = true;
-    const bp   = ctx.createBiquadFilter();
-    bp.type    = 'bandpass';
-    bp.frequency.value = 800;
-    bp.Q.value = 0.5;
-    const bpGain = ctx.createGain();
-    bpGain.gain.value = 0.3;
-    src.connect(bp);
-    bp.connect(bpGain);
-    bpGain.connect(this.gainNode);
-    src.start();
-    this.nodes.push(src);
-
-    // Gentle cup clink: short sine bursts via LFO-controlled oscillator
-    const clink    = ctx.createOscillator();
-    const clinkGain = ctx.createGain();
-    clink.type       = 'sine';
-    clink.frequency.value = 880;
-    clinkGain.gain.value  = 0;
-    const lfo      = ctx.createOscillator();
-    const lfoGain  = ctx.createGain();
-    lfo.type       = 'sine';
-    lfo.frequency.value = 0.12 + Math.random() * 0.06;
-    lfoGain.gain.value  = 0.02;
-    lfo.connect(lfoGain);
-    lfoGain.connect(clinkGain.gain);
-    clink.connect(clinkGain);
-    clinkGain.connect(this.gainNode);
-    clink.start();
-    lfo.start();
-    this.nodes.push(clink, lfo);
-  }
-
-  play(trackId) {
-    this.stop();
-    switch (trackId) {
-      case 'rain':    this.playRain();       break;
-      case 'forest':  this.playForest();     break;
-      case 'cafe':    this.playCafe();       break;
-      case 'brown':   this.playBrownNoise(); break;
-      default: break;
-    }
-  }
-}
-
-const engine = new AmbientEngine();
-
-// ── Track definitions ─────────────────────────────────────────────────────────
 const TRACKS = [
   { id: 'rain',   emoji: '🌧️',  name: 'Rain',       desc: 'Gentle rainfall & hiss' },
   { id: 'forest', emoji: '🌲',  name: 'Forest',     desc: 'Crickets & soft wind' },
   { id: 'cafe',   emoji: '☕',  name: 'Cozy Cafe',  desc: 'Murmur & cup clinks' },
-  { id: 'brown',  emoji: '🌊',  name: 'Brown Noise',desc: 'Deep, soothing rumble' },
+  { id: 'space',  emoji: '🌊',  name: 'Brown Noise',desc: 'Deep, soothing rumble' },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function AmbientSoundPlayer({ trigger, showToast }) {
+export default function AmbientSoundPlayer({ showToast }) {
   const [open,       setOpen]       = useState(false);
-  const [activeId,   setActiveId]   = useState(null);    // currently playing track
-  const [volume,     setVolume]     = useState(0.6);
+  const [activeId,   setActiveId]   = useState(null);
+  const [volume,     setVolume]     = useState(0.5);
   const [muted,      setMuted]      = useState(false);
   const panelRef = useRef(null);
 
-  // Close on outside click
   useEffect(() => {
     function onOutside(e) {
       if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false);
@@ -251,19 +34,15 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
     };
   }, [open]);
 
-  // Stop engine on unmount
-  useEffect(() => () => engine.stop(), []);
-
   const handleTrack = useCallback((id) => {
-    if (activeId === id) {
-      // Toggle off
-      engine.stop();
+    if (activeId === id && soundEngine.isPlaying) {
+      soundEngine.stop();
       setActiveId(null);
       if (showToast) showToast('Ambient sound stopped', '🔇');
     } else {
-      engine.play(id);
+      soundEngine.playTrack(id);
       setActiveId(id);
-      const t = TRACKS.find(t => t.id === id);
+      const t = TRACKS.find(tr => tr.id === id);
       if (showToast) showToast(`Playing ${t?.name} ambient loop`, t?.emoji || '🎶');
     }
   }, [activeId, showToast]);
@@ -271,21 +50,23 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
   const handleVolume = (v) => {
     const val = parseFloat(v);
     setVolume(val);
-    engine.setVolume(val);
-    if (muted && val > 0) { setMuted(false); engine.setMute(false); }
+    soundEngine.setVolume(val);
+    if (muted && val > 0) {
+      setMuted(false);
+      soundEngine.setMute(false);
+    }
   };
 
   const handleMute = () => {
     const next = !muted;
     setMuted(next);
-    engine.setMute(next);
+    soundEngine.setMute(next);
   };
 
-  const isPlaying = activeId !== null;
+  const isPlaying = activeId !== null && soundEngine.isPlaying;
 
   return (
-    <div className="ambient-player-container" ref={panelRef}>
-      {/* Trigger element — rendered by Header via render prop / cloneElement */}
+    <div className="ambient-player-container" ref={panelRef} style={{ position: 'relative' }}>
       <button
         type="button"
         id="ambient-noise-btn"
@@ -294,80 +75,88 @@ export default function AmbientSoundPlayer({ trigger, showToast }) {
         title="Ambient Soundscapes"
         aria-label="Ambient Sound Player"
         aria-expanded={open}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px',
+          backgroundColor: isPlaying ? 'rgba(99, 14, 212, 0.15)' : '#f0f3ff',
+          border: isPlaying ? '1px solid #630ed4' : '1px solid rgba(204,195,216,0.3)',
+          color: isPlaying ? '#630ed4' : '#111c2d',
+          borderRadius: '12px', cursor: 'pointer', fontSize: '13px'
+        }}
       >
         <span>{isPlaying ? '🎵' : '🎧'}</span>
-        <span>{isPlaying ? 'Playing' : 'Audio'}</span>
+        <span style={{ fontWeight: '500' }}>{isPlaying ? 'Playing' : 'Audio'}</span>
       </button>
 
-      {/* Drawer */}
       {open && (
-        <div className="ambient-drawer" role="dialog" aria-label="Ambient Sound Player">
-          <div className="ambient-drawer-header">
-            <span className="ambient-drawer-icon">🎧</span>
-            <div>
-              <div className="ambient-drawer-title">Ambient Soundscapes</div>
-              <div className="ambient-drawer-sub">Focus-enhancing background loops</div>
+        <div className="ambient-drawer" role="dialog" aria-label="Ambient Sound Player" style={{
+          position: 'absolute', right: 0, top: '44px', width: '280px',
+          backgroundColor: 'white', borderRadius: '16px', border: '1px solid rgba(204,195,216,0.4)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.15)', zIndex: 999, padding: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>🎧</span>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#111c2d' }}>Ambient Soundscapes</div>
+                <div style={{ fontSize: '11px', color: '#4a4455' }}>Web Audio Synthesis</div>
+              </div>
             </div>
             <button
               type="button"
-              className="ambient-drawer-close"
               onClick={() => setOpen(false)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4a4455', fontSize: '16px' }}
               aria-label="Close audio player"
             >✕</button>
           </div>
 
-          {/* Track list */}
-          <div className="ambient-track-list">
-            {TRACKS.map(track => {
-              const playing = activeId === track.id;
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+            {TRACKS.map(t => {
+              const isSelected = activeId === t.id && isPlaying;
               return (
-                <button
-                  type="button"
-                  key={track.id}
-                  className={`ambient-track${playing ? ' playing' : ''}`}
-                  onClick={() => handleTrack(track.id)}
-                  aria-pressed={playing}
-                  title={`${playing ? 'Stop' : 'Play'} ${track.name}`}
+                <div
+                  key={t.id}
+                  onClick={() => handleTrack(t.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 12px', borderRadius: '12px', cursor: 'pointer',
+                    backgroundColor: isSelected ? 'rgba(234, 221, 255, 0.5)' : '#f8fafc',
+                    border: isSelected ? '1px solid #630ed4' : '1px solid rgba(204,195,216,0.3)',
+                    transition: 'all 0.15s'
+                  }}
                 >
-                  <span className="ambient-track-emoji">{track.emoji}</span>
-                  <div className="ambient-track-info">
-                    <span className="ambient-track-name">{track.name}</span>
-                    <span className="ambient-track-desc">{track.desc}</span>
-                  </div>
-                  {playing ? (
-                    <div className="ambient-eq-bars" aria-hidden="true">
-                      <span /><span /><span /><span />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '18px' }}>{t.emoji}</span>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#111c2d' }}>{t.name}</div>
+                      <div style={{ fontSize: '10px', color: '#4a4455' }}>{t.desc}</div>
                     </div>
-                  ) : (
-                    <span className="ambient-play-icon">▶</span>
-                  )}
-                </button>
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: isSelected ? '#630ed4' : '#4a4455' }}>
+                    {isSelected ? '⏸️' : '▶️'}
+                  </span>
+                </div>
               );
             })}
           </div>
 
-          {/* Volume Controls */}
-          <div className="ambient-controls">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(204,195,216,0.3)' }}>
             <button
               type="button"
-              className={`ambient-mute-btn${muted ? ' muted' : ''}`}
               onClick={handleMute}
-              title={muted ? 'Unmute' : 'Mute'}
-              aria-label={muted ? 'Unmute' : 'Mute'}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}
             >
               {muted ? '🔇' : '🔊'}
             </button>
             <input
               type="range"
-              className="ambient-volume-slider"
-              min={0}
-              max={1}
-              step={0.02}
-              value={muted ? 0 : volume}
+              min="0"
+              max="1"
+              step="0.05"
+              value={volume}
               onChange={e => handleVolume(e.target.value)}
+              style={{ flex: 1, accentColor: '#630ed4' }}
               aria-label="Volume"
             />
-            <span className="ambient-volume-pct">{muted ? '0' : Math.round(volume * 100)}%</span>
           </div>
         </div>
       )}
