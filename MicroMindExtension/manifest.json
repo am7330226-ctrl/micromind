@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "MicroMind — Mental Declutter & Task Manager",
+  "short_name": "MicroMind",
+  "version": "2.0.0",
+  "description": "Daily mental declutter, Eisenhower priority matrix, habit tracker & focus timer directly on your screen.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "contextMenus",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MicroMind Quick Capture",
+    "default_icon": {
+      "16": "icon.svg",
+      "48": "icon.svg",
+      "128": "icon.svg"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon.svg",
+    "48": "icon.svg",
+    "128": "icon.svg"
+  }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MicroMind Quick Capture</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <span class="logo">🧠</span>
+        <h1>MicroMind</h1>
+      </div>
+      <button id="openSidePanelBtn" class="icon-btn" title="Open Full Side Panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12z"/><path d="M9 3v18"/></svg>
+      </button>
+    </header>
+
+    <!-- Brain Dump Input -->
+    <div class="input-section">
+      <div class="input-wrapper">
+        <input type="text" id="taskInput" placeholder="Quick brain dump thought or task..." />
+        <button id="addTaskBtn" class="add-btn">↵</button>
+      </div>
+      <div id="aiPreview" class="ai-preview hidden">
+        <span class="ai-label">🤖 AI:</span>
+        <span id="aiBadge" class="badge">INBOX</span>
+        <span id="aiTime" class="badge time">15m</span>
+      </div>
+    </div>
+
+    <!-- Habits Row -->
+    <div class="habits-section">
+      <h2>Habits Today</h2>
+      <div id="habitsRow" class="habits-row">
+        <!-- Habit pills rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Quick Focus Timer -->
+    <div class="timer-section">
+      <div class="timer-display">
+        <span id="timerText">25:00</span>
+        <span class="timer-label">Pomodoro</span>
+      </div>
+      <button id="timerToggleBtn" class="timer-btn">Start Focus</button>
+    </div>
+
+    <!-- Task List -->
+    <div class="tasks-section">
+      <div class="section-title">
+        <h2>Tasks (<span id="taskCount">0</span>)</h2>
+      </div>
+      <div id="taskList" class="task-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

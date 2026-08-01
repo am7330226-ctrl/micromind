@@ -1,0 +1,213 @@
+:root {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --color-violet: #a855f7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow-y: auto;
+  user-select: none;
+}
+
+.sidepanel-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 20px;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.stats-badge {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.input-section {
+  width: 100%;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 6px 8px 6px 12px;
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.add-btn {
+  background: var(--color-violet);
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.matrix-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quadrant {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.quadrant-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.indicator {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.q1 .indicator { background: #ef4444; }
+.q2 .indicator { background: #3b82f6; }
+.q3 .indicator { background: #eab308; }
+.q4 .indicator { background: #94a3b8; }
+
+.quadrant h2 {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.q-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.quadrant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sp-task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.sp-task-item.completed span {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.sp-task-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-task-checkbox.checked {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+  font-size: 10px;
+}
+
+.sp-task-text {
+  flex: 1;
+}
+
+.sp-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.inbox-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.inbox-section h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

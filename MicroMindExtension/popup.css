@@ -1,0 +1,274 @@
+:root {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --color-violet: #a855f7;
+  --color-violet-hover: #9333ea;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  width: 340px;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.popup-container {
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo {
+  font-size: 18px;
+}
+
+h1 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.icon-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--color-violet);
+}
+
+.input-section {
+  margin-bottom: 14px;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 4px 6px 4px 10px;
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.add-btn {
+  background: var(--color-violet);
+  border: none;
+  color: white;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+
+}
+
+.ai-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.ai-preview.hidden {
+  display: none;
+}
+
+.ai-label {
+  color: var(--text-secondary);
+}
+
+.badge {
+  background: rgba(168, 85, 247, 0.2);
+  color: var(--color-violet);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.badge.time {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.habits-section {
+  margin-bottom: 14px;
+}
+
+h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.habits-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+
+}
+
+.habit-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.habit-chip.done {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.timer-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.timer-display {
+  display: flex;
+  flex-direction: column;
+}
+
+#timerText {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.timer-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.timer-btn {
+  background: var(--color-violet);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tasks-section {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.task-item.completed span {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.task-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-checkbox.checked {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+  font-size: 10px;
+}
+
+.task-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+}
