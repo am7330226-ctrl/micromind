@@ -1,80 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useStoreState, useAuth } from '../store/StoreContext';
-import { Ionicons } from '@expo/vector-icons';
-import ThemeSelectorModal from './ThemeSelectorModal';
-import AuthModal from './AuthModal';
-import VoiceBriefingModal from './VoiceBriefingModal';
-import { triggerLightImpact } from '../services/haptics';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useStoreState } from '../store/StoreContext';
 
 export default function Header() {
-  const { streak, xp, level, theme } = useStoreState();
-  const { user } = useAuth();
-
-  const [themeModalVisible, setThemeModalVisible] = useState(false);
-  const [authModalVisible, setAuthModalVisible] = useState(false);
-  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
-
+  const { streak, level, theme, clarityScore } = useStoreState();
   const colors = theme.colors;
 
+  const gaugeColor =
+    clarityScore >= 70
+      ? colors.accentEmerald
+      : clarityScore >= 40
+      ? colors.accentAmber
+      : '#ef4444';
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.bgHeader, borderColor: colors.borderColor }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.bgHeader, borderColor: colors.borderColor },
+      ]}
+    >
+      {/* ── Left: Logo + pills ─────────────────────────────────────────────── */}
       <View style={styles.leftSection}>
         <Text style={[styles.appTitle, { color: colors.textPrimary }]}>🧠 MicroMind</Text>
-        <Pressable
-          style={[styles.badgePill, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}
-          onPress={() => {
-            triggerLightImpact();
-            setVoiceModalVisible(true);
-          }}
-        >
-          <Ionicons name="volume-medium" size={14} color="#eab308" />
-          <Text style={styles.badgeText}>Briefing</Text>
-        </Pressable>
-      </View>
 
-      <View style={styles.rightSection}>
-        {/* Streak */}
-        <View style={[styles.statPill, { backgroundColor: 'rgba(249, 115, 22, 0.15)' }]}>
-          <Text style={{ fontSize: 13 }}>🔥</Text>
-          <Text style={[styles.statText, { color: '#f97316' }]}>{streak}d</Text>
+        <View style={[styles.pill, { backgroundColor: 'rgba(249,115,22,0.15)' }]}>
+          <Text style={styles.pillEmoji}>🔥</Text>
+          <Text style={[styles.pillText, { color: '#f97316' }]}>{streak}d</Text>
         </View>
 
-        {/* Level & XP */}
-        <View style={[styles.statPill, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
-          <Text style={{ fontSize: 13 }}>⚡</Text>
-          <Text style={[styles.statText, { color: colors.primaryViolet }]}>Lvl {level}</Text>
+        <View style={[styles.pill, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
+          <Text style={styles.pillEmoji}>⚡</Text>
+          <Text style={[styles.pillText, { color: colors.primaryViolet }]}>Lv {level}</Text>
         </View>
-
-        {/* Theme Selector */}
-        <Pressable
-          style={[styles.iconButton, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}
-          onPress={() => {
-            triggerLightImpact();
-            setThemeModalVisible(true);
-          }}
-        >
-          <Text style={{ fontSize: 16 }}>{theme.emoji}</Text>
-        </Pressable>
-
-        {/* Auth Button */}
-        <Pressable
-          style={[
-            styles.iconButton,
-            { backgroundColor: user ? 'rgba(34, 197, 94, 0.15)' : colors.bgCard, borderColor: colors.borderColor },
-          ]}
-          onPress={() => {
-            triggerLightImpact();
-            setAuthModalVisible(true);
-          }}
-        >
-          <Ionicons name={user ? 'person-circle' : 'person-outline'} size={18} color={user ? '#22c55e' : colors.textSecondary} />
-        </Pressable>
       </View>
 
-      <ThemeSelectorModal visible={themeModalVisible} onClose={() => setThemeModalVisible(false)} />
-      <AuthModal visible={authModalVisible} onClose={() => setAuthModalVisible(false)} />
-      <VoiceBriefingModal visible={voiceModalVisible} onClose={() => setVoiceModalVisible(false)} />
+      {/* ── Right: Clarity Score Gauge ─────────────────────────────────────── */}
+      <View style={styles.claritySection}>
+        <Text style={[styles.clarityLabel, { color: colors.textSecondary }]}>Clarity</Text>
+        <View style={styles.clarityRow}>
+          <View
+            style={[styles.gaugeTrack, { backgroundColor: 'rgba(255,255,255,0.10)' }]}
+          >
+            <View
+              style={[
+                styles.gaugeFill,
+                { width: `${clarityScore}%`, backgroundColor: gaugeColor },
+              ]}
+            />
+          </View>
+          <Text style={[styles.clarityNum, { color: gaugeColor }]}>{clarityScore}</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -85,55 +62,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 11,
     borderBottomWidth: 1,
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    flex: 1,
   },
   appTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
     letterSpacing: -0.5,
+    marginRight: 2,
   },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#eab308',
-  },
-  rightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  statPill: {
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
-  statText: {
-    fontSize: 12,
-    fontWeight: '700',
+  pillEmoji: { fontSize: 12 },
+  pillText: { fontSize: 12, fontWeight: '800' },
+
+  // Clarity gauge
+  claritySection: { alignItems: 'flex-end', gap: 2 },
+  clarityLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 0.5 },
+  clarityRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  gaugeTrack: {
+    width: 80,
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
-  iconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
+  gaugeFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  clarityNum: {
+    fontSize: 13,
+    fontWeight: '800',
+    minWidth: 24,
+    textAlign: 'right',
   },
 });

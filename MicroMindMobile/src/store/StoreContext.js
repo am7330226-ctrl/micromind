@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { loadSavedState, saveAppState, getSavedThemeId, saveThemeId } from '../services/storage';
 import { classifyTask, estimateTaskTime } from '../services/aiClassifier';
 import { THEMES, DEFAULT_THEME } from '../theme/themes';
@@ -20,6 +20,7 @@ export const DEFAULT_HABITS = [
 function getInitialState() {
   return {
     tasks: [],
+    thoughts: [],
     habits: DEFAULT_HABITS,
     focusSlots: { 'focus-1': null, 'focus-2': null, 'focus-3': null },
     moodToday: 0,
@@ -67,6 +68,60 @@ function reducer(state, action) {
         tasks: [newTask, ...(state.tasks || [])],
       };
     }
+
+    // ── Thought capture (Brain Dump with tags) ────────────────────────────────
+    case 'ADD_THOUGHT': {
+      const raw = action.payload;
+      if (!raw || !raw.text) return state;
+      const newThought = {
+        id: generateId(),
+        text: raw.text.trim(),
+        tag: raw.tag || 'Idea',
+        status: 'active',   // 'active' | 'reviewed' | 'archived'
+        pinned: false,
+        createdAt: Date.now(),
+      };
+      return {
+        ...state,
+        thoughts: [newThought, ...(state.thoughts || [])],
+        xp: (state.xp || 0) + 5,
+      };
+    }
+
+    case 'UPDATE_THOUGHT_STATUS': {
+      return {
+        ...state,
+        thoughts: (state.thoughts || []).map(t =>
+          t.id === action.id ? { ...t, status: action.status } : t
+        ),
+      };
+    }
+
+    case 'PIN_THOUGHT': {
+      return {
+        ...state,
+        thoughts: (state.thoughts || []).map(t =>
+          t.id === action.id ? { ...t, pinned: !t.pinned } : t
+        ),
+      };
+    }
+
+    case 'ARCHIVE_THOUGHT': {
+      return {
+        ...state,
+        thoughts: (state.thoughts || []).map(t =>
+          t.id === action.id ? { ...t, status: 'archived', pinned: false } : t
+        ),
+      };
+    }
+
+    case 'DELETE_THOUGHT': {
+      return {
+        ...state,
+        thoughts: (state.thoughts || []).filter(t => t.id !== action.id),
+      };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     case 'DELETE_TASK':
       return {
@@ -350,8 +405,24 @@ export function StoreProvider({ children }) {
     await saveThemeId(themeId);
   }, []);
 
+  // ── Derived Clarity Score (0–100) ─────────────────────────────────────────
+  const clarityScore = useMemo(() => {
+    const habitsDone = (state.habits || []).filter(h => h.done).length;
+    const habitsTotal = (state.habits || []).length || 1;
+    const habitPct = Math.round((habitsDone / habitsTotal) * 40); // 40 pts
+
+    const moodPts = Math.round(((state.moodToday || 0) / 5) * 30); // 30 pts
+
+    const tasksDone = (state.tasks || []).filter(t => t.completed).length;
+    const tasksTotal = (state.tasks || []).length || 1;
+    const taskPct = Math.min(tasksDone, tasksTotal);
+    const tasksPts = Math.round((taskPct / tasksTotal) * 30); // 30 pts
+
+    return Math.min(100, habitPct + moodPts + tasksPts);
+  }, [state.habits, state.moodToday, state.tasks]);
+
   return (
-    <StateContext.Provider value={{ ...state, theme: activeTheme, isLoaded }}>
+    <StateContext.Provider value={{ ...state, theme: activeTheme, isLoaded, clarityScore }}>
       <DispatchContext.Provider value={dispatch}>
         <AuthContext.Provider value={{ user, setUser, setTheme }}>
           {children}
