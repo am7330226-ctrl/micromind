@@ -94,12 +94,31 @@ export default function ThemeSelector({ showToast }) {
       {/* Theme picker panel */}
       {panelOpen && (
         <div className="theme-panel" role="dialog" aria-label="Theme Selector">
-          <div className="theme-panel-header">
-            <span>🎨</span>
-            <div>
-              <div className="theme-panel-title">Choose Theme</div>
-              <div className="theme-panel-sub">Level {level} · Earn XP to unlock more</div>
+          <div className="theme-panel-header" style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span>🎨</span>
+              <div>
+                <div className="theme-panel-title">Choose Theme</div>
+                <div className="theme-panel-sub">Level {level} · Earn XP to unlock more</div>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setPanelOpen(false)}
+              aria-label="Close Theme Selector"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: 'var(--text-secondary, #64748b)',
+                padding: '4px 8px',
+                borderRadius: '8px',
+              }}
+            >
+              ✕
+            </button>
           </div>
 
           <div className="theme-grid">
