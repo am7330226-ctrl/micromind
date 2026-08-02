@@ -20,24 +20,37 @@ export default function ThemeSelector({ showToast }) {
 
   // Close on outside click and listen for custom open event
   useEffect(() => {
+    let ignoreOutside = false;
+
     function onOutside(e) {
+      if (ignoreOutside) return;
       if (panelRef.current && !panelRef.current.contains(e.target)) {
         setPanelOpen(false);
       }
     }
     function onOpenEvent() {
+      ignoreOutside = true;
       setPanelOpen(true);
+      setTimeout(() => {
+        ignoreOutside = false;
+      }, 300);
     }
     
     document.addEventListener('open-theme-selector', onOpenEvent);
     if (panelOpen) {
-      document.addEventListener('mousedown', onOutside);
-      document.addEventListener('touchstart', onOutside);
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', onOutside);
+        document.addEventListener('touchstart', onOutside);
+      }, 100);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('open-theme-selector', onOpenEvent);
+        document.removeEventListener('mousedown', onOutside);
+        document.removeEventListener('touchstart', onOutside);
+      };
     }
     return () => {
       document.removeEventListener('open-theme-selector', onOpenEvent);
-      document.removeEventListener('mousedown', onOutside);
-      document.removeEventListener('touchstart', onOutside);
     };
   }, [panelOpen]);
 

@@ -52,6 +52,8 @@ export default function MobileBottomDock({
       <button
         className="dock-btn"
         onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           e.currentTarget.blur();
           document.dispatchEvent(new CustomEvent('open-theme-selector'));
           window.scrollTo({ top: 0, behavior: 'smooth' });
