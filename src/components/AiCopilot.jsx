@@ -11,7 +11,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState, useDispatch, useAuth, createTask } from '../store.jsx';
-import { sendCopilotMessage } from '../utils/aiCopilotService.js';
+import { sendCopilotMessage, getApiKey, setApiKey } from '../utils/aiCopilotService.js';
 import { generateSubtasks } from '../utils/aiBreakdown.js';
 
 export default function AiCopilot({ showToast, onOpenPomodoro }) {
@@ -19,10 +19,12 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
   const dispatch = useDispatch();
   const { auth } = useAuth();
 
-  const [isOpen, setIsOpen]     = useState(false);
-  const [input, setInput]       = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [messages, setMessages] = useState([
+  const [isOpen, setIsOpen]           = useState(false);
+  const [input, setInput]             = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [showKeySettings, setShowKeySettings] = useState(false);
+  const [keyInput, setKeyInput]       = useState('');
+  const [messages, setMessages]       = useState([
     {
       id: 'welcome',
       role: 'assistant',
@@ -31,6 +33,15 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       timestamp: Date.now(),
     },
   ]);
+
+  const handleSaveKey = (e) => {
+    e.preventDefault();
+    setApiKey(keyInput);
+    setShowKeySettings(false);
+    if (showToast) {
+      showToast(keyInput.trim() ? 'Gemini API Key saved! Copilot online 🚀' : 'API Key removed (offline mode)', '🔑');
+    }
+  };
 
   const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
@@ -223,6 +234,16 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                 <button
                   type="button"
                   className="copilot-icon-btn"
+                  onClick={() => {
+                    setKeyInput(getApiKey());
+                    setShowKeySettings(s => !s);
+                  }}
+                  title="Configure Gemini API Key"
+                  aria-label="Configure Gemini API Key"
+                >🔑</button>
+                <button
+                  type="button"
+                  className="copilot-icon-btn"
                   onClick={() => setMessages([
                     {
                       id: String(Date.now()),
@@ -242,6 +263,22 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                 >✕</button>
               </div>
             </div>
+
+            {/* API Key Inline Configuration Form */}
+            {showKeySettings && (
+              <form onSubmit={handleSaveKey} style={{ padding: '10px 14px', backgroundColor: 'rgba(99, 14, 212, 0.08)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="password"
+                  placeholder="Paste Gemini API Key (AIzaSy...)"
+                  value={keyInput}
+                  onChange={e => setKeyInput(e.target.value)}
+                  style={{ flex: 1, padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '12px', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                />
+                <button type="submit" style={{ padding: '6px 12px', borderRadius: '8px', background: '#630ed4', color: '#fff', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+                  Save
+                </button>
+              </form>
+            )}
 
             {/* Quick Action Prompt Chips */}
             <div className="copilot-quick-chips">

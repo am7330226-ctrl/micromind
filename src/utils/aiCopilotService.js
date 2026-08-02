@@ -8,6 +8,9 @@
 
 // ── API Key Resolution ───────────────────────────────────────────────────────
 export function getApiKey() {
+  if (typeof window !== 'undefined' && localStorage.getItem('micromind_gemini_api_key')) {
+    return localStorage.getItem('micromind_gemini_api_key');
+  }
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
     return import.meta.env.VITE_GEMINI_API_KEY;
   }
@@ -21,6 +24,16 @@ export function getApiKey() {
     return window.__GEMINI_API_KEY__;
   }
   return '';
+}
+
+export function setApiKey(key) {
+  if (typeof window !== 'undefined') {
+    if (key && key.trim()) {
+      localStorage.setItem('micromind_gemini_api_key', key.trim());
+    } else {
+      localStorage.removeItem('micromind_gemini_api_key');
+    }
+  }
 }
 
 function getGeminiUrl() {
