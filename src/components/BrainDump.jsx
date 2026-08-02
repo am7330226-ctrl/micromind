@@ -6,6 +6,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAppState, useDispatch, createTask } from '../store.jsx';
+import { parseMultiTaskVoiceDump } from '../utils/aiCopilotService.js';
 import TaskItem from './TaskItem.jsx';
 
 const CONFIDENCE_THRESHOLD = 0.60;
@@ -85,12 +86,27 @@ export default function BrainDump({ showToast }) {
       rec.interimResults = false;
       rec.lang = 'en-US';
 
-      rec.onstart = () => setIsListening(true);
-      rec.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
+      rec.onresult = async (e) => {
+        const transcript = e.results[0][0]?.transcript;
         if (transcript) {
           setInputValue(transcript);
           if (showToast) showToast(`Voice captured: "${transcript}"`, '🎙️');
+
+          // Multi-task parsing if transcript contains multiple items
+          if (/\b(?:and|then|also|plus)\b|[,.;]/i.test(transcript)) {
+            const parsedItems = await parseMultiTaskVoiceDump(transcript);
+            if (parsedItems.length > 1) {
+              parsedItems.forEach(item => {
+                const task = createTask(item.title, item.priority || 'inbox');
+                if (item.duration) {
+                  task.timeEstimate = { minutes: item.duration, label: `${item.duration}m` };
+                }
+                dispatch({ type: 'ADD_TASK', payload: task });
+              });
+              setInputValue('');
+              if (showToast) showToast(`✨ Auto-parsed ${parsedItems.length} tasks from voice recording!`, '🚀');
+            }
+          }
         }
       };
       rec.onerror = () => setIsListening(false);

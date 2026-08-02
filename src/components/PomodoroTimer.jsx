@@ -42,6 +42,8 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
     setTotalSecs(POMO_DURATIONS[newMode]);
   }, [running]);
 
+  const [consecutiveFocus, setConsecutiveFocus] = useState(0);
+
   // ── Handle timer completion (stable ref prevents stale closure) ──────────
   const handleTimerDone = useCallback(() => {
     setRunning(false);
@@ -53,7 +55,15 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
         showToast(msg, '🍅');
         return newSessions;
       });
+      setConsecutiveFocus(c => {
+        const nextC = c + 1;
+        if (nextC >= 4 && showToast) {
+          showToast('☕ Burnout Safeguard: 4 sessions in a row! Take a 15-minute Long Break to recharge.', '⚠️');
+        }
+        return nextC;
+      });
     } else {
+      setConsecutiveFocus(0);
       showToast('✅ Break over — ready to focus again!', '🍅');
     }
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -192,6 +202,12 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
         {sessions > 0 && (
           <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
             {sessions}/8 sessions today
+          </div>
+        )}
+
+        {consecutiveFocus >= 4 && (
+          <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '11px', fontWeight: '700', textAlign: 'center', marginTop: '8px' }}>
+            ☕ Burnout Safeguard: 4 continuous sessions! Take a 15-min break.
           </div>
         )}
 

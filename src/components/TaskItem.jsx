@@ -8,7 +8,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useDispatch, useAppState } from '../store.jsx';
 import { parseRichText } from '../utils/parseRichText.js';
-import { generateSubtasks } from '../utils/aiBreakdown.js';
+import { decomposeGoal } from '../utils/aiCopilotService.js';
 import { formatMinutes } from '../utils/estimateTaskTime.js';
 
 const CATEGORIES_META = {
@@ -113,16 +113,17 @@ export default function TaskItem({ task, onToggle, showBreakdown = false, showTo
     setSubtasksOpen(true);
 
     try {
-      const subtaskTexts = await generateSubtasks(task.text);
+      const subtaskTexts = await decomposeGoal(task.text);
       subtaskTexts.forEach(text => {
         dispatch({ type: 'ADD_SUBTASK', id: task.id, text });
       });
+      if (showToast) showToast('🧩 Overwhelm Buster: Goal decomposed into micro-steps!', '✨');
     } catch {
       // Fallback
     } finally {
       dispatch({ type: 'SET_TASK_BREAKDOWN_LOADING', id: task.id, loading: false });
     }
-  }, [task, dispatch]);
+  }, [task, dispatch, showToast]);
 
   const handleTimeBadgeClick = (e) => {
     e.stopPropagation();

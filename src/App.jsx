@@ -10,7 +10,8 @@ import { AppStateProvider, useAuth, useAppState, useDispatch } from './store.jsx
 import { useToast } from './hooks/useToast.js';
 import { THEMES, getSavedThemeId, applyTheme } from './utils/themes.js';
 
-// Base Components
+import AiDailyBriefing   from './components/AiDailyBriefing.jsx';
+import { checkSmartReminders, requestNotificationPermission } from './utils/aiNotificationEngine.js';
 import Header          from './components/Header.jsx';
 import BrainDump       from './components/BrainDump.jsx';
 import EisenhowerMatrix from './components/EisenhowerMatrix.jsx';
@@ -81,6 +82,14 @@ function AppContent({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    requestNotificationPermission();
+    const interval = setInterval(() => {
+      checkSmartReminders(state, showToast);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [state, showToast]);
+
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good Morning' :
@@ -125,6 +134,9 @@ function AppContent({
         />
 
         <main style={{ padding: '32px 24px', maxWidth: '1400px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+
+          {/* AI Morning Briefing & Evening Decompression Banner */}
+          <AiDailyBriefing showToast={showToast} />
 
           {/* Welcome Banner — Dashboard Anchor */}
           <div id="section-dashboard" style={{

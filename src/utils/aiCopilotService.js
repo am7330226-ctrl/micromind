@@ -286,3 +286,131 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
     };
   }
 }
+
+/**
+ * Parse a multi-sentence voice recording into multiple structured task items.
+ * Uses Gemini JSON Mode when online, or local delimiter splitting offline.
+ *
+ * @param {string} transcript - The spoken text recording
+ * @returns {Promise<Array<{ title: string, priority: string, duration: number }>>}
+ */
+export async function parseMultiTaskVoiceDump(transcript) {
+  if (!transcript || typeof transcript !== 'string') return [];
+  const apiKey = getApiKey();
+  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+  if (isOnline && apiKey) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const prompt = `Extract all individual task items from this spoken transcript into JSON format. Assign each task a title, priority (q1, q2, q3, q4, or inbox), and duration in minutes.\nTranscript: "${transcript}"`;
+      const body = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: 'application/json',
+          response_schema: {
+            type: 'ARRAY',
+            items: {
+              type: 'OBJECT',
+              properties: {
+                title: { type: 'STRING' },
+                priority: { type: 'STRING' },
+                duration: { type: 'NUMBER' },
+              },
+              required: ['title'],
+            },
+          },
+        },
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (jsonText) {
+          const parsed = JSON.parse(jsonText);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  // Local fallback: split by punctuation and conjunctions ("and", "then", ",", ".")
+  const parts = transcript
+    .split(/\b(?:and|then|also|plus)\b|[,.;\n]/i)
+    .map(s => s.trim())
+    .filter(s => s.length > 2);
+
+  return parts.map(part => {
+    let priority = 'inbox';
+    const lower = part.toLowerCase();
+    if (/\b(urgent|asap|today|critical|important)\b/.test(lower)) priority = 'q1';
+    else if (/\b(schedule|plan|study|read)\b/.test(lower)) priority = 'q2';
+
+    let duration = 25;
+    const durMatch = part.match(/(\d+)\s*(m|min|minutes)/i);
+    if (durMatch) duration = parseInt(durMatch[1], 10);
+
+    return { title: part, priority, duration };
+  });
+}
+
+/**
+ * 1-Click Overwhelm Buster: Decompose a big intimidating goal into micro-tasks (< 15m each).
+ *
+ * @param {string} goalTitle - Intimidating task title
+ * @returns {Promise<string[]>} List of 3-4 micro sub-task strings
+ */
+export async function decomposeGoal(goalTitle) {
+  if (!goalTitle) return [];
+  const apiKey = getApiKey();
+  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+  if (isOnline && apiKey) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const prompt = `Decompose this big goal into 3-4 micro actionable sub-tasks (< 15 mins each) to eliminate procrastination and overwhelm. Output JSON array of strings.\nGoal: "${goalTitle}"`;
+      const body = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          response_mime_type: 'application/json',
+          response_schema: {
+            type: 'ARRAY',
+            items: { type: 'STRING' },
+          },
+        },
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (jsonText) {
+          const parsed = JSON.parse(jsonText);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  // Local fallback
+  return [
+    `Set timer for 10 mins & open workspace for "${goalTitle.slice(0, 20)}"`,
+    'Outline initial structure and 3 core action points',
+    'Execute first 15-minute core block without self-editing',
+    'Review progress and log completed micro-step',
+  ];
+}
