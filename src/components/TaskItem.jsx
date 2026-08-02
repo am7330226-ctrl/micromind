@@ -156,12 +156,15 @@ export default function TaskItem({ task, onToggle, showBreakdown = false, showTo
   const timeLabel = task.timeEstimate?.label || null;
 
   return (
-    <div className={`task-item-wrapper${task.completed ? ' completed' : ''}`}>
+    <div
+      className={`task-item-wrapper${task.completed ? ' completed' : ''}`}
+      style={{ position: 'relative', zIndex: categoryMenuOpen ? 100 : 1 }}
+    >
       <div
         className={`task-item${task.completed ? ' completed' : ''}`}
         data-id={task.id}
         onClick={handleRowClick}
-        style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+        style={{ cursor: 'pointer', transition: 'all 0.2s ease', position: 'relative', zIndex: categoryMenuOpen ? 100 : 1 }}
       >
         {/* Row 1: Checkbox + Task Text Body + Category Selector Pill */}
         <div className="task-item-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
@@ -212,7 +215,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false, showTo
                 position: 'absolute', top: '100%', right: 0, marginTop: '6px',
                 backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-color, rgba(204, 195, 216, 0.4))',
                 borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                padding: '6px', zIndex: 999, minWidth: '130px', display: 'flex', flexDirection: 'column', gap: '4px'
+                padding: '6px', zIndex: 9999, minWidth: '130px', display: 'flex', flexDirection: 'column', gap: '4px'
               }}>
                 {CATEGORIES_LIST.map(cat => (
                   <button
