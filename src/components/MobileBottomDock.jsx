@@ -7,8 +7,6 @@ export default function MobileBottomDock({
   onOpenPomodoro,
   onOpenAnalytics,
   onReset,
-  lightMode,
-  setLightMode,
   showToast
 }) {
   const focusInput = () => {
@@ -52,19 +50,20 @@ export default function MobileBottomDock({
       </button>
 
       <button
-        className={`dock-btn${lightMode ? ' active' : ''}`}
+        className="dock-btn"
         onClick={(e) => {
           e.currentTarget.blur();
-          if (typeof setLightMode === 'function') {
-            setLightMode(m => !m);
-            if (showToast) showToast(lightMode ? 'Switched to Dark Mode 🌙' : 'Switched to Light Mode ☀️', '🎨');
+          const btn = document.getElementById('theme-toggle-btn');
+          if (btn) {
+            btn.click();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
-        title="Toggle Theme"
-        aria-label="Toggle Theme"
+        title="Choose Theme"
+        aria-label="Theme Selector"
       >
-        <span>{lightMode ? '☀️' : '🌙'}</span>
-        <span className="dock-label">{lightMode ? 'Light' : 'Theme'}</span>
+        <span>🎨</span>
+        <span className="dock-label">Theme</span>
       </button>
 
       <button
