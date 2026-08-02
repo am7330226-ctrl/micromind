@@ -11,6 +11,9 @@ export function getApiKey() {
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
     return import.meta.env.VITE_GEMINI_API_KEY;
   }
+  if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
+    return process.env.VITE_GEMINI_API_KEY;
+  }
   if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
     return process.env.GEMINI_API_KEY;
   }
