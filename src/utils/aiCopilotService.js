@@ -22,7 +22,7 @@ export function getApiKey() {
 
 function getGeminiUrl() {
   const apiKey = getApiKey();
-  return `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  return `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 }
 
 // ── Gemini Function Declarations ─────────────────────────────────────────────

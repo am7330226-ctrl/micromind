@@ -10,8 +10,15 @@ export default function HabitTracker({ showToast }) {
 
   const habits = state.habits || [];
 
-  const handleToggle = (habitId) => {
-    dispatch({ type: 'TOGGLE_HABIT', id: habitId });
+  const handleToggle = (habit) => {
+    dispatch({ type: 'TOGGLE_HABIT', id: habit.id });
+    if (showToast) {
+      const isDone = !habit.done;
+      showToast(
+        isDone ? `${habit.label} done! Keep it up! 🎉` : `${habit.label} unchecked`,
+        isDone ? habit.emoji : '↩️'
+      );
+    }
   };
 
   const doneCount = habits.filter(h => h.done).length;
@@ -34,11 +41,11 @@ export default function HabitTracker({ showToast }) {
           <div
             key={habit.id}
             className={`habit-item${habit.done ? ' done' : ''}`}
-            onClick={() => handleToggle(habit.id)}
+            onClick={() => handleToggle(habit)}
             role="checkbox"
             aria-checked={habit.done}
             tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && handleToggle(habit.id)}
+            onKeyDown={e => e.key === 'Enter' && handleToggle(habit)}
           >
             <span className="habit-dot" />
             <span className="habit-emoji">{habit.emoji}</span>

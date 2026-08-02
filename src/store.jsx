@@ -309,6 +309,17 @@ function reducer(state, action) {
         return t;
       });
 
+      // Archive today's completed non-recurring tasks before removing them, then keep history
+      const tasksBeingArchived = state.tasks
+        .filter(t => t.completed && !shouldRegenerate(t.text))
+        .map(t => ({
+          id: t.id, text: t.text, category: t.category,
+          completedAt: new Date().toISOString(), dueDate: t.dueDate || null,
+        }));
+      const prevArchive = state.completedArchive || [];
+      // Keep up to last 200 archived tasks to avoid unbounded growth
+      const updatedArchive = [...prevArchive, ...tasksBeingArchived].slice(-200);
+
       return {
         ...state,
         tasks: newTasks,
@@ -319,7 +330,7 @@ function reducer(state, action) {
         badges: newBadges,
         pomodoroSessions: 0,
         lastResetDate: todayStr,
-        completedArchive: [],  // clear archive on daily reset
+        completedArchive: updatedArchive,
         focusSlots: Object.fromEntries(
           Object.entries(state.focusSlots).map(([k, v]) => {
             const taskStillExists = newTasks.find(t => t.id === v);
@@ -340,6 +351,16 @@ function reducer(state, action) {
 
     default:
       return state;
+  }
+}
+
+// ── Auth sub-reducer ──────────────────────────────────────────────────────────
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'LOGIN':       return { session: action.session, name: action.name, user: action.user, isGuest: false };
+    case 'LOGIN_GUEST': return { session: action.session, name: action.name, user: action.user, isGuest: true };
+    case 'LOGOUT':      return { session: null, name: '', user: null, isGuest: false };
+    default:            return state;
   }
 }
 
@@ -509,15 +530,7 @@ export function AppStateProvider({ children }) {
   );
 }
 
-// ── Auth sub-reducer ──────────────────────────────────────────────────────────
-function authReducer(state, action) {
-  switch (action.type) {
-    case 'LOGIN':       return { session: action.session, name: action.name, user: action.user, isGuest: false };
-    case 'LOGIN_GUEST': return { session: action.session, name: action.name, user: action.user, isGuest: true };
-    case 'LOGOUT':      return { session: null, name: '', user: null, isGuest: false };
-    default:            return state;
-  }
-}
+
 
 // ── Custom Hooks ──────────────────────────────────────────────────────────────
 export function useAppState()  { return useContext(StateContext); }

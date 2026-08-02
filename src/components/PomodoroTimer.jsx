@@ -23,7 +23,8 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
   const [sessions,    setSessions]    = useState(0);
   const [linkedId,    setLinkedId]    = useState(null);
 
-  const intervalRef  = useRef(null);
+  const intervalRef   = useRef(null);
+  const timerDoneRef  = useRef(null);
 
   // Derive focus tasks from state
   const focusTasks = ['focus-1', 'focus-2', 'focus-3']
@@ -41,6 +42,34 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
     setTotalSecs(POMO_DURATIONS[newMode]);
   }, [running]);
 
+  // ── Handle timer completion (stable ref prevents stale closure) ──────────
+  const handleTimerDone = useCallback(() => {
+    setRunning(false);
+    if (mode === 'focus') {
+      setSessions(prev => {
+        const newSessions = Math.min(prev + 1, 8);
+        dispatch({ type: 'SET_POMODORO_SESSIONS', sessions: newSessions });
+        const msg = `🎉 Focus session done! ${newSessions} session(s) today.`;
+        showToast(msg, '🍅');
+        return newSessions;
+      });
+    } else {
+      showToast('✅ Break over — ready to focus again!', '🍅');
+    }
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification('MicroMind 🍅', {
+        body: mode === 'focus' ? 'Focus session done! Time for a break.' : 'Break over! Ready to focus?',
+      });
+    }
+    const next = mode === 'focus' ? 'short' : 'focus';
+    switchMode(next);
+  }, [mode, dispatch, showToast, switchMode]);
+
+  // Keep ref current so interval always calls the latest version
+  useEffect(() => {
+    timerDoneRef.current = handleTimerDone;
+  }, [handleTimerDone]);
+
   // ── Timer tick ───────────────────────────────────────────────
   useEffect(() => {
     if (running) {
@@ -48,7 +77,7 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
         setSecsLeft(prev => {
           if (prev <= 1) {
             clearInterval(intervalRef.current);
-            handleTimerDone();
+            timerDoneRef.current?.();
             return 0;
           }
           return prev - 1;
@@ -58,7 +87,7 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [running, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Browser tab title ────────────────────────────────────────
   useEffect(() => {
@@ -71,27 +100,6 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
     }
     return () => { document.title = 'MicroMind - Daily Mental Declutter'; };
   }, [running, secsLeft]);
-
-  function handleTimerDone() {
-    setRunning(false);
-    if (mode === 'focus') {
-      const newSessions = Math.min(sessions + 1, 8);
-      setSessions(newSessions);
-      dispatch({ type: 'SET_POMODORO_SESSIONS', sessions: newSessions });
-    }
-    // Browser notification
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      new Notification('MicroMind 🍅', {
-        body: mode === 'focus' ? 'Focus session done! Time for a break.' : 'Break over! Ready to focus?',
-      });
-    }
-    const msg = mode === 'focus'
-      ? `🎉 Focus session done! ${sessions + (mode === 'focus' ? 1 : 0)} session(s) today.`
-      : '✅ Break over — ready to focus again!';
-    showToast(msg, '🍅');
-    const next = mode === 'focus' ? 'short' : 'focus';
-    switchMode(next);
-  }
 
   const handleStartPause = () => setRunning(r => !r);
 
@@ -175,12 +183,17 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
           </div>
         </div>
 
-        {/* Session dots */}
+        {/* Session dots — shows 8 dots matching the 8-session cap */}
         <div id="pomo-session-dots" className="pomo-session-dots">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <span key={i} className={`pomo-dot${i < sessions ? ' filled' : ''}`} />
           ))}
         </div>
+        {sessions > 0 && (
+          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            {sessions}/8 sessions today
+          </div>
+        )}
 
         {/* Controls */}
         <div className="pomo-controls">

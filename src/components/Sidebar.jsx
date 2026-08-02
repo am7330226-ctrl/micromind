@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, onClose, onNewEntry, showToast }) {
 
   const handleSettingsClick = () => {
     if (onClose) onClose();
-    const themeBtn = document.getElementById('theme-selector-btn') || document.querySelector('.theme-btn');
+    const themeBtn = document.getElementById('theme-toggle-btn') || document.querySelector('.theme-btn');
     if (themeBtn) {
       themeBtn.click();
     } else if (showToast) {

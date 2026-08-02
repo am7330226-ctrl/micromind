@@ -4,7 +4,7 @@
  * Styled with theme-aware classes for dark mode glass surfaces.
  */
 
-import { useAppState } from '../store.jsx';
+import { useAppState, useAuth } from '../store.jsx';
 
 const MOCK_LEADERBOARD = [
   { rank: 2, name: 'Sarah K.',  xp: 720, level: 4, streak: 8  },
@@ -17,9 +17,10 @@ const NEXT_REWARD_LABEL = 'Deep Focus Soundpack 🔓';
 
 export default function FocusLeague() {
   const state    = useAppState();
+  const { auth } = useAuth();
   const userXp   = state.xp    || 0;
   const userLvl  = state.level || 1;
-  const userName = state.userName || 'You';
+  const userName = auth.name || 'You';
 
   const pct = Math.min(100, Math.round((userXp / NEXT_REWARD_XP) * 100));
 

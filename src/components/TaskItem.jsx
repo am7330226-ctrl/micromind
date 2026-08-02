@@ -209,7 +209,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false, showTo
             {categoryMenuOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: '6px',
-                backgroundColor: '#ffffff', border: '1px solid rgba(204, 195, 216, 0.4)',
+                backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-color, rgba(204, 195, 216, 0.4))',
                 borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
                 padding: '6px', zIndex: 999, minWidth: '130px', display: 'flex', flexDirection: 'column', gap: '4px'
               }}>
@@ -222,7 +222,7 @@ export default function TaskItem({ task, onToggle, showBreakdown = false, showTo
                       display: 'flex', alignItems: 'center', gap: '8px',
                       padding: '6px 10px', borderRadius: '8px', border: 'none',
                       backgroundColor: task.category === cat.id ? 'rgba(99,14,212,0.1)' : 'transparent',
-                      color: task.category === cat.id ? '#630ed4' : '#111c2d',
+                      color: task.category === cat.id ? '#630ed4' : 'var(--text-primary, #111c2d)',
                       fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'left'
                     }}
                   >

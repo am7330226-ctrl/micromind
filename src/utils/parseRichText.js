@@ -16,7 +16,12 @@ export function parseRichText(text) {
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, linkText, url) => {
-    const clean = url.startsWith('http') ? url : `https://${url}`;
+    const trimmed = url.trim();
+    // Block dangerous URI schemes to prevent XSS
+    if (/^(javascript|data|vbscript):/i.test(trimmed)) {
+      return `<span class="task-tag" title="Blocked unsafe link">${linkText}</span>`;
+    }
+    const clean = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
     return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
   });
   s = s.replace(/(^|\s)#([\w-]+)/g, (_, prefix, tag) =>

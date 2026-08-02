@@ -46,9 +46,13 @@ export default function TaskDetailPanel() {
   };
 
   if (!task) {
+    // No task found — just show closed backdrop (selectedTaskId may be briefly stale)
     return (
-      <div className={`task-detail-backdrop ${selectedTaskId ? 'visible' : ''}`} onClick={handleClose}>
-         <div className={`task-detail-panel ${selectedTaskId ? 'open' : ''}`} onClick={e => e.stopPropagation()}></div>
+      <div
+        className={`task-detail-backdrop ${selectedTaskId ? 'visible' : ''}`}
+        onClick={() => dispatch({ type: 'SET_SELECTED_TASK', id: null })}
+      >
+        <div className={`task-detail-panel ${selectedTaskId ? 'open' : ''}`} onClick={e => e.stopPropagation()} />
       </div>
     );
   }

@@ -14,7 +14,6 @@ export default function BrainDump({ showToast }) {
   const state = useAppState();
   const dispatch = useDispatch();
   const inputRef = useRef(null);
-  const workerRef = useRef(null);
   const recognitionRef = useRef(null);
 
   const [inputValue, setInputValue]   = useState('');

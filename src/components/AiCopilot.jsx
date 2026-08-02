@@ -58,7 +58,6 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         const taskObj = {
           completed: false,
           text: args.title || 'New Task',
-          id: String(Date.now()),
           ...createTask(args.title || 'New Task', args.priority || 'inbox'),
         };
         if (args.duration) {
