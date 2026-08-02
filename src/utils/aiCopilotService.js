@@ -125,9 +125,10 @@ Capabilities & Tools:
 Guidelines: Always be concise (< 3 sentences unless explaining a topic), warm, and encouraging.`;
 }
 
-// ── Client-Side Intent Parser (Fallback Execution) ───────────────────────────
+// ── Client-Side Intent Parser (Smart Local Engine) ─────────────────────────
 function parseClientIntent(messageText, appState) {
   const text = messageText.toLowerCase();
+  const activeTasksCount = (appState?.tasks || []).filter(t => !t.completed).length;
 
   // Match "add task ..."
   if (text.includes('add task') || text.includes('create task') || text.startsWith('add ') || text.startsWith('new task')) {
@@ -177,39 +178,49 @@ function parseClientIntent(messageText, appState) {
     };
   }
 
-  return null;
+  // Match "break down" / "subtasks"
+  if (text.includes('break down') || text.includes('breakdown') || text.includes('subtask') || text.includes('steps')) {
+    return {
+      name: 'breakdownTasks',
+      args: {},
+      text: `Analyzed your **Do First** quadrant and generated actionable sub-task checklists! ⚡`,
+    };
+  }
+
+  // General query response in Local Engine mode
+  return {
+    name: 'generalOfflineResponse',
+    args: {},
+    text: `⚡ **Smart Local Engine Active**: You currently have **${activeTasksCount} active task${activeTasksCount !== 1 ? 's' : ''}**. Ask me to *"Add task..."*, *"Start timer"*, or *"Break down Q1"*!`,
+  };
 }
 
 /**
- * Send user message to Gemini API with function calling, logging, and error handling.
+ * Send user message to Gemini API with function calling, logging, and resilient local engine fallback.
  *
  * @param {string} userMessage
  * @param {Array} chatHistory
  * @param {object} appState
  * @param {string} userName
- * @returns {Promise<{ responseText: string, toolCalls: Array, error: string|null }>}
+ * @returns {Promise<{ responseText: string, toolCalls: Array, engine: string, error: string|null }>}
  */
 export async function sendCopilotMessage(userMessage, chatHistory = [], appState = {}, userName = 'Friend') {
   const fallbackIntent = parseClientIntent(userMessage, appState);
   const apiKey = getApiKey();
+  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
+  // ── Offline / No-Key Routing → Smart Local Engine ──────────────────────────
+  if (!isOnline || !apiKey) {
+    return {
+      responseText: fallbackIntent.text,
+      toolCalls: fallbackIntent.name !== 'generalOfflineResponse' ? [{ name: fallbackIntent.name, args: fallbackIntent.args }] : [],
+      engine: isOnline ? 'local_no_key' : 'local_offline',
+      error: null,
+    };
+  }
+
+  // ── Online Routing → Gemini 2.5 Flash Cloud LLM ───────────────────────────
   try {
-    if (!apiKey) {
-      console.warn('AI Copilot Warning: No Gemini API Key configured in env. Using smart client-side execution.');
-      if (fallbackIntent) {
-        return {
-          responseText: fallbackIntent.text,
-          toolCalls: [{ name: fallbackIntent.name, args: fallbackIntent.args }],
-          error: null,
-        };
-      }
-      return {
-        responseText: `I'm in **Smart Offline Mode**. You currently have **${(appState?.tasks || []).filter(t => !t.completed).length} active tasks**. You can ask me to *"Add task..."* or *"Start timer"*!`,
-        toolCalls: [],
-        error: null,
-      };
-    }
-
     const systemInstruction = buildSystemInstruction(appState, userName);
     const contents = [
       ...chatHistory.map(m => ({
@@ -253,7 +264,7 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
     }
 
     // Attach fallback intent if API gave plain text without tool calls for action commands
-    if (toolCalls.length === 0 && fallbackIntent) {
+    if (toolCalls.length === 0 && fallbackIntent && fallbackIntent.name !== 'generalOfflineResponse') {
       toolCalls.push({ name: fallbackIntent.name, args: fallbackIntent.args });
       if (!responseText) responseText = fallbackIntent.text;
     }
@@ -262,20 +273,16 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
       responseText = "I'm ready to help you manage your tasks and focus time!";
     }
 
-    return { responseText, toolCalls, error: null };
+    return { responseText, toolCalls, engine: 'online', error: null };
   } catch (error) {
-    console.error('AI Copilot Error:', error);
+    console.warn('AI Copilot Gemini Error (Falling back to Smart Local Engine):', error.message);
 
-    // If client fallback parser can handle action (e.g. add task, pomodoro)
-    if (fallbackIntent) {
-      return {
-        responseText: fallbackIntent.text,
-        toolCalls: [{ name: fallbackIntent.name, args: fallbackIntent.args }],
-        error: error.message,
-      };
-    }
-
-    const defaultText = `Copilot is currently offline or rate-limited (${error.message}). Ask me to add tasks or start timers using standard commands!`;
-    return { responseText: defaultText, toolCalls: [], error: error.message };
+    // Seamless auto-fallback to Smart Local Engine on API/Network failure
+    return {
+      responseText: fallbackIntent.text,
+      toolCalls: fallbackIntent.name !== 'generalOfflineResponse' ? [{ name: fallbackIntent.name, args: fallbackIntent.args }] : [],
+      engine: 'local_fallback',
+      error: null,
+    };
   }
 }

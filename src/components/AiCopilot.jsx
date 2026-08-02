@@ -24,6 +24,21 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
   const [loading, setLoading]         = useState(false);
   const [showKeySettings, setShowKeySettings] = useState(false);
   const [keyInput, setKeyInput]       = useState('');
+  const [isOnline, setIsOnline]       = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline  = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const hasKey = Boolean(getApiKey());
+  const isCloudActive = isOnline && hasKey;
   const [messages, setMessages]       = useState([
     {
       id: 'welcome',
@@ -126,16 +141,12 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
     setLoading(true);
 
     try {
-      const { responseText, toolCalls, error } = await sendCopilotMessage(
+      const { responseText, toolCalls, engine } = await sendCopilotMessage(
         text,
         messages.slice(-6),
         state,
         auth.name
       );
-
-      if (error && showToast) {
-        showToast('Copilot offline mode active', '⚠️');
-      }
 
       const executedActions = [];
       for (const call of toolCalls) {
@@ -162,6 +173,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         role: 'assistant',
         content: responseText,
         executedActions,
+        engine,
         timestamp: Date.now(),
       };
 
@@ -227,7 +239,16 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                 </div>
                 <div>
                   <div className="copilot-title">MicroMind AI Copilot</div>
-                  <div className="copilot-subtitle">Context-Aware App Assistant</div>
+                  <div className="copilot-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px' }}>
+                    <span style={{
+                      width: '7px', height: '7px', borderRadius: '50%',
+                      backgroundColor: isCloudActive ? '#10b981' : '#f59e0b',
+                      boxShadow: isCloudActive ? '0 0 8px rgba(16, 185, 129, 0.6)' : '0 0 8px rgba(245, 158, 11, 0.6)'
+                    }} />
+                    <span style={{ color: isCloudActive ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: '600' }}>
+                      {isCloudActive ? '🟢 Gemini 2.5 Active' : '⚡ Smart Local Engine'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="copilot-header-actions">
@@ -309,6 +330,13 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                           .replace(/\n/g, '<br/>'),
                       }}
                     />
+
+                    {/* Engine Origin Badge */}
+                    {msg.role === 'assistant' && msg.engine && (
+                      <div className="engine-badge" style={{ fontSize: '10px', marginTop: '4px', opacity: 0.75, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>{msg.engine === 'online' ? '✨ Powered by Gemini 2.5 Flash' : '⚡ Processed via Smart Local Engine'}</span>
+                      </div>
+                    )}
 
                     {/* Executed Action Badges */}
                     {msg.executedActions && msg.executedActions.length > 0 && (
