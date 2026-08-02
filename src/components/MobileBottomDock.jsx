@@ -53,11 +53,8 @@ export default function MobileBottomDock({
         className="dock-btn"
         onClick={(e) => {
           e.currentTarget.blur();
-          const btn = document.getElementById('theme-toggle-btn');
-          if (btn) {
-            btn.click();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
+          document.dispatchEvent(new CustomEvent('open-theme-selector'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         title="Choose Theme"
         aria-label="Theme Selector"

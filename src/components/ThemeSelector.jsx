@@ -18,18 +18,24 @@ export default function ThemeSelector({ showToast }) {
   const [lockedHint, setLockedHint] = useState(null); // { id, msg }
   const panelRef = useRef(null);
 
-  // Close on outside click
+  // Close on outside click and listen for custom open event
   useEffect(() => {
     function onOutside(e) {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
         setPanelOpen(false);
       }
     }
+    function onOpenEvent() {
+      setPanelOpen(true);
+    }
+    
+    document.addEventListener('open-theme-selector', onOpenEvent);
     if (panelOpen) {
       document.addEventListener('mousedown', onOutside);
       document.addEventListener('touchstart', onOutside);
     }
     return () => {
+      document.removeEventListener('open-theme-selector', onOpenEvent);
       document.removeEventListener('mousedown', onOutside);
       document.removeEventListener('touchstart', onOutside);
     };
