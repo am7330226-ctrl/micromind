@@ -1,7 +1,7 @@
 /**
  * EisenhowerMatrix.jsx — The 2×2 priority matrix.
- * Enhanced with AI Total Focus Time display in Q1 (Do First) header.
- * Drag-and-drop removed in favor of 1-Tap Category Selector Pills.
+ * Redesigned 1:1 to match the clean white floating card layout with 5px vertical
+ * colored accent stripes, uppercase subtitles, count badges, and dashed drop-zone empty states.
  */
 
 import { useAppState } from '../store.jsx';
@@ -13,29 +13,41 @@ const QUADRANTS = [
     id: 'q1',
     num: '01',
     label: 'Do First',
-    subtitle: 'Urgent & Important',
+    subtitle: 'URGENT & IMPORTANT',
     emoji: '🔥',
+    accentColor: '#f97316',
+    badgeBg: '#e0f2fe',
+    badgeColor: '#0369a1',
   },
   {
     id: 'q2',
     num: '02',
     label: 'Schedule',
-    subtitle: 'Important, Not Urgent',
+    subtitle: 'IMPORTANT, NOT URGENT',
     emoji: '📅',
+    accentColor: '#3b82f6',
+    badgeBg: '#e0f2fe',
+    badgeColor: '#0369a1',
   },
   {
     id: 'q3',
     num: '03',
     label: 'Delegate',
-    subtitle: 'Urgent, Not Important',
+    subtitle: 'URGENT, NOT IMPORTANT',
     emoji: '🤝',
+    accentColor: '#eab308',
+    badgeBg: '#e0f2fe',
+    badgeColor: '#0369a1',
   },
   {
     id: 'q4',
     num: '04',
     label: "Don't Do",
-    subtitle: 'Not Urgent & Not Important',
+    subtitle: 'NOT URGENT & NOT IMPORTANT',
     emoji: '🗑️',
+    accentColor: '#78350f',
+    badgeBg: '#e0f2fe',
+    badgeColor: '#0369a1',
   },
 ];
 
@@ -43,13 +55,35 @@ function Quadrant({ quadrant, tasks, showToast }) {
   const focusTime = quadrant.id === 'q1' ? sumFocusTime(tasks) : null;
 
   return (
-    <div className={`quadrant ${quadrant.id}`}>
-      <div className="quadrant-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="editorial-num">{quadrant.num}</span>
+    <div
+      className={`quadrant ${quadrant.id}`}
+      style={{
+        backgroundColor: 'var(--bg-card, #ffffff)',
+        borderRadius: '20px',
+        borderLeft: `5px solid ${quadrant.accentColor}`,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+        borderTop: '1px solid var(--border-color, #e2e8f0)',
+        borderRight: '1px solid var(--border-color, #e2e8f0)',
+        borderBottom: '1px solid var(--border-color, #e2e8f0)',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      {/* Header */}
+      <div className="quadrant-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+          <span style={{ fontSize: '26px', fontWeight: '800', color: quadrant.accentColor, fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+            {quadrant.num}
+          </span>
           <div>
-            <div className="quadrant-title">{quadrant.emoji} {quadrant.label}</div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '1px' }}>
+            <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>{quadrant.emoji}</span>
+              <span>{quadrant.label}</span>
+            </div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '3px' }}>
               {quadrant.subtitle}
             </div>
           </div>
@@ -59,6 +93,7 @@ function Quadrant({ quadrant, tasks, showToast }) {
           {quadrant.id === 'q1' && focusTime?.label && (
             <span
               className="q1-focus-time-badge"
+              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '600', backgroundColor: 'rgba(249, 115, 22, 0.12)', color: '#c2410c' }}
               title={`Estimated total focus time: ${focusTime.label}`}
               aria-label={`Estimated total focus time for Do First tasks: ${focusTime.label}`}
             >
@@ -66,18 +101,45 @@ function Quadrant({ quadrant, tasks, showToast }) {
             </span>
           )}
 
-          <span className="task-count">
+          <span
+            style={{
+              padding: '4px 10px',
+              borderRadius: '8px',
+              backgroundColor: quadrant.badgeBg,
+              color: quadrant.badgeColor,
+              fontSize: '12px',
+              fontWeight: '700',
+              fontFamily: 'Inter, sans-serif',
+              lineHeight: 1,
+            }}
+          >
             {tasks.filter(t => !t.completed).length}
             {quadrant.id === 'q1' ? '/3' : ''}
           </span>
         </div>
       </div>
 
-      <div className="task-list">
+      {/* Task List / Dashed Drop Zone */}
+      <div className="task-list" style={{ minHeight: '140px' }}>
         {tasks.length === 0 ? (
-          <div className="empty-state">
-            <span>✦</span>
-            Select category pill on a task to move it here
+          <div
+            style={{
+              border: '2px dashed var(--border-color, #cbd5e1)',
+              borderRadius: '16px',
+              padding: '36px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              backgroundColor: 'rgba(241, 245, 249, 0.3)',
+              gap: '8px',
+            }}
+          >
+            <span style={{ fontSize: '28px', color: '#93c5fd' }}>★</span>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4, maxWidth: '180px' }}>
+              Select category pill on a task<br />to move it here
+            </div>
           </div>
         ) : (
           tasks.map(task => (
@@ -101,18 +163,22 @@ export default function EisenhowerMatrix({ showToast }) {
     (state.tasks || []).filter(t => t && t.category === qId);
 
   return (
-    <div className="glass-panel eisenhower-matrix-container">
-      <div className="matrix-header">
+    <div className="glass-panel eisenhower-matrix-container" id="section-priority-matrix">
+      <div className="matrix-header" style={{ marginBottom: '24px' }}>
         <div>
-          <h2 className="section-title">Priority Matrix</h2>
-          <p className="section-subtitle">
+          <h2 className="section-title" style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
+            Priority Matrix
+          </h2>
+          <p className="section-subtitle" style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 6px 0' }}>
             1-Tap category pills to categorize tasks into the Eisenhower quadrants
           </p>
+          <div style={{ fontSize: '10px', fontWeight: '800', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            EISENHOWER METHOD
+          </div>
         </div>
-        <span className="eisenhower-tag">Eisenhower Method</span>
       </div>
 
-      <div className="matrix-grid">
+      <div className="matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
         {QUADRANTS.map(q => (
           <Quadrant
             key={q.id}
