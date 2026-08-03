@@ -5,7 +5,7 @@
  */
 
 import './index.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import {
   AppStateProvider,
   useAuth,
@@ -25,21 +25,27 @@ import BrainDump from './components/BrainDump.jsx';
 import EisenhowerMatrix from './components/EisenhowerMatrix.jsx';
 import MoodWidget from './components/MoodWidget.jsx';
 import HabitTracker from './components/HabitTracker.jsx';
-import PomodoroTimer from './components/PomodoroTimer.jsx';
-import AnalyticsDashboard from './components/AnalyticsDashboard.jsx';
 import ToastContainer from './components/ToastContainer.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import CompletedArchive from './components/CompletedArchive.jsx';
 import TaskDetailPanel from './components/TaskDetailPanel.jsx';
 import MobileBottomDock from './components/MobileBottomDock.jsx';
-import AiCopilot from './components/AiCopilot.jsx';
 
 // Stitch Bento Cards
 import Sidebar from './components/Sidebar.jsx';
 import FocusLeague from './components/FocusLeague.jsx';
 import FocusAnalytics from './components/FocusAnalytics.jsx';
 import TimelineCard from './components/TimelineCard.jsx';
-import DigitalSanctuary from './components/DigitalSanctuary.jsx';
+
+// Lazily loaded: modals/overlays and heavier panels not needed for first paint
+const PomodoroTimer = lazy(() => import('./components/PomodoroTimer.jsx'));
+const AnalyticsDashboard = lazy(
+  () => import('./components/AnalyticsDashboard.jsx'),
+);
+const AiCopilot = lazy(() => import('./components/AiCopilot.jsx'));
+const DigitalSanctuary = lazy(
+  () => import('./components/DigitalSanctuary.jsx'),
+);
 
 function AppInner() {
   const { auth, login, loginGuest, logout } = useAuth();
@@ -338,7 +344,11 @@ function AppContent({
               <TimelineCard />
             </div>
             <div id="section-digital-sanctuary" className="md:col-span-7">
-              <DigitalSanctuary onOpenPomodoro={() => setPomodoroOpen(true)} />
+              <Suspense fallback={null}>
+                <DigitalSanctuary
+                  onOpenPomodoro={() => setPomodoroOpen(true)}
+                />
+              </Suspense>
             </div>
 
             {/* Row 4: Widgets */}
@@ -357,15 +367,21 @@ function AppContent({
         </main>
 
         {/* Modals & Overlays */}
-        <PomodoroTimer
-          open={pomodoroOpen}
-          onClose={() => setPomodoroOpen(false)}
-          showToast={showToast}
-        />
-        <AnalyticsDashboard
-          open={analyticsOpen}
-          onClose={() => setAnalyticsOpen(false)}
-        />
+        <Suspense fallback={null}>
+          {pomodoroOpen && (
+            <PomodoroTimer
+              open={pomodoroOpen}
+              onClose={() => setPomodoroOpen(false)}
+              showToast={showToast}
+            />
+          )}
+          {analyticsOpen && (
+            <AnalyticsDashboard
+              open={analyticsOpen}
+              onClose={() => setAnalyticsOpen(false)}
+            />
+          )}
+        </Suspense>
         <TaskDetailPanel />
 
         <MobileBottomDock
@@ -382,10 +398,12 @@ function AppContent({
           showToast={showToast}
         />
 
-        <AiCopilot
-          showToast={showToast}
-          onOpenPomodoro={() => setPomodoroOpen(true)}
-        />
+        <Suspense fallback={null}>
+          <AiCopilot
+            showToast={showToast}
+            onOpenPomodoro={() => setPomodoroOpen(true)}
+          />
+        </Suspense>
 
         <ToastContainer toasts={toasts} />
       </div>
