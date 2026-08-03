@@ -24,3 +24,6 @@ Thumbs.db
 # Logs and Temp
 *.log
 *-errors.json
+
+# Unrelated nested repo
+/Abhay-kumar/
