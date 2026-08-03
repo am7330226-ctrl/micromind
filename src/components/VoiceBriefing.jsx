@@ -8,20 +8,24 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppState } from '../store.jsx';
 import { useAuth } from '../store.jsx';
-import { generateBriefingScript, isVoiceSupported } from '../utils/voiceBriefing.js';
+import {
+  generateBriefingScript,
+  isVoiceSupported,
+} from '../utils/voiceBriefing.js';
 
 export default function VoiceBriefing({ showToast }) {
-  const state    = useAppState();
+  const state = useAppState();
   const { auth } = useAuth();
 
-  const [status, setStatus]   = useState('idle'); // 'idle' | 'speaking' | 'paused' | 'unsupported'
-  const [script, setScript]   = useState('');
+  const [status, setStatus] = useState('idle'); // 'idle' | 'speaking' | 'paused' | 'unsupported'
+  const [script, setScript] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const utteranceRef = useRef(null);
-  const panelRef     = useRef(null);
+  const panelRef = useRef(null);
 
   // ── Check browser support ────────────────────────────────────────────────
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isVoiceSupported()) setStatus('unsupported');
     // Cleanup on unmount: stop any ongoing speech
     return () => {
@@ -50,6 +54,7 @@ export default function VoiceBriefing({ showToast }) {
   useEffect(() => {
     if (panelOpen) {
       const generated = generateBriefingScript(state, auth.name || 'Friend');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScript(generated);
     }
   }, [panelOpen, state, auth.name]);
@@ -72,20 +77,28 @@ export default function VoiceBriefing({ showToast }) {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(script);
-    utterance.rate  = 0.92;   // slightly slower than default for clarity
+    utterance.rate = 0.92; // slightly slower than default for clarity
     utterance.pitch = 1.05;
     utterance.volume = 1;
 
     // Pick a pleasant voice if available
     const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google US'))
-    ) || voices.find(v => v.lang.startsWith('en'));
+    const preferred =
+      voices.find(
+        (v) =>
+          v.lang.startsWith('en') &&
+          (v.name.includes('Female') ||
+            v.name.includes('Samantha') ||
+            v.name.includes('Google US')),
+      ) || voices.find((v) => v.lang.startsWith('en'));
     if (preferred) utterance.voice = preferred;
 
     utterance.onstart = () => setStatus('speaking');
-    utterance.onend   = () => setStatus('idle');
-    utterance.onerror = () => { setStatus('idle'); if (showToast) showToast('Speech error occurred', '⚠️'); };
+    utterance.onend = () => setStatus('idle');
+    utterance.onerror = () => {
+      setStatus('idle');
+      if (showToast) showToast('Speech error occurred', '⚠️');
+    };
 
     utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
@@ -114,7 +127,7 @@ export default function VoiceBriefing({ showToast }) {
       <button
         type="button"
         className={`utility-tool-btn voice-briefing-trigger${status === 'speaking' ? ' voice-active' : ''}`}
-        onClick={() => setPanelOpen(o => !o)}
+        onClick={() => setPanelOpen((o) => !o)}
         title="Daily AI Voice Briefing"
         aria-label="Voice Briefing"
         aria-expanded={panelOpen}
@@ -134,23 +147,36 @@ export default function VoiceBriefing({ showToast }) {
 
       {/* Briefing Panel */}
       {panelOpen && (
-        <div className="voice-briefing-panel" role="dialog" aria-label="Daily Briefing">
+        <div
+          className="voice-briefing-panel"
+          role="dialog"
+          aria-label="Daily Briefing"
+        >
           <div className="voice-panel-header">
             <span className="voice-panel-icon">🔊</span>
             <div>
               <div className="voice-panel-title">Daily Briefing</div>
-              <div className="voice-panel-subtitle">Your AI-powered morning summary</div>
+              <div className="voice-panel-subtitle">
+                Your AI-powered morning summary
+              </div>
             </div>
             <button
               type="button"
               className="voice-panel-close"
-              onClick={() => { handleStop(); setPanelOpen(false); }}
+              onClick={() => {
+                handleStop();
+                setPanelOpen(false);
+              }}
               aria-label="Close briefing panel"
-            >✕</button>
+            >
+              ✕
+            </button>
           </div>
 
           {/* Script Preview */}
-          <div className={`voice-script-preview${status === 'speaking' ? ' speaking' : ''}`}>
+          <div
+            className={`voice-script-preview${status === 'speaking' ? ' speaking' : ''}`}
+          >
             {script}
           </div>
 
@@ -158,7 +184,11 @@ export default function VoiceBriefing({ showToast }) {
           {status === 'speaking' && (
             <div className="voice-status-bar">
               <div className="audio-pulse-indicator">
-                <span /><span /><span /><span /><span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
               </div>
               <span className="voice-status-text">Reading your briefing…</span>
             </div>

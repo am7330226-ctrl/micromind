@@ -7,40 +7,46 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppState, useDispatch } from '../store.jsx';
 
 const POMO_DURATIONS = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
-const POMO_LABELS    = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' };
+const POMO_LABELS = {
+  focus: 'Focus Time',
+  short: 'Short Break',
+  long: 'Long Break',
+};
 const RING_R = 88;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R; // ≈ 552.9
 
 export default function PomodoroTimer({ open, onClose, showToast }) {
-  const state    = useAppState();
+  const state = useAppState();
   const dispatch = useDispatch();
 
+  const [mode, setMode] = useState('focus');
+  const [secsLeft, setSecsLeft] = useState(POMO_DURATIONS.focus);
+  const [totalSecs, setTotalSecs] = useState(POMO_DURATIONS.focus);
+  const [running, setRunning] = useState(false);
+  const [sessions, setSessions] = useState(0);
+  const [linkedId, setLinkedId] = useState(null);
 
-  const [mode,        setMode]        = useState('focus');
-  const [secsLeft,    setSecsLeft]    = useState(POMO_DURATIONS.focus);
-  const [totalSecs,   setTotalSecs]   = useState(POMO_DURATIONS.focus);
-  const [running,     setRunning]     = useState(false);
-  const [sessions,    setSessions]    = useState(0);
-  const [linkedId,    setLinkedId]    = useState(null);
-
-  const intervalRef   = useRef(null);
-  const timerDoneRef  = useRef(null);
+  const intervalRef = useRef(null);
+  const timerDoneRef = useRef(null);
 
   // Derive focus tasks from state
   const focusTasks = ['focus-1', 'focus-2', 'focus-3']
-    .map(key => {
+    .map((key) => {
       const id = state.focusSlots?.[key];
-      return id ? state.tasks.find(t => t.id === id) : null;
+      return id ? state.tasks.find((t) => t.id === id) : null;
     })
     .filter(Boolean);
 
   // ── Mode switch ──────────────────────────────────────────────
-  const switchMode = useCallback((newMode) => {
-    if (running) return;
-    setMode(newMode);
-    setSecsLeft(POMO_DURATIONS[newMode]);
-    setTotalSecs(POMO_DURATIONS[newMode]);
-  }, [running]);
+  const switchMode = useCallback(
+    (newMode) => {
+      if (running) return;
+      setMode(newMode);
+      setSecsLeft(POMO_DURATIONS[newMode]);
+      setTotalSecs(POMO_DURATIONS[newMode]);
+    },
+    [running],
+  );
 
   const [consecutiveFocus, setConsecutiveFocus] = useState(0);
 
@@ -48,17 +54,20 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
   const handleTimerDone = useCallback(() => {
     setRunning(false);
     if (mode === 'focus') {
-      setSessions(prev => {
+      setSessions((prev) => {
         const newSessions = Math.min(prev + 1, 8);
         dispatch({ type: 'SET_POMODORO_SESSIONS', sessions: newSessions });
         const msg = `🎉 Focus session done! ${newSessions} session(s) today.`;
         showToast(msg, '🍅');
         return newSessions;
       });
-      setConsecutiveFocus(c => {
+      setConsecutiveFocus((c) => {
         const nextC = c + 1;
         if (nextC >= 4 && showToast) {
-          showToast('☕ Burnout Safeguard: 4 sessions in a row! Take a 15-minute Long Break to recharge.', '⚠️');
+          showToast(
+            '☕ Burnout Safeguard: 4 sessions in a row! Take a 15-minute Long Break to recharge.',
+            '⚠️',
+          );
         }
         return nextC;
       });
@@ -66,9 +75,15 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
       setConsecutiveFocus(0);
       showToast('✅ Break over — ready to focus again!', '🍅');
     }
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    if (
+      typeof Notification !== 'undefined' &&
+      Notification.permission === 'granted'
+    ) {
       new Notification('MicroMind 🍅', {
-        body: mode === 'focus' ? 'Focus session done! Time for a break.' : 'Break over! Ready to focus?',
+        body:
+          mode === 'focus'
+            ? 'Focus session done! Time for a break.'
+            : 'Break over! Ready to focus?',
       });
     }
     const next = mode === 'focus' ? 'short' : 'focus';
@@ -84,7 +99,7 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
   useEffect(() => {
     if (running) {
       intervalRef.current = setInterval(() => {
-        setSecsLeft(prev => {
+        setSecsLeft((prev) => {
           if (prev <= 1) {
             clearInterval(intervalRef.current);
             timerDoneRef.current?.();
@@ -97,21 +112,25 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [running]);
 
   // ── Browser tab title ────────────────────────────────────────
   useEffect(() => {
     if (running) {
-      const m = Math.floor(secsLeft / 60).toString().padStart(2, '0');
+      const m = Math.floor(secsLeft / 60)
+        .toString()
+        .padStart(2, '0');
       const s = (secsLeft % 60).toString().padStart(2, '0');
       document.title = `${m}:${s} — MicroMind`;
     } else {
       document.title = 'MicroMind - Daily Mental Declutter';
     }
-    return () => { document.title = 'MicroMind - Daily Mental Declutter'; };
+    return () => {
+      document.title = 'MicroMind - Daily Mental Declutter';
+    };
   }, [running, secsLeft]);
 
-  const handleStartPause = () => setRunning(r => !r);
+  const handleStartPause = () => setRunning((r) => !r);
 
   const handleReset = () => {
     setRunning(false);
@@ -126,28 +145,37 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
   };
 
   const handleLinkTask = (taskId) => {
-    setLinkedId(prev => prev === taskId ? null : taskId);
+    setLinkedId((prev) => (prev === taskId ? null : taskId));
   };
 
   // ── Ring ─────────────────────────────────────────────────────
-  const ratio  = secsLeft / (totalSecs || 1);
+  const ratio = secsLeft / (totalSecs || 1);
   const offset = RING_CIRCUMFERENCE * (1 - ratio);
 
   // ── Display ──────────────────────────────────────────────────
-  const mm = Math.floor(secsLeft / 60).toString().padStart(2, '0');
+  const mm = Math.floor(secsLeft / 60)
+    .toString()
+    .padStart(2, '0');
   const ss = (secsLeft % 60).toString().padStart(2, '0');
 
-  const linkedTask = focusTasks.find(t => t.id === linkedId);
+  const linkedTask = focusTasks.find((t) => t.id === linkedId);
 
   if (!open) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div className="pomodoro-backdrop visible" onClick={onClose} id="pomodoro-backdrop" />
+      <div
+        className="pomodoro-backdrop visible"
+        onClick={onClose}
+        id="pomodoro-backdrop"
+      />
 
       {/* Widget panel */}
-      <div id="pomodoro-widget" className={`pomodoro-widget open mode-${mode}${running ? ' running' : ''}`}>
+      <div
+        id="pomodoro-widget"
+        className={`pomodoro-widget open mode-${mode}${running ? ' running' : ''}`}
+      >
         {/* Header */}
         <div className="pomodoro-header">
           <div>
@@ -155,13 +183,20 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
             <p className="pomodoro-subtitle">Deep Focus Timer</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="pomodoro-close" onClick={onClose} id="pomodoro-close-btn" aria-label="Close">✕</button>
+            <button
+              className="pomodoro-close"
+              onClick={onClose}
+              id="pomodoro-close-btn"
+              aria-label="Close"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
         {/* Mode tabs */}
         <div className="pomo-mode-tabs">
-          {['focus', 'short', 'long'].map(m => (
+          {['focus', 'short', 'long'].map((m) => (
             <button
               key={m}
               className={`pomo-mode-btn${mode === m ? ' active' : ''}`}
@@ -169,7 +204,11 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
               onClick={() => switchMode(m)}
               disabled={running}
             >
-              {m === 'focus' ? 'Focus' : m === 'short' ? 'Short Break' : 'Long Break'}
+              {m === 'focus'
+                ? 'Focus'
+                : m === 'short'
+                  ? 'Short Break'
+                  : 'Long Break'}
             </button>
           ))}
         </div>
@@ -181,50 +220,102 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
             <circle
               id="pomo-ring-fill"
               className="pomo-ring-fill"
-              cx="100" cy="100" r={RING_R}
+              cx="100"
+              cy="100"
+              r={RING_R}
               strokeDasharray={RING_CIRCUMFERENCE}
               strokeDashoffset={offset}
-              style={{ transition: running ? 'stroke-dashoffset 1s linear' : 'none' }}
+              style={{
+                transition: running ? 'stroke-dashoffset 1s linear' : 'none',
+              }}
             />
           </svg>
           <div className="pomo-time-display">
-            <span id="pomo-time" className="pomo-time">{mm}:{ss}</span>
-            <span id="pomo-mode-label" className="pomo-mode-label">{POMO_LABELS[mode]}</span>
+            <span id="pomo-time" className="pomo-time">
+              {mm}:{ss}
+            </span>
+            <span id="pomo-mode-label" className="pomo-mode-label">
+              {POMO_LABELS[mode]}
+            </span>
           </div>
         </div>
 
         {/* Session dots — shows 8 dots matching the 8-session cap */}
         <div id="pomo-session-dots" className="pomo-session-dots">
           {Array.from({ length: 8 }).map((_, i) => (
-            <span key={i} className={`pomo-dot${i < sessions ? ' filled' : ''}`} />
+            <span
+              key={i}
+              className={`pomo-dot${i < sessions ? ' filled' : ''}`}
+            />
           ))}
         </div>
         {sessions > 0 && (
-          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              fontSize: '11px',
+              color: 'var(--text-secondary)',
+              marginTop: '2px',
+            }}
+          >
             {sessions}/8 sessions today
           </div>
         )}
 
         {consecutiveFocus >= 4 && (
-          <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', fontSize: '11px', fontWeight: '700', textAlign: 'center', marginTop: '8px' }}>
+          <div
+            style={{
+              padding: '8px 12px',
+              borderRadius: '12px',
+              background: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#f59e0b',
+              fontSize: '11px',
+              fontWeight: '700',
+              textAlign: 'center',
+              marginTop: '8px',
+            }}
+          >
             ☕ Burnout Safeguard: 4 continuous sessions! Take a 15-min break.
           </div>
         )}
 
         {/* Controls */}
         <div className="pomo-controls">
-          <button className="pomo-ctrl-btn pomo-secondary" onClick={handleReset} title="Reset" id="pomo-reset-btn">⟲</button>
-          <button className="pomo-ctrl-btn pomo-primary" onClick={handleStartPause} id="pomo-start-btn">
-            <span id="pomo-play-icon">{running ? '⏸' : '▶'}</span>
-            <span id="pomo-start-label">{running ? 'Pause' : secsLeft < totalSecs ? 'Resume' : 'Start'}</span>
+          <button
+            className="pomo-ctrl-btn pomo-secondary"
+            onClick={handleReset}
+            title="Reset"
+            id="pomo-reset-btn"
+          >
+            ⟲
           </button>
-          <button className="pomo-ctrl-btn pomo-secondary" onClick={handleSkip} title="Skip" id="pomo-skip-btn">⏭</button>
+          <button
+            className="pomo-ctrl-btn pomo-primary"
+            onClick={handleStartPause}
+            id="pomo-start-btn"
+          >
+            <span id="pomo-play-icon">{running ? '⏸' : '▶'}</span>
+            <span id="pomo-start-label">
+              {running ? 'Pause' : secsLeft < totalSecs ? 'Resume' : 'Start'}
+            </span>
+          </button>
+          <button
+            className="pomo-ctrl-btn pomo-secondary"
+            onClick={handleSkip}
+            title="Skip"
+            id="pomo-skip-btn"
+          >
+            ⏭
+          </button>
         </div>
 
         {/* Linked task */}
         <div className="pomo-task-info">
           <span className="pomodoro-task-label" id="pomodoro-task-label">
-            {linkedTask ? `▶ ${linkedTask.text.slice(0, 40)}` : 'No task selected'}
+            {linkedTask
+              ? `▶ ${linkedTask.text.slice(0, 40)}`
+              : 'No task selected'}
           </span>
         </div>
 
@@ -233,7 +324,13 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
           <span className="pomo-task-picker-label">Link a Focus Task</span>
           <div className="pomo-focus-slots" id="pomo-focus-slots">
             {focusTasks.length === 0 ? (
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', padding: '4px 0' }}>
+              <p
+                style={{
+                  fontSize: '0.78rem',
+                  color: 'var(--text-muted)',
+                  padding: '4px 0',
+                }}
+              >
                 Drag tasks into the Focus slots first.
               </p>
             ) : (
@@ -244,7 +341,9 @@ export default function PomodoroTimer({ open, onClose, showToast }) {
                   onClick={() => handleLinkTask(task.id)}
                 >
                   <span className="pomo-slot-num">{idx + 1}</span>
-                  <span className="pomo-slot-text">{task.text.slice(0, 36)}</span>
+                  <span className="pomo-slot-text">
+                    {task.text.slice(0, 36)}
+                  </span>
                 </button>
               ))
             )}

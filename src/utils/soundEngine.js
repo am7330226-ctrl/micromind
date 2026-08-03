@@ -6,11 +6,11 @@
 
 class AmbientEngine {
   constructor() {
-    this.ctx       = null;
-    this.gainNode  = null;
-    this.nodes     = [];
-    this.muted     = false;
-    this.volume    = 0.5;
+    this.ctx = null;
+    this.gainNode = null;
+    this.nodes = [];
+    this.muted = false;
+    this.volume = 0.5;
     this.currentTrack = null; // 'rain' | 'forest' | 'cafe' | 'space' | null
     this.isPlaying = false;
   }
@@ -27,7 +27,10 @@ class AmbientEngine {
     }
     if (this.ctx && !this.gainNode) {
       this.gainNode = this.ctx.createGain();
-      this.gainNode.gain.setValueAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime);
+      this.gainNode.gain.setValueAtTime(
+        this.muted ? 0 : this.volume,
+        this.ctx.currentTime,
+      );
       this.gainNode.connect(this.ctx.destination);
     }
     return this.ctx;
@@ -36,20 +39,32 @@ class AmbientEngine {
   setVolume(v) {
     this.volume = Math.max(0, Math.min(1, v));
     if (this.gainNode && this.ctx) {
-      this.gainNode.gain.setTargetAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime, 0.1);
+      this.gainNode.gain.setTargetAtTime(
+        this.muted ? 0 : this.volume,
+        this.ctx.currentTime,
+        0.1,
+      );
     }
   }
 
   setMute(muted) {
     this.muted = muted;
     if (this.gainNode && this.ctx) {
-      this.gainNode.gain.setTargetAtTime(muted ? 0 : this.volume, this.ctx.currentTime, 0.1);
+      this.gainNode.gain.setTargetAtTime(
+        muted ? 0 : this.volume,
+        this.ctx.currentTime,
+        0.1,
+      );
     }
   }
 
   stop() {
-    this.nodes.forEach(n => {
-      try { n.stop(); } catch(_) {}
+    this.nodes.forEach((n) => {
+      try {
+        n.stop();
+      } catch {
+        /* ignore */
+      }
     });
     this.nodes = [];
     this.isPlaying = false;
@@ -96,7 +111,7 @@ class AmbientEngine {
   // ── Track Synthesizers ──────────────────────────────────────────────────
   _playBrownNoise(ctx) {
     const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
+    const buf = ctx.createBuffer(2, bufSize, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const data = buf.getChannelData(ch);
       let last = 0;
@@ -109,9 +124,9 @@ class AmbientEngine {
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.loop   = true;
-    const lp   = ctx.createBiquadFilter();
-    lp.type    = 'lowpass';
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
     lp.frequency.value = 300;
     src.connect(lp);
     lp.connect(this.gainNode);
@@ -121,16 +136,16 @@ class AmbientEngine {
 
   _playRain(ctx) {
     const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
+    const buf = ctx.createBuffer(2, bufSize, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const data = buf.getChannelData(ch);
       for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.loop   = true;
-    const bp   = ctx.createBiquadFilter();
-    bp.type    = 'bandpass';
+    src.loop = true;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
     bp.frequency.value = 1200;
     bp.Q.value = 0.8;
     src.connect(bp);
@@ -138,7 +153,7 @@ class AmbientEngine {
     src.start();
     this.nodes.push(src);
 
-    const lfo     = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
     const lfoGain = ctx.createGain();
     lfo.type = 'sine';
     lfo.frequency.setValueAtTime(0.35, ctx.currentTime);
@@ -184,17 +199,17 @@ class AmbientEngine {
   _playCafe(ctx) {
     // Mid white noise filtering simulating chatter & ambient rustle
     const bufSize = ctx.sampleRate * 4;
-    const buf     = ctx.createBuffer(2, bufSize, ctx.sampleRate);
+    const buf = ctx.createBuffer(2, bufSize, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const data = buf.getChannelData(ch);
       for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.loop   = true;
+    src.loop = true;
 
     const lp = ctx.createBiquadFilter();
-    lp.type  = 'lowpass';
+    lp.type = 'lowpass';
     lp.frequency.value = 800;
 
     src.connect(lp);

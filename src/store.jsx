@@ -290,7 +290,8 @@ function reducer(state, action) {
       const completed = state.tasks.filter((t) => t.completed).length;
       const qb = { q1: 0, q2: 0, q3: 0, q4: 0 };
       state.tasks.forEach((t) => {
-        if (t.completed && qb.hasOwnProperty(t.category)) qb[t.category]++;
+        if (t.completed && Object.prototype.hasOwnProperty.call(qb, t.category))
+          qb[t.category]++;
         if (t.completed && t.category.startsWith('focus-')) qb.q1++;
       });
       const todayStr = new Date().toISOString().split('T')[0];
@@ -502,13 +503,11 @@ export function AppStateProvider({ children }) {
     if (!auth.user?.id || auth.isGuest) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(async () => {
-      const { error } = await supabase
-        .from('user_data')
-        .upsert({
-          id: auth.user.id,
-          data: state,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from('user_data').upsert({
+        id: auth.user.id,
+        data: state,
+        updated_at: new Date().toISOString(),
+      });
       if (error)
         console.warn('Could not save data to Supabase:', error.message);
     }, 800);
