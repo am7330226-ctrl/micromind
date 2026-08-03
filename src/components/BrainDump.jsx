@@ -9,8 +9,6 @@ import { useAppState, useDispatch, createTask } from '../store.jsx';
 import { parseMultiTaskVoiceDump } from '../utils/aiCopilotService.js';
 import TaskItem from './TaskItem.jsx';
 
-const CONFIDENCE_THRESHOLD = 0.6;
-
 export default function BrainDump({ showToast }) {
   const state = useAppState();
   const dispatch = useDispatch();
@@ -18,7 +16,6 @@ export default function BrainDump({ showToast }) {
   const recognitionRef = useRef(null);
 
   const [inputValue, setInputValue] = useState('');
-  const [aiStatus, setAiStatus] = useState('ready'); // ready | sorting | sorted
   const [isListening, setIsListening] = useState(false);
   const [sortBtnText, setSortBtnText] = useState('✨ AI Auto-Sort');
 

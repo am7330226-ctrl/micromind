@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { Ionicons } from '@expo/vector-icons';

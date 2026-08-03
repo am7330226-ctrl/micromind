@@ -25,7 +25,6 @@ export default function VoiceBriefing({ showToast }) {
 
   // ── Check browser support ────────────────────────────────────────────────
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isVoiceSupported()) setStatus('unsupported');
     // Cleanup on unmount: stop any ongoing speech
     return () => {
@@ -54,7 +53,7 @@ export default function VoiceBriefing({ showToast }) {
   useEffect(() => {
     if (panelOpen) {
       const generated = generateBriefingScript(state, auth.name || 'Friend');
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setScript(generated);
     }
   }, [panelOpen, state, auth.name]);

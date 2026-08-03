@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import TaskCard from './TaskCard';
@@ -31,7 +30,7 @@ export default function FocusThree({ onOpenDetail }) {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerBox}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          🎯 Today's Focus Three
+          🎯 Today&apos;s Focus Three
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Limit work-in-progress to 3 high-impact commitments.

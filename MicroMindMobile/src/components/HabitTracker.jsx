@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { triggerTaskCompletionHaptic } from '../services/haptics';

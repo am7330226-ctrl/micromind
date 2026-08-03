@@ -7,7 +7,6 @@ export default function MobileBottomDock({
   onOpenPomodoro,
   onOpenAnalytics,
   onReset,
-  showToast,
 }) {
   const focusInput = () => {
     const input = document.getElementById('dump-input');

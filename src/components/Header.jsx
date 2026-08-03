@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useDispatch, useAppState } from '../store.jsx';
+import { useDispatch } from '../store.jsx';
 import PwaInstallPrompt from './PwaInstallPrompt.jsx';
 import VoiceBriefing from './VoiceBriefing.jsx';
 import AmbientSoundPlayer from './AmbientSoundPlayer.jsx';
@@ -20,7 +20,6 @@ export default function Header({
   onToggleSidebar,
 }) {
   const dispatch = useDispatch();
-  const state = useAppState();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -52,9 +51,6 @@ export default function Header({
         '🌙',
       );
   };
-
-  const xp = state.xp || 0;
-  const level = state.level || 1;
 
   return (
     <header

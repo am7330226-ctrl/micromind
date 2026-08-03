@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, Modal, StyleSheet, Pressable } from 'react-native';
 import { useStoreState } from '../store/StoreContext';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
-import { triggerMediumImpact, triggerLightImpact } from '../services/haptics';
+import { triggerMediumImpact } from '../services/haptics';
 
 export default function VoiceBriefingModal({ visible, onClose }) {
   const { tasks, streak, level, theme } = useStoreState();

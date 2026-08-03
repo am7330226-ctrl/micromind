@@ -43,7 +43,7 @@ export default function MoodWidget({ showToast }) {
             <line x1="9" y1="9" x2="9.01" y2="9" />
             <line x1="15" y1="9" x2="15.01" y2="9" />
           </svg>
-          Today's Mood
+          Today&apos;s Mood
         </h2>
         <span className="helper-badge">How are you feeling?</span>
       </div>

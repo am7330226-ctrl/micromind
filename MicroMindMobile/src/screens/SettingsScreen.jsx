@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Switch,
-} from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import {
   useStoreState,
   useStoreDispatch,
@@ -52,7 +45,7 @@ const TOOL_SECTIONS = [
   },
 ];
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen() {
   const { theme, xp, level, streak, tasks, thoughts, habits, clarityScore } =
     useStoreState();
   const dispatch = useStoreDispatch();

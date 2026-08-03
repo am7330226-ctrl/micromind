@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -61,7 +61,8 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
       generated.forEach((st) => {
         dispatch({ type: 'ADD_SUBTASK', id: task.id, text: st });
       });
-    } catch (e) {
+    } catch {
+      // AI breakdown failed — leave task without subtasks
     } finally {
       setIsAiLoading(false);
     }

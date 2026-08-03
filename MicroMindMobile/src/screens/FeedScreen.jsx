@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  FlatList,
-} from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useStoreState } from '../store/StoreContext';
 import { Ionicons } from '@expo/vector-icons';
 import { triggerLightImpact } from '../services/haptics';

@@ -56,7 +56,9 @@ export async function stopAmbientSound() {
     try {
       await currentSound.stopAsync();
       await currentSound.unloadAsync();
-    } catch (err) {}
+    } catch {
+      // Sound may already be unloaded
+    }
     currentSound = null;
   }
   isPlaying = false;

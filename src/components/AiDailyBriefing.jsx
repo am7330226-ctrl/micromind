@@ -126,7 +126,7 @@ export default function AiDailyBriefing({ showToast }) {
 
             {isAfternoon && (
               <>
-                ⚡ You've completed{' '}
+                ⚡ You&apos;ve completed{' '}
                 <strong>
                   {completedToday} task{completedToday !== 1 ? 's' : ''}
                 </strong>{' '}

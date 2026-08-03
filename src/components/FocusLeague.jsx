@@ -19,7 +19,6 @@ export default function FocusLeague() {
   const state = useAppState();
   const { auth } = useAuth();
   const userXp = state.xp || 0;
-  const userLvl = state.level || 1;
   const userName = auth.name || 'You';
 
   const pct = Math.min(100, Math.round((userXp / NEXT_REWARD_XP) * 100));

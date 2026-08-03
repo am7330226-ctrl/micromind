@@ -3,8 +3,8 @@
  * Shows rich-text notes, sub-checklist, and due date.
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { useAppState, useDispatch, generateId } from '../store.jsx';
+import { useState, useEffect } from 'react';
+import { useAppState, useDispatch } from '../store.jsx';
 
 export default function TaskDetailPanel() {
   const state = useAppState();
@@ -22,6 +22,7 @@ export default function TaskDetailPanel() {
     if (task) {
       setLocalNotes(task.notes || '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.id]); // Only run when the selected task ID changes
 
   const handleClose = () => {
