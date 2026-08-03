@@ -11,7 +11,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
@@ -119,10 +120,18 @@ h1 {
   border-radius: 2px;
 }
 
-.q1 .indicator { background: #ef4444; }
-.q2 .indicator { background: #3b82f6; }
-.q3 .indicator { background: #eab308; }
-.q4 .indicator { background: #94a3b8; }
+.q1 .indicator {
+  background: #ef4444;
+}
+.q2 .indicator {
+  background: #3b82f6;
+}
+.q3 .indicator {
+  background: #eab308;
+}
+.q4 .indicator {
+  background: #94a3b8;
+}
 
 .quadrant h2 {
   flex: 1;

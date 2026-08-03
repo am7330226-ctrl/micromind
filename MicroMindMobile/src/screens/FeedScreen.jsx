@@ -18,9 +18,9 @@ const INSIGHTS = [
     category: 'Cognitive Bias',
     categoryColor: '#6366F1',
     emoji: '🧩',
-    title: "Dunning-Kruger Effect",
+    title: 'Dunning-Kruger Effect',
     summary:
-      "People with limited knowledge in a domain tend to overestimate their own competence — while experts underestimate theirs. Awareness of this bias sharpens calibration and invites deliberate humility.",
+      'People with limited knowledge in a domain tend to overestimate their own competence — while experts underestimate theirs. Awareness of this bias sharpens calibration and invites deliberate humility.',
     readTime: '60s',
     xpReward: 10,
     tag: 'Mental Model',
@@ -32,7 +32,7 @@ const INSIGHTS = [
     emoji: '⚡',
     title: "Parkinson's Law",
     summary:
-      "Work expands to fill the time available. By setting artificially tight deadlines, you force your brain into execution mode and dramatically cut decision-making overhead.",
+      'Work expands to fill the time available. By setting artificially tight deadlines, you force your brain into execution mode and dramatically cut decision-making overhead.',
     readTime: '45s',
     xpReward: 10,
     tag: 'Time Management',
@@ -42,9 +42,9 @@ const INSIGHTS = [
     category: 'Decision Making',
     categoryColor: '#F59E0B',
     emoji: '🎯',
-    title: "First Principles Thinking",
+    title: 'First Principles Thinking',
     summary:
-      "Break problems into their fundamental truths, then reason up from scratch. Used by Aristotle and Elon Musk — it obliterates inherited assumptions and unlocks radical solutions.",
+      'Break problems into their fundamental truths, then reason up from scratch. Used by Aristotle and Elon Musk — it obliterates inherited assumptions and unlocks radical solutions.',
     readTime: '60s',
     xpReward: 15,
     tag: 'Mental Model',
@@ -54,7 +54,7 @@ const INSIGHTS = [
     category: 'Focus',
     categoryColor: '#8B5CF6',
     emoji: '🔭',
-    title: "The 2-Minute Rule",
+    title: 'The 2-Minute Rule',
     summary:
       "If a task takes under 2 minutes, do it immediately. This single heuristic eliminates the hidden mental tax of 'open loops' — tasks stored in working memory without resolution.",
     readTime: '30s',
@@ -66,9 +66,9 @@ const INSIGHTS = [
     category: 'Cognitive Bias',
     categoryColor: '#6366F1',
     emoji: '🌀',
-    title: "Sunk Cost Fallacy",
+    title: 'Sunk Cost Fallacy',
     summary:
-      "Past investment — money, time, effort — should never drive future decisions. Only future value matters. Recognizing this frees you from escalating losing commitments.",
+      'Past investment — money, time, effort — should never drive future decisions. Only future value matters. Recognizing this frees you from escalating losing commitments.',
     readTime: '45s',
     xpReward: 10,
     tag: 'Decision Making',
@@ -78,7 +78,7 @@ const INSIGHTS = [
     category: 'Learning',
     categoryColor: '#10B981',
     emoji: '🧠',
-    title: "Spaced Repetition",
+    title: 'Spaced Repetition',
     summary:
       "Reviewing material at gradually increasing intervals (1d → 3d → 7d → 21d) exploits the 'spacing effect' — one of the most replicated findings in memory research. Active recall beats passive re-reading 4-to-1.",
     readTime: '60s',
@@ -90,7 +90,7 @@ const INSIGHTS = [
     category: 'Systems',
     categoryColor: '#F59E0B',
     emoji: '⚙️',
-    title: "Second-Order Thinking",
+    title: 'Second-Order Thinking',
     summary:
       "Ask 'and then what?' after every decision. First-order thinkers see immediate consequences; second-order thinkers model the downstream ripple effects — the mark of genuine strategic intelligence.",
     readTime: '60s',
@@ -102,9 +102,9 @@ const INSIGHTS = [
     category: 'Psychology',
     categoryColor: '#EC4899',
     emoji: '🪞',
-    title: "Cognitive Reframing",
+    title: 'Cognitive Reframing',
     summary:
-      "Deliberately shifting the perspective through which you interpret a situation changes its emotional valence without changing any facts. Used by CBT therapists and elite athletes alike to break destructive thought loops.",
+      'Deliberately shifting the perspective through which you interpret a situation changes its emotional valence without changing any facts. Used by CBT therapists and elite athletes alike to break destructive thought loops.',
     readTime: '45s',
     xpReward: 10,
     tag: 'Mental Clarity',
@@ -120,9 +120,9 @@ export default function FeedScreen() {
 
   const [learnedIds, setLearnedIds] = useState(new Set());
 
-  const toggleLearned = id => {
+  const toggleLearned = (id) => {
     triggerLightImpact();
-    setLearnedIds(prev => {
+    setLearnedIds((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -144,24 +144,40 @@ export default function FeedScreen() {
       {/* ── Top Banner ─────────────────────────────────────────────────────── */}
       <View style={styles.banner}>
         <View>
-          <Text style={[styles.bannerDate, { color: colors.textSecondary }]}>{todayLabel}</Text>
+          <Text style={[styles.bannerDate, { color: colors.textSecondary }]}>
+            {todayLabel}
+          </Text>
           <Text style={[styles.bannerTitle, { color: colors.textPrimary }]}>
             Daily Micro-Insights
           </Text>
-          <Text style={[styles.bannerSubtitle, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.bannerSubtitle, { color: colors.textSecondary }]}
+          >
             Sharpen your mind in 60 seconds ⚡
           </Text>
         </View>
 
         {/* Streak pill */}
-        <View style={[styles.streakPill, { backgroundColor: 'rgba(245,158,11,0.15)' }]}>
+        <View
+          style={[
+            styles.streakPill,
+            { backgroundColor: 'rgba(245,158,11,0.15)' },
+          ]}
+        >
           <Text style={styles.streakEmoji}>🔥</Text>
-          <Text style={[styles.streakText, { color: colors.accentAmber }]}>{streak}d</Text>
+          <Text style={[styles.streakText, { color: colors.accentAmber }]}>
+            {streak}d
+          </Text>
         </View>
       </View>
 
       {/* ── Clarity Gauge ──────────────────────────────────────────────────── */}
-      <View style={[styles.clarityCard, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.clarityCard,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         <View style={styles.clarityHeader}>
           <Text style={[styles.clarityLabel, { color: colors.textSecondary }]}>
             🧠 Cognitive Clarity Score
@@ -170,7 +186,12 @@ export default function FeedScreen() {
             {clarityScore}/100
           </Text>
         </View>
-        <View style={[styles.gaugeTrack, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <View
+          style={[
+            styles.gaugeTrack,
+            { backgroundColor: 'rgba(255,255,255,0.08)' },
+          ]}
+        >
           <View
             style={[
               styles.gaugeFill,
@@ -180,18 +201,18 @@ export default function FeedScreen() {
                   clarityScore >= 70
                     ? colors.accentEmerald
                     : clarityScore >= 40
-                    ? colors.accentAmber
-                    : '#ef4444',
+                      ? colors.accentAmber
+                      : '#ef4444',
               },
             ]}
           />
         </View>
         <Text style={[styles.clarityCaption, { color: colors.textSecondary }]}>
           {clarityScore >= 70
-            ? '✨ Peak clarity — you\'re firing on all cylinders!'
+            ? "✨ Peak clarity — you're firing on all cylinders!"
             : clarityScore >= 40
-            ? '⚡ Building momentum — keep stacking habits.'
-            : '🌱 Low clarity — complete habits and set your mood.'}
+              ? '⚡ Building momentum — keep stacking habits.'
+              : '🌱 Low clarity — complete habits and set your mood.'}
         </Text>
       </View>
 
@@ -206,7 +227,7 @@ export default function FeedScreen() {
         style={styles.featuredScroll}
         contentContainerStyle={styles.featuredContent}
       >
-        {FEATURED.map(card => (
+        {FEATURED.map((card) => (
           <FeaturedCard
             key={card.id}
             card={card}
@@ -218,11 +239,16 @@ export default function FeedScreen() {
       </ScrollView>
 
       {/* ── More Insights (Vertical List) ─────────────────────────────────── */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary, marginTop: 24 }]}>
+      <Text
+        style={[
+          styles.sectionLabel,
+          { color: colors.textSecondary, marginTop: 24 },
+        ]}
+      >
         📚 MORE KNOWLEDGE CARDS
       </Text>
 
-      {REMAINING.map(card => (
+      {REMAINING.map((card) => (
         <InsightCard
           key={card.id}
           card={card}
@@ -253,27 +279,52 @@ function FeaturedCard({ card, learned, onToggle, colors }) {
     >
       <View style={styles.featCardTop}>
         <Text style={styles.featEmoji}>{card.emoji}</Text>
-        <View style={[styles.categoryChip, { backgroundColor: `${card.categoryColor}22` }]}>
-          <Text style={[styles.categoryChipText, { color: card.categoryColor }]}>
+        <View
+          style={[
+            styles.categoryChip,
+            { backgroundColor: `${card.categoryColor}22` },
+          ]}
+        >
+          <Text
+            style={[styles.categoryChipText, { color: card.categoryColor }]}
+          >
             {card.category}
           </Text>
         </View>
       </View>
 
-      <Text style={[styles.featTitle, { color: colors.textPrimary }]}>{card.title}</Text>
-      <Text style={[styles.featSummary, { color: colors.textSecondary }]} numberOfLines={4}>
+      <Text style={[styles.featTitle, { color: colors.textPrimary }]}>
+        {card.title}
+      </Text>
+      <Text
+        style={[styles.featSummary, { color: colors.textSecondary }]}
+        numberOfLines={4}
+      >
         {card.summary}
       </Text>
 
       <View style={styles.featFooter}>
-        <View style={[styles.readTimeBadge, { backgroundColor: 'rgba(255,255,255,0.07)' }]}>
-          <Ionicons name="time-outline" size={11} color={colors.textSecondary} />
+        <View
+          style={[
+            styles.readTimeBadge,
+            { backgroundColor: 'rgba(255,255,255,0.07)' },
+          ]}
+        >
+          <Ionicons
+            name="time-outline"
+            size={11}
+            color={colors.textSecondary}
+          />
           <Text style={[styles.readTimeText, { color: colors.textSecondary }]}>
             🕐 {card.readTime}
           </Text>
         </View>
-        <View style={[styles.xpBadge, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
-          <Text style={[styles.xpText, { color: colors.accentIndigo }]}>+{card.xpReward} XP</Text>
+        <View
+          style={[styles.xpBadge, { backgroundColor: 'rgba(99,102,241,0.15)' }]}
+        >
+          <Text style={[styles.xpText, { color: colors.accentIndigo }]}>
+            +{card.xpReward} XP
+          </Text>
         </View>
 
         <Pressable
@@ -322,21 +373,32 @@ function InsightCard({ card, learned, onToggle, colors }) {
       ]}
       onPress={() => {
         triggerLightImpact();
-        setExpanded(e => !e);
+        setExpanded((e) => !e);
       }}
       activeOpacity={0.85}
     >
       <View style={styles.insightHeader}>
         <Text style={styles.insightEmoji}>{card.emoji}</Text>
         <View style={styles.insightTitleBlock}>
-          <Text style={[styles.insightTitle, { color: colors.textPrimary }]}>{card.title}</Text>
+          <Text style={[styles.insightTitle, { color: colors.textPrimary }]}>
+            {card.title}
+          </Text>
           <View style={styles.insightMetaRow}>
-            <View style={[styles.categoryChip, { backgroundColor: `${card.categoryColor}22` }]}>
-              <Text style={[styles.categoryChipText, { color: card.categoryColor }]}>
+            <View
+              style={[
+                styles.categoryChip,
+                { backgroundColor: `${card.categoryColor}22` },
+              ]}
+            >
+              <Text
+                style={[styles.categoryChipText, { color: card.categoryColor }]}
+              >
                 {card.category}
               </Text>
             </View>
-            <Text style={[styles.readTimeInline, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.readTimeInline, { color: colors.textSecondary }]}
+            >
               🕐 {card.readTime}
             </Text>
           </View>
@@ -354,8 +416,15 @@ function InsightCard({ card, learned, onToggle, colors }) {
             {card.summary}
           </Text>
           <View style={styles.insightFooter}>
-            <View style={[styles.xpBadge, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
-              <Text style={[styles.xpText, { color: colors.accentIndigo }]}>+{card.xpReward} XP</Text>
+            <View
+              style={[
+                styles.xpBadge,
+                { backgroundColor: 'rgba(99,102,241,0.15)' },
+              ]}
+            >
+              <Text style={[styles.xpText, { color: colors.accentIndigo }]}>
+                +{card.xpReward} XP
+              </Text>
             </View>
             <Pressable
               style={[
@@ -377,7 +446,11 @@ function InsightCard({ card, learned, onToggle, colors }) {
               <Text
                 style={[
                   styles.learnedBtnText,
-                  { color: learned ? colors.accentEmerald : colors.textSecondary },
+                  {
+                    color: learned
+                      ? colors.accentEmerald
+                      : colors.textSecondary,
+                  },
                 ]}
               >
                 {learned ? 'Learned ✓' : 'Mark Learned'}
@@ -458,11 +531,21 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 8,
   },
-  featCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  featCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   featEmoji: { fontSize: 28 },
   featTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.3 },
   featSummary: { fontSize: 13, lineHeight: 20 },
-  featFooter: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  featFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
+  },
 
   // Insight card (vertical)
   insightCard: {
@@ -475,9 +558,19 @@ const styles = StyleSheet.create({
   insightEmoji: { fontSize: 22 },
   insightTitleBlock: { flex: 1 },
   insightTitle: { fontSize: 14, fontWeight: '700' },
-  insightMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
+  insightMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 3,
+  },
   insightBody: { fontSize: 13, lineHeight: 20, marginTop: 12 },
-  insightFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  insightFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
   readTimeInline: { fontSize: 11 },
 
   // Shared

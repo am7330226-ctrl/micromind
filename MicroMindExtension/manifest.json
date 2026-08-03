@@ -4,12 +4,7 @@
   "short_name": "MicroMind",
   "version": "2.0.0",
   "description": "Daily mental declutter, Eisenhower priority matrix, habit tracker & focus timer directly on your screen.",
-  "permissions": [
-    "sidePanel",
-    "storage",
-    "contextMenus",
-    "activeTab"
-  ],
+  "permissions": ["sidePanel", "storage", "contextMenus", "activeTab"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "MicroMind Quick Capture",

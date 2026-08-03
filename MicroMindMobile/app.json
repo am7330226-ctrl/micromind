@@ -22,9 +22,6 @@
       "favicon": "./assets/favicon.png",
       "name": "MicroMind — AI Second Brain"
     },
-    "plugins": [
-      "expo-font",
-      "expo-status-bar"
-    ]
+    "plugins": ["expo-font", "expo-status-bar"]
   }
 }

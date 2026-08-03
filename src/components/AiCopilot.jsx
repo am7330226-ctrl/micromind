@@ -11,23 +11,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppState, useDispatch, useAuth, createTask } from '../store.jsx';
-import { sendCopilotMessage, getApiKey, setApiKey } from '../utils/aiCopilotService.js';
+import {
+  sendCopilotMessage,
+  getApiKey,
+  setApiKey,
+} from '../utils/aiCopilotService.js';
 import { generateSubtasks } from '../utils/aiBreakdown.js';
 
 export default function AiCopilot({ showToast, onOpenPomodoro }) {
-  const state    = useAppState();
+  const state = useAppState();
   const dispatch = useDispatch();
   const { auth } = useAuth();
 
-  const [isOpen, setIsOpen]           = useState(false);
-  const [input, setInput]             = useState('');
-  const [loading, setLoading]         = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showKeySettings, setShowKeySettings] = useState(false);
-  const [keyInput, setKeyInput]       = useState('');
-  const [isOnline, setIsOnline]       = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [keyInput, setKeyInput] = useState('');
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
 
   useEffect(() => {
-    const handleOnline  = () => setIsOnline(true);
+    const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -39,7 +45,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
   const hasKey = Boolean(getApiKey());
   const isCloudActive = isOnline && hasKey;
-  const [messages, setMessages]       = useState([
+  const [messages, setMessages] = useState([
     {
       id: 'welcome',
       role: 'assistant',
@@ -54,12 +60,17 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
     setApiKey(keyInput);
     setShowKeySettings(false);
     if (showToast) {
-      showToast(keyInput.trim() ? 'Gemini API Key saved! Copilot online 🚀' : 'API Key removed (offline mode)', '🔑');
+      showToast(
+        keyInput.trim()
+          ? 'Gemini API Key saved! Copilot online 🚀'
+          : 'API Key removed (offline mode)',
+        '🔑',
+      );
     }
   };
 
   const messagesEndRef = useRef(null);
-  const inputRef       = useRef(null);
+  const inputRef = useRef(null);
 
   // Auto-scroll to bottom on new messages or loading state
   useEffect(() => {
@@ -89,7 +100,10 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         if (args.duration) {
           taskObj.timeEstimate = {
             minutes: args.duration,
-            label: args.duration >= 60 ? `${args.duration / 60}h` : `${args.duration}m`,
+            label:
+              args.duration >= 60
+                ? `${args.duration / 60}h`
+                : `${args.duration}m`,
           };
         }
         dispatch({ type: 'ADD_TASK', payload: taskObj, task: taskObj });
@@ -99,9 +113,17 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
       if (name === 'moveTask') {
         const tasks = state.tasks || [];
-        const match = tasks.find(t => t.id === args.taskId || t.text.toLowerCase().includes(String(args.taskId).toLowerCase()));
+        const match = tasks.find(
+          (t) =>
+            t.id === args.taskId ||
+            t.text.toLowerCase().includes(String(args.taskId).toLowerCase()),
+        );
         if (match) {
-          dispatch({ type: 'MOVE_TASK', id: match.id, category: args.newPriority || 'q1' });
+          dispatch({
+            type: 'MOVE_TASK',
+            id: match.id,
+            category: args.newPriority || 'q1',
+          });
           if (showToast) showToast(`Moved "${match.text}"`, '⚡');
           return `Moved "${match.text}" to ${args.newPriority || 'Q1'}`;
         }
@@ -109,7 +131,8 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
       if (name === 'startPomodoroTimer') {
         if (onOpenPomodoro) onOpenPomodoro();
-        if (showToast) showToast(`Pomodoro Timer opened (${args.minutes || 25}m)`, '🍓');
+        if (showToast)
+          showToast(`Pomodoro Timer opened (${args.minutes || 25}m)`, '🍓');
         return `Started ${args.minutes || 25}m Pomodoro session`;
       }
 
@@ -136,7 +159,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       timestamp: Date.now(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInput('');
     setLoading(true);
 
@@ -145,7 +168,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         text,
         messages.slice(-6),
         state,
-        auth.name
+        auth.name,
       );
 
       const executedActions = [];
@@ -155,16 +178,23 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
       }
 
       // Check if user asked to break down tasks
-      if (text.toLowerCase().includes('break down') || text.toLowerCase().includes('breakdown')) {
-        const q1Tasks = (state.tasks || []).filter(t => t.category === 'q1' && !t.completed);
+      if (
+        text.toLowerCase().includes('break down') ||
+        text.toLowerCase().includes('breakdown')
+      ) {
+        const q1Tasks = (state.tasks || []).filter(
+          (t) => t.category === 'q1' && !t.completed,
+        );
         if (q1Tasks.length > 0) {
           for (const task of q1Tasks.slice(0, 2)) {
             const subtasks = await generateSubtasks(task.text);
-            subtasks.forEach(subtext => {
+            subtasks.forEach((subtext) => {
               dispatch({ type: 'ADD_SUBTASK', id: task.id, text: subtext });
             });
           }
-          executedActions.push(`Generated sub-tasks for Do First priority items`);
+          executedActions.push(
+            `Generated sub-tasks for Do First priority items`,
+          );
         }
       }
 
@@ -177,17 +207,19 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         timestamp: Date.now(),
       };
 
-      setMessages(prev => [...prev, botMsg]);
+      setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
       console.error('AI Copilot Error:', err);
-      if (showToast) showToast('Copilot is currently offline. Check your API key.', '⚠️');
+      if (showToast)
+        showToast('Copilot is currently offline. Check your API key.', '⚠️');
 
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           id: String(Date.now() + 1),
           role: 'assistant',
-          content: "Copilot is currently offline. You can still ask me to add tasks or start timers!",
+          content:
+            'Copilot is currently offline. You can still ask me to add tasks or start timers!',
           timestamp: Date.now(),
         },
       ]);
@@ -207,7 +239,7 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
         type="button"
         id="copilot-fab-btn"
         className={`copilot-fab${isOpen ? ' active' : ''}`}
-        onClick={() => setIsOpen(o => !o)}
+        onClick={() => setIsOpen((o) => !o)}
         title="MicroMind AI Copilot"
         aria-label="Toggle AI Copilot Drawer"
         aria-expanded={isOpen}
@@ -239,14 +271,37 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                 </div>
                 <div>
                   <div className="copilot-title">MicroMind AI Copilot</div>
-                  <div className="copilot-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px' }}>
-                    <span style={{
-                      width: '7px', height: '7px', borderRadius: '50%',
-                      backgroundColor: isCloudActive ? '#10b981' : '#f59e0b',
-                      boxShadow: isCloudActive ? '0 0 8px rgba(16, 185, 129, 0.6)' : '0 0 8px rgba(245, 158, 11, 0.6)'
-                    }} />
-                    <span style={{ color: isCloudActive ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: '600' }}>
-                      {isCloudActive ? '🟢 Gemini 2.5 Active' : '⚡ Smart Local Engine'}
+                  <div
+                    className="copilot-subtitle"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        backgroundColor: isCloudActive ? '#10b981' : '#f59e0b',
+                        boxShadow: isCloudActive
+                          ? '0 0 8px rgba(16, 185, 129, 0.6)'
+                          : '0 0 8px rgba(245, 158, 11, 0.6)',
+                      }}
+                    />
+                    <span
+                      style={{
+                        color: isCloudActive
+                          ? 'var(--text-primary)'
+                          : 'var(--text-secondary)',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {isCloudActive
+                        ? '🟢 Gemini 2.5 Active'
+                        : '⚡ Smart Local Engine'}
                     </span>
                   </div>
                 </div>
@@ -257,45 +312,84 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                   className="copilot-icon-btn"
                   onClick={() => {
                     setKeyInput(getApiKey());
-                    setShowKeySettings(s => !s);
+                    setShowKeySettings((s) => !s);
                   }}
                   title="Configure Gemini API Key"
                   aria-label="Configure Gemini API Key"
-                >🔑</button>
+                >
+                  🔑
+                </button>
                 <button
                   type="button"
                   className="copilot-icon-btn"
-                  onClick={() => setMessages([
-                    {
-                      id: String(Date.now()),
-                      role: 'assistant',
-                      content: "Chat cleared! How can I assist you with your tasks?",
-                      timestamp: Date.now(),
-                    },
-                  ])}
+                  onClick={() =>
+                    setMessages([
+                      {
+                        id: String(Date.now()),
+                        role: 'assistant',
+                        content:
+                          'Chat cleared! How can I assist you with your tasks?',
+                        timestamp: Date.now(),
+                      },
+                    ])
+                  }
                   title="Clear Chat"
                   aria-label="Clear chat messages"
-                >🗑️</button>
+                >
+                  🗑️
+                </button>
                 <button
                   type="button"
                   className="copilot-close-btn"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close AI Copilot Drawer"
-                >✕</button>
+                >
+                  ✕
+                </button>
               </div>
             </div>
 
             {/* API Key Inline Configuration Form */}
             {showKeySettings && (
-              <form onSubmit={handleSaveKey} style={{ padding: '10px 14px', backgroundColor: 'rgba(99, 14, 212, 0.08)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <form
+                onSubmit={handleSaveKey}
+                style={{
+                  padding: '10px 14px',
+                  backgroundColor: 'rgba(99, 14, 212, 0.08)',
+                  borderBottom: '1px solid var(--border-color)',
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                }}
+              >
                 <input
                   type="password"
                   placeholder="Paste Gemini API Key (AIzaSy...)"
                   value={keyInput}
-                  onChange={e => setKeyInput(e.target.value)}
-                  style={{ flex: 1, padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '12px', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                  onChange={(e) => setKeyInput(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    fontSize: '12px',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-primary)',
+                  }}
                 />
-                <button type="submit" style={{ padding: '6px 12px', borderRadius: '8px', background: '#630ed4', color: '#fff', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    background: '#630ed4',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
                   Save
                 </button>
               </form>
@@ -303,20 +397,36 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
             {/* Quick Action Prompt Chips */}
             <div className="copilot-quick-chips">
-              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("➕ Add task: Learn React (45m)")}>
+              <button
+                type="button"
+                className="copilot-chip"
+                onClick={() =>
+                  handleQuickPrompt('➕ Add task: Learn React (45m)')
+                }
+              >
                 ➕ Add React Task
               </button>
-              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("✨ Break down my Do First tasks")}>
+              <button
+                type="button"
+                className="copilot-chip"
+                onClick={() =>
+                  handleQuickPrompt('✨ Break down my Do First tasks')
+                }
+              >
                 ✨ Breakdown Q1
               </button>
-              <button type="button" className="copilot-chip" onClick={() => handleQuickPrompt("⏱️ Start 25m Pomodoro timer")}>
+              <button
+                type="button"
+                className="copilot-chip"
+                onClick={() => handleQuickPrompt('⏱️ Start 25m Pomodoro timer')}
+              >
                 ⏱️ 25m Timer
               </button>
             </div>
 
             {/* Messages Body */}
             <div className="copilot-messages">
-              {messages.map(msg => (
+              {messages.map((msg) => (
                 <div key={msg.id} className={`copilot-msg-row ${msg.role}`}>
                   {msg.role === 'assistant' && (
                     <div className="msg-avatar">🤖</div>
@@ -333,8 +443,22 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
 
                     {/* Engine Origin Badge */}
                     {msg.role === 'assistant' && msg.engine && (
-                      <div className="engine-badge" style={{ fontSize: '10px', marginTop: '4px', opacity: 0.75, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span>{msg.engine === 'online' ? '✨ Powered by Gemini 2.5 Flash' : '⚡ Processed via Smart Local Engine'}</span>
+                      <div
+                        className="engine-badge"
+                        style={{
+                          fontSize: '10px',
+                          marginTop: '4px',
+                          opacity: 0.75,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <span>
+                          {msg.engine === 'online'
+                            ? '✨ Powered by Gemini 2.5 Flash'
+                            : '⚡ Processed via Smart Local Engine'}
+                        </span>
                       </div>
                     )}
 
@@ -357,7 +481,9 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
                 <div className="copilot-msg-row assistant">
                   <div className="msg-avatar">🤖</div>
                   <div className="msg-bubble loading-bubble">
-                    <span className="dot" /><span className="dot" /><span className="dot" />
+                    <span className="dot" />
+                    <span className="dot" />
+                    <span className="dot" />
                   </div>
                 </div>
               )}
@@ -366,13 +492,19 @@ export default function AiCopilot({ showToast, onOpenPomodoro }) {
             </div>
 
             {/* Input Form */}
-            <form className="copilot-input-form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+            <form
+              className="copilot-input-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+            >
               <input
                 ref={inputRef}
                 type="text"
                 className="copilot-input"
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask Copilot or command: 'add task...', 'timer'..."
                 aria-label="AI Copilot input"
                 disabled={loading}

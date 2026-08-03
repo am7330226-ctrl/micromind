@@ -9,7 +9,9 @@ chrome.runtime.onInstalled.addListener(() => {
 
   // Enable side panel to open on action click if configured
   if (chrome.sidePanel?.setPanelBehavior) {
-    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
+    chrome.sidePanel
+      .setPanelBehavior({ openPanelOnActionClick: false })
+      .catch(() => {});
   }
 });
 

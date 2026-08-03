@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 import { useStoreState, useAuth } from '../store/StoreContext';
 import { supabase } from '../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,7 +37,10 @@ export default function AuthModal({ visible, onClose }) {
         if (error) throw error;
         if (data.user) setUser(data.user);
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (error) throw error;
         if (data.user) setUser(data.user);
       }
@@ -49,12 +60,29 @@ export default function AuthModal({ visible, onClose }) {
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
-        <View style={[styles.card, { backgroundColor: colors.bgSidebar, borderColor: colors.borderColor }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.bgSidebar,
+              borderColor: colors.borderColor,
+            },
+          ]}
+        >
           <View style={styles.headerRow}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
-              {user ? '👤 Account Settings' : isSignUp ? 'Create MicroMind Account' : 'Sign In to MicroMind'}
+              {user
+                ? '👤 Account Settings'
+                : isSignUp
+                  ? 'Create MicroMind Account'
+                  : 'Sign In to MicroMind'}
             </Text>
             <Pressable onPress={onClose}>
               <Ionicons name="close" size={20} color={colors.textSecondary} />
@@ -63,8 +91,14 @@ export default function AuthModal({ visible, onClose }) {
 
           {user ? (
             <View style={styles.userSection}>
-              <Text style={[styles.userEmailText, { color: colors.textPrimary }]}>Signed in as:</Text>
-              <Text style={[styles.userEmail, { color: colors.primaryViolet }]}>{user.email}</Text>
+              <Text
+                style={[styles.userEmailText, { color: colors.textPrimary }]}
+              >
+                Signed in as:
+              </Text>
+              <Text style={[styles.userEmail, { color: colors.primaryViolet }]}>
+                {user.email}
+              </Text>
 
               <Pressable style={styles.signOutButton} onPress={handleSignOut}>
                 <Ionicons name="log-out-outline" size={18} color="#ef4444" />
@@ -73,11 +107,24 @@ export default function AuthModal({ visible, onClose }) {
             </View>
           ) : (
             <View style={styles.form}>
-              {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+              {errorMessage ? (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              ) : null}
 
-              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Email Address</Text>
+              <Text
+                style={[styles.inputLabel, { color: colors.textSecondary }]}
+              >
+                Email Address
+              </Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.bgCard, borderColor: colors.borderColor, color: colors.textPrimary }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.borderColor,
+                    color: colors.textPrimary,
+                  },
+                ]}
                 placeholder="you@example.com"
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="email-address"
@@ -86,9 +133,20 @@ export default function AuthModal({ visible, onClose }) {
                 onChangeText={setEmail}
               />
 
-              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Password</Text>
+              <Text
+                style={[styles.inputLabel, { color: colors.textSecondary }]}
+              >
+                Password
+              </Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.bgCard, borderColor: colors.borderColor, color: colors.textPrimary }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.borderColor,
+                    color: colors.textPrimary,
+                  },
+                ]}
                 placeholder="••••••••"
                 placeholderTextColor={colors.textSecondary}
                 secureTextEntry
@@ -96,17 +154,36 @@ export default function AuthModal({ visible, onClose }) {
                 onChangeText={setPassword}
               />
 
-              <Pressable style={[styles.submitBtn, { backgroundColor: colors.primaryViolet }]} onPress={handleAuthSubmit} disabled={loading}>
+              <Pressable
+                style={[
+                  styles.submitBtn,
+                  { backgroundColor: colors.primaryViolet },
+                ]}
+                onPress={handleAuthSubmit}
+                disabled={loading}
+              >
                 {loading ? (
                   <ActivityIndicator color="#ffffff" />
                 ) : (
-                  <Text style={styles.submitBtnText}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
+                  <Text style={styles.submitBtnText}>
+                    {isSignUp ? 'Sign Up' : 'Sign In'}
+                  </Text>
                 )}
               </Pressable>
 
-              <Pressable onPress={() => setIsSignUp(!isSignUp)} style={styles.toggleAuth}>
-                <Text style={[styles.toggleAuthText, { color: colors.textSecondary }]}>
-                  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+              <Pressable
+                onPress={() => setIsSignUp(!isSignUp)}
+                style={styles.toggleAuth}
+              >
+                <Text
+                  style={[
+                    styles.toggleAuthText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {isSignUp
+                    ? 'Already have an account? Sign In'
+                    : "Don't have an account? Sign Up"}
                 </Text>
               </Pressable>
             </View>

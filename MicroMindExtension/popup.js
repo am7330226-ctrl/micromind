@@ -35,10 +35,14 @@ chrome.storage.local.get(['micromind_tasks', 'micromind_habits'], (data) => {
 // Category classifier
 function classify(text) {
   const lower = text.toLowerCase();
-  if (/\b(urgent|asap|critical|due today|today|fix|bug)\b/.test(lower)) return 'Q1 DO FIRST';
-  if (/\b(plan|strategy|goals|study|learn|workout|design|read)\b/.test(lower)) return 'Q2 SCHEDULE';
-  if (/\b(email|call|reply|text|meeting|sync|book)\b/.test(lower)) return 'Q3 DELEGATE';
-  if (/\b(scroll|browse|watch|game|social)\b/.test(lower)) return 'Q4 ELIMINATE';
+  if (/\b(urgent|asap|critical|due today|today|fix|bug)\b/.test(lower))
+    return 'Q1 DO FIRST';
+  if (/\b(plan|strategy|goals|study|learn|workout|design|read)\b/.test(lower))
+    return 'Q2 SCHEDULE';
+  if (/\b(email|call|reply|text|meeting|sync|book)\b/.test(lower))
+    return 'Q3 DELEGATE';
+  if (/\b(scroll|browse|watch|game|social)\b/.test(lower))
+    return 'Q4 ELIMINATE';
   return 'INBOX';
 }
 
@@ -86,19 +90,21 @@ function handleAddTask() {
 }
 
 function toggleTask(id) {
-  tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+  tasks = tasks.map((t) =>
+    t.id === id ? { ...t, completed: !t.completed } : t,
+  );
   saveTasks();
   render();
 }
 
 function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
+  tasks = tasks.filter((t) => t.id !== id);
   saveTasks();
   render();
 }
 
 function toggleHabit(id) {
-  habits = habits.map(h => h.id === id ? { ...h, done: !h.done } : h);
+  habits = habits.map((h) => (h.id === id ? { ...h, done: !h.done } : h));
   chrome.storage.local.set({ micromind_habits: habits });
   renderHabits();
 }
@@ -113,9 +119,10 @@ function render() {
   taskList.innerHTML = '';
 
   if (tasks.length === 0) {
-    taskList.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); text-align:center; padding:12px;">No tasks. Brain dump above!</div>';
+    taskList.innerHTML =
+      '<div style="font-size:12px; color:var(--text-secondary); text-align:center; padding:12px;">No tasks. Brain dump above!</div>';
   } else {
-    tasks.forEach(t => {
+    tasks.forEach((t) => {
       const item = document.createElement('div');
       item.className = `task-item ${t.completed ? 'completed' : ''}`;
 
@@ -145,7 +152,7 @@ function render() {
 
 function renderHabits() {
   habitsRow.innerHTML = '';
-  habits.forEach(h => {
+  habits.forEach((h) => {
     const chip = document.createElement('div');
     chip.className = `habit-chip ${h.done ? 'done' : ''}`;
     chip.innerHTML = `<span>${h.emoji}</span><span>${h.label}</span>`;
@@ -183,7 +190,10 @@ function updateTimerDisplay() {
 // Side Panel Launcher
 openSidePanelBtn.addEventListener('click', async () => {
   if (chrome.sidePanel?.open) {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
     if (tab?.windowId) {
       chrome.sidePanel.open({ windowId: tab.windowId });
       window.close();

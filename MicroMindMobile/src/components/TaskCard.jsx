@@ -2,13 +2,20 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { Ionicons } from '@expo/vector-icons';
-import { triggerTaskCompletionHaptic, triggerLightImpact } from '../services/haptics';
+import {
+  triggerTaskCompletionHaptic,
+  triggerLightImpact,
+} from '../services/haptics';
 
 const CATEGORY_COLORS = {
   q1: { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', label: 'Q1 Do First' },
   q2: { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', label: 'Q2 Schedule' },
   q3: { bg: 'rgba(234, 179, 8, 0.15)', text: '#eab308', label: 'Q3 Delegate' },
-  q4: { bg: 'rgba(148, 163, 184, 0.15)', text: '#94a3b8', label: 'Q4 Eliminate' },
+  q4: {
+    bg: 'rgba(148, 163, 184, 0.15)',
+    text: '#94a3b8',
+    label: 'Q4 Eliminate',
+  },
   inbox: { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7', label: 'Inbox' },
 };
 
@@ -21,7 +28,7 @@ export default function TaskCard({ task, onOpenDetail }) {
   const categoryInfo = CATEGORY_COLORS[task.category] || CATEGORY_COLORS.inbox;
 
   const subtasks = task.subtasks || [];
-  const completedSubtasks = subtasks.filter(s => s.completed).length;
+  const completedSubtasks = subtasks.filter((s) => s.completed).length;
 
   const handleToggle = () => {
     triggerTaskCompletionHaptic();
@@ -39,7 +46,9 @@ export default function TaskCard({ task, onOpenDetail }) {
         styles.card,
         {
           backgroundColor: colors.bgCard,
-          borderColor: isCompleted ? 'rgba(34, 197, 94, 0.3)' : colors.borderColor,
+          borderColor: isCompleted
+            ? 'rgba(34, 197, 94, 0.3)'
+            : colors.borderColor,
           opacity: isCompleted ? 0.65 : 1,
         },
       ]}
@@ -80,12 +89,23 @@ export default function TaskCard({ task, onOpenDetail }) {
         {/* Badges Row */}
         <View style={styles.badgeRow}>
           <View style={[styles.badge, { backgroundColor: categoryInfo.bg }]}>
-            <Text style={[styles.badgeText, { color: categoryInfo.text }]}>{categoryInfo.label}</Text>
+            <Text style={[styles.badgeText, { color: categoryInfo.text }]}>
+              {categoryInfo.label}
+            </Text>
           </View>
 
           {task.timeEstimate?.label && (
-            <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
-              <Ionicons name="time-outline" size={10} color={colors.textSecondary} />
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: 'rgba(255,255,255,0.06)' },
+              ]}
+            >
+              <Ionicons
+                name="time-outline"
+                size={10}
+                color={colors.textSecondary}
+              />
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
                 {task.timeEstimate.label}
               </Text>
@@ -93,8 +113,17 @@ export default function TaskCard({ task, onOpenDetail }) {
           )}
 
           {subtasks.length > 0 && (
-            <View style={[styles.badge, { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
-              <Ionicons name="list-outline" size={10} color={colors.textSecondary} />
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: 'rgba(255,255,255,0.06)' },
+              ]}
+            >
+              <Ionicons
+                name="list-outline"
+                size={10}
+                color={colors.textSecondary}
+              />
               <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
                 {completedSubtasks}/{subtasks.length}
               </Text>

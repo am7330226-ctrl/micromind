@@ -7,11 +7,14 @@ import { useState, useEffect } from 'react';
 
 export default function PwaInstallPrompt({ showToast }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled]       = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Detect if app is already running in standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone
+    ) {
       setIsInstalled(true);
       return;
     }
@@ -68,7 +71,8 @@ export default function PwaInstallPrompt({ showToast }) {
         gap: '6px',
         padding: '6px 14px',
         borderRadius: '999px',
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15))',
+        background:
+          'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15))',
         border: '1.5px solid rgba(139, 92, 246, 0.35)',
         color: 'var(--color-violet)',
         fontSize: '0.82rem',

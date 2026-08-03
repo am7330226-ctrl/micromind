@@ -10,8 +10,8 @@ export default function Header() {
     clarityScore >= 70
       ? colors.accentEmerald
       : clarityScore >= 40
-      ? colors.accentAmber
-      : '#ef4444';
+        ? colors.accentAmber
+        : '#ef4444';
 
   return (
     <View
@@ -22,25 +22,38 @@ export default function Header() {
     >
       {/* ── Left: Logo + pills ─────────────────────────────────────────────── */}
       <View style={styles.leftSection}>
-        <Text style={[styles.appTitle, { color: colors.textPrimary }]}>🧠 MicroMind</Text>
+        <Text style={[styles.appTitle, { color: colors.textPrimary }]}>
+          🧠 MicroMind
+        </Text>
 
-        <View style={[styles.pill, { backgroundColor: 'rgba(249,115,22,0.15)' }]}>
+        <View
+          style={[styles.pill, { backgroundColor: 'rgba(249,115,22,0.15)' }]}
+        >
           <Text style={styles.pillEmoji}>🔥</Text>
           <Text style={[styles.pillText, { color: '#f97316' }]}>{streak}d</Text>
         </View>
 
-        <View style={[styles.pill, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
+        <View
+          style={[styles.pill, { backgroundColor: 'rgba(99,102,241,0.15)' }]}
+        >
           <Text style={styles.pillEmoji}>⚡</Text>
-          <Text style={[styles.pillText, { color: colors.primaryViolet }]}>Lv {level}</Text>
+          <Text style={[styles.pillText, { color: colors.primaryViolet }]}>
+            Lv {level}
+          </Text>
         </View>
       </View>
 
       {/* ── Right: Clarity Score Gauge ─────────────────────────────────────── */}
       <View style={styles.claritySection}>
-        <Text style={[styles.clarityLabel, { color: colors.textSecondary }]}>Clarity</Text>
+        <Text style={[styles.clarityLabel, { color: colors.textSecondary }]}>
+          Clarity
+        </Text>
         <View style={styles.clarityRow}>
           <View
-            style={[styles.gaugeTrack, { backgroundColor: 'rgba(255,255,255,0.10)' }]}
+            style={[
+              styles.gaugeTrack,
+              { backgroundColor: 'rgba(255,255,255,0.10)' },
+            ]}
           >
             <View
               style={[
@@ -49,7 +62,9 @@ export default function Header() {
               ]}
             />
           </View>
-          <Text style={[styles.clarityNum, { color: gaugeColor }]}>{clarityScore}</Text>
+          <Text style={[styles.clarityNum, { color: gaugeColor }]}>
+            {clarityScore}
+          </Text>
         </View>
       </View>
     </View>

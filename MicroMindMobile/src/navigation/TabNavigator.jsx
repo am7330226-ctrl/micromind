@@ -28,11 +28,15 @@ function InboxScreen({ onOpenDetail }) {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {tasks.length === 0 ? (
           <View style={styles.emptyInbox}>
-            <Ionicons name="flash-outline" size={36} color={colors.textSecondary} />
+            <Ionicons
+              name="flash-outline"
+              size={36}
+              color={colors.textSecondary}
+            />
             <View style={{ height: 8 }} />
           </View>
         ) : (
-          tasks.map(task => (
+          tasks.map((task) => (
             <TaskCard key={task.id} task={task} onOpenDetail={onOpenDetail} />
           ))
         )}
@@ -49,13 +53,15 @@ export default function TabNavigator() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [detailVisible, setDetailVisible] = useState(false);
 
-  const handleOpenDetail = task => {
+  const handleOpenDetail = (task) => {
     setSelectedTask(task);
     setDetailVisible(true);
   };
 
   // Unreviewed thought count for badge
-  const deckBadgeCount = (thoughts || []).filter(t => t.status === 'active').length;
+  const deckBadgeCount = (thoughts || []).filter(
+    (t) => t.status === 'active',
+  ).length;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bgMain }}>
@@ -80,12 +86,18 @@ export default function TabNavigator() {
           },
           tabBarIcon: ({ color, focused, size }) => {
             const iconMap = {
-              Feed:     focused ? 'sparkles'        : 'sparkles-outline',
-              Deck:     focused ? 'albums'           : 'albums-outline',
-              Inbox:    focused ? 'flash'            : 'flash-outline',
-              Settings: focused ? 'settings'         : 'settings-outline',
+              Feed: focused ? 'sparkles' : 'sparkles-outline',
+              Deck: focused ? 'albums' : 'albums-outline',
+              Inbox: focused ? 'flash' : 'flash-outline',
+              Settings: focused ? 'settings' : 'settings-outline',
             };
-            return <Ionicons name={iconMap[route.name] || 'ellipse'} size={22} color={color} />;
+            return (
+              <Ionicons
+                name={iconMap[route.name] || 'ellipse'}
+                size={22}
+                color={color}
+              />
+            );
           },
         })}
       >
@@ -114,10 +126,7 @@ export default function TabNavigator() {
         />
 
         {/* Inbox — Brain Dump + Tasks */}
-        <Tab.Screen
-          name="Inbox"
-          options={{ tabBarLabel: 'Inbox' }}
-        >
+        <Tab.Screen name="Inbox" options={{ tabBarLabel: 'Inbox' }}>
           {() => <InboxScreen onOpenDetail={handleOpenDetail} />}
         </Tab.Screen>
 

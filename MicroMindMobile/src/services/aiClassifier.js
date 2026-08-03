@@ -11,7 +11,7 @@ const QUADRANT_PATTERNS = {
 
 /**
  * Classifies a task string into an Eisenhower category
- * @param {string} text 
+ * @param {string} text
  * @returns {string} 'q1' | 'q2' | 'q3' | 'q4' | 'inbox'
  */
 export function classifyTask(text) {
@@ -26,17 +26,52 @@ export function classifyTask(text) {
 }
 
 const KEYWORD_RULES = [
-  { pattern: /\b(call|phone|text|ping|slack|reply|confirm|quick)\b/i, minutes: 5 },
-  { pattern: /\b(check|read|glance|verify|look at|review notification)\b/i, minutes: 10 },
-  { pattern: /\b(email|respond|schedule|book|reserve|purchase|order|pay|invoice|form|sign)\b/i, minutes: 15 },
+  {
+    pattern: /\b(call|phone|text|ping|slack|reply|confirm|quick)\b/i,
+    minutes: 5,
+  },
+  {
+    pattern: /\b(check|read|glance|verify|look at|review notification)\b/i,
+    minutes: 10,
+  },
+  {
+    pattern:
+      /\b(email|respond|schedule|book|reserve|purchase|order|pay|invoice|form|sign)\b/i,
+    minutes: 15,
+  },
   { pattern: /\b(meeting|standup|sync|1:1|talk with|discuss)\b/i, minutes: 30 },
-  { pattern: /\b(fix|patch|bug|hotfix|debug|tweak|update|edit|revise)\b/i, minutes: 30 },
-  { pattern: /\b(write|draft|compose|prepare|outline|summarize|document|report|slides|presentation|proposal)\b/i, minutes: 45 },
-  { pattern: /\b(design|mockup|wireframe|prototype|figma|sketch|ui|ux)\b/i, minutes: 60 },
-  { pattern: /\b(implement|build|develop|create|code|program|refactor|migrate|integrate)\b/i, minutes: 60 },
-  { pattern: /\b(research|analyze|investigate|study|explore|audit|evaluate)\b/i, minutes: 60 },
-  { pattern: /\b(launch|deploy|release|ship|plan|strategy|roadmap|architect|system|feature|project)\b/i, minutes: 90 },
-  { pattern: /\b(campaign|marketing|onboarding|workshop|training|course|tutorial)\b/i, minutes: 120 },
+  {
+    pattern: /\b(fix|patch|bug|hotfix|debug|tweak|update|edit|revise)\b/i,
+    minutes: 30,
+  },
+  {
+    pattern:
+      /\b(write|draft|compose|prepare|outline|summarize|document|report|slides|presentation|proposal)\b/i,
+    minutes: 45,
+  },
+  {
+    pattern: /\b(design|mockup|wireframe|prototype|figma|sketch|ui|ux)\b/i,
+    minutes: 60,
+  },
+  {
+    pattern:
+      /\b(implement|build|develop|create|code|program|refactor|migrate|integrate)\b/i,
+    minutes: 60,
+  },
+  {
+    pattern: /\b(research|analyze|investigate|study|explore|audit|evaluate)\b/i,
+    minutes: 60,
+  },
+  {
+    pattern:
+      /\b(launch|deploy|release|ship|plan|strategy|roadmap|architect|system|feature|project)\b/i,
+    minutes: 90,
+  },
+  {
+    pattern:
+      /\b(campaign|marketing|onboarding|workshop|training|course|tutorial)\b/i,
+    minutes: 120,
+  },
 ];
 
 export function formatMinutes(minutes) {
@@ -68,7 +103,8 @@ export function estimateTaskTime(text) {
 
 const BREAKDOWN_RULES = [
   {
-    pattern: /\b(solve|practice|questions|problems|leetcode|hackerrank|exercises|dsa|algo|coding questions)\b/i,
+    pattern:
+      /\b(solve|practice|questions|problems|leetcode|hackerrank|exercises|dsa|algo|coding questions)\b/i,
     subtasks: [
       'Pick 3 topic problems on LeetCode or HackerRank',
       'Set up local Python IDE or Jupyter environment',
@@ -86,7 +122,8 @@ const BREAKDOWN_RULES = [
     ],
   },
   {
-    pattern: /\b(build|develop|implement|code|program|react|node|vue|css|html|frontend|backend|api|app)\b/i,
+    pattern:
+      /\b(build|develop|implement|code|program|react|node|vue|css|html|frontend|backend|api|app)\b/i,
     subtasks: [
       'Set up component structure and initial file layout',
       'Implement UI layout and core state management',
@@ -104,7 +141,8 @@ const BREAKDOWN_RULES = [
     ],
   },
   {
-    pattern: /\b(study|learn|read|chapter|course|exam|prep|quiz|test|tutorial)\b/i,
+    pattern:
+      /\b(study|learn|read|chapter|course|exam|prep|quiz|test|tutorial)\b/i,
     subtasks: [
       'Review core concepts and highlight key formulas',
       'Solve 5 practice problems without checking answer key',
@@ -131,7 +169,7 @@ const FALLBACK_SUBTASKS = [
 ];
 
 export async function generateSubtasks(taskText) {
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 300));
   if (!taskText || typeof taskText !== 'string') return FALLBACK_SUBTASKS;
 
   for (const rule of BREAKDOWN_RULES) {

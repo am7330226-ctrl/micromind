@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, Modal, StyleSheet, Pressable, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+} from 'react-native';
 import { useStoreState, useAuth } from '../store/StoreContext';
 import { THEMES } from '../theme/themes';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +17,7 @@ export default function ThemeSelectorModal({ visible, onClose }) {
   const { setTheme } = useAuth();
   const colors = theme.colors;
 
-  const handleSelectTheme = selectedTheme => {
+  const handleSelectTheme = (selectedTheme) => {
     if (level < selectedTheme.unlockLevel) return;
     triggerLightImpact();
     setTheme(selectedTheme.id);
@@ -18,18 +25,36 @@ export default function ThemeSelectorModal({ visible, onClose }) {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
-        <View style={[styles.sheet, { backgroundColor: colors.bgSidebar, borderColor: colors.borderColor }]}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.bgSidebar,
+              borderColor: colors.borderColor,
+            },
+          ]}
+        >
           <View style={styles.headerRow}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>🎨 Select Theme</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              🎨 Select Theme
+            </Text>
             <Pressable onPress={onClose}>
               <Ionicons name="close" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
 
-          <ScrollView style={styles.themeList} showsVerticalScrollIndicator={false}>
-            {THEMES.map(t => {
+          <ScrollView
+            style={styles.themeList}
+            showsVerticalScrollIndicator={false}
+          >
+            {THEMES.map((t) => {
               const isUnlocked = level >= t.unlockLevel;
               const isActive = activeThemeId === t.id;
 
@@ -39,8 +64,12 @@ export default function ThemeSelectorModal({ visible, onClose }) {
                   style={[
                     styles.themeCard,
                     {
-                      backgroundColor: isActive ? 'rgba(168, 85, 247, 0.2)' : colors.bgCard,
-                      borderColor: isActive ? colors.primaryViolet : colors.borderColor,
+                      backgroundColor: isActive
+                        ? 'rgba(168, 85, 247, 0.2)'
+                        : colors.bgCard,
+                      borderColor: isActive
+                        ? colors.primaryViolet
+                        : colors.borderColor,
                       opacity: isUnlocked ? 1 : 0.5,
                     },
                   ]}
@@ -49,8 +78,19 @@ export default function ThemeSelectorModal({ visible, onClose }) {
                 >
                   <Text style={{ fontSize: 24 }}>{t.emoji}</Text>
                   <View style={styles.themeInfo}>
-                    <Text style={[styles.themeName, { color: colors.textPrimary }]}>{t.name}</Text>
-                    <Text style={[styles.themeDesc, { color: colors.textSecondary }]}>{t.description}</Text>
+                    <Text
+                      style={[styles.themeName, { color: colors.textPrimary }]}
+                    >
+                      {t.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.themeDesc,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {t.description}
+                    </Text>
                   </View>
 
                   {!isUnlocked ? (
@@ -59,7 +99,11 @@ export default function ThemeSelectorModal({ visible, onClose }) {
                       <Text style={styles.lockText}>Lvl {t.unlockLevel}</Text>
                     </View>
                   ) : isActive ? (
-                    <Ionicons name="checkmark-circle" size={20} color={colors.primaryViolet} />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={colors.primaryViolet}
+                    />
                   ) : null}
                 </Pressable>
               );

@@ -31,14 +31,22 @@ export async function requestNotificationPermission() {
  * @param {string} emoji
  * @param {function} showToast
  */
-export function sendSmartNotification(title, body, emoji = '🔔', showToast = null) {
+export function sendSmartNotification(
+  title,
+  body,
+  emoji = '🔔',
+  showToast = null,
+) {
   // In-app toast feedback
   if (showToast) {
     showToast(`${title}: ${body}`, emoji);
   }
 
   // Native Web Browser Push Notification
-  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+  if (
+    typeof Notification !== 'undefined' &&
+    Notification.permission === 'granted'
+  ) {
     try {
       new Notification(`${emoji} ${title}`, {
         body,
@@ -62,7 +70,7 @@ export function checkSmartReminders(appState, showToast = null) {
   if (now - lastReminderTime < REMINDER_COOLDOWN_MS) return;
 
   const tasks = appState?.tasks || [];
-  const activeQ1 = tasks.filter(t => t.category === 'q1' && !t.completed);
+  const activeQ1 = tasks.filter((t) => t.category === 'q1' && !t.completed);
   const hour = new Date().getHours();
 
   // 1. Morning Urgent Q1 Task Nudge (8 AM - 12 PM)
@@ -73,21 +81,23 @@ export function checkSmartReminders(appState, showToast = null) {
       'Morning Focus Opportunity',
       `You have ${activeQ1.length} Q1 Do-First task${activeQ1.length > 1 ? 's' : ''}. High priority: "${topTask.text.slice(0, 30)}"`,
       '🔥',
-      showToast
+      showToast,
     );
     return;
   }
 
   // 2. Low Energy Mood Suggestion
   if (appState?.moodToday === 1 || appState?.moodToday === 2) {
-    const quickInbox = tasks.filter(t => t.category === 'inbox' && !t.completed);
+    const quickInbox = tasks.filter(
+      (t) => t.category === 'inbox' && !t.completed,
+    );
     if (quickInbox.length > 0) {
       lastReminderTime = now;
       sendSmartNotification(
         'Gentle Mood Care',
         `Feeling low energy? Try clearing a quick inbox thought instead of heavy Q1 tasks.`,
         '🌱',
-        showToast
+        showToast,
       );
       return;
     }
@@ -95,14 +105,14 @@ export function checkSmartReminders(appState, showToast = null) {
 
   // 3. Evening Momentum Wrap-Up (5 PM - 8 PM)
   if (hour >= 17 && hour <= 20) {
-    const completedCount = tasks.filter(t => t.completed).length;
+    const completedCount = tasks.filter((t) => t.completed).length;
     if (completedCount > 0) {
       lastReminderTime = now;
       sendSmartNotification(
         'Daily Progress Wrap-Up',
         `You've completed ${completedCount} task${completedCount > 1 ? 's' : ''} today! Review your evening briefing on the dashboard.`,
         '🌅',
-        showToast
+        showToast,
       );
       return;
     }

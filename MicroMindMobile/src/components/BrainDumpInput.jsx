@@ -1,22 +1,37 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Pressable, Text, ScrollView } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  Text,
+  ScrollView,
+} from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { classifyTask, estimateTaskTime } from '../services/aiClassifier';
 import { Ionicons } from '@expo/vector-icons';
 import { triggerMediumImpact, triggerLightImpact } from '../services/haptics';
 
 const TAGS = [
-  { id: 'Idea',       emoji: '💡', label: 'Idea' },
-  { id: 'Learning',   emoji: '🎓', label: 'Learning' },
-  { id: 'Habit',      emoji: '🌿', label: 'Habit' },
+  { id: 'Idea', emoji: '💡', label: 'Idea' },
+  { id: 'Learning', emoji: '🎓', label: 'Learning' },
+  { id: 'Habit', emoji: '🌿', label: 'Habit' },
   { id: 'Reflection', emoji: '🪞', label: 'Reflection' },
 ];
 
 const TAG_COLORS = {
-  Idea:       { bg: 'rgba(99,102,241,0.18)',  text: '#6366F1', activeBg: '#6366F1' },
-  Learning:   { bg: 'rgba(16,185,129,0.18)',  text: '#10B981', activeBg: '#10B981' },
-  Habit:      { bg: 'rgba(245,158,11,0.18)',  text: '#F59E0B', activeBg: '#F59E0B' },
-  Reflection: { bg: 'rgba(236,72,153,0.18)',  text: '#EC4899', activeBg: '#EC4899' },
+  Idea: { bg: 'rgba(99,102,241,0.18)', text: '#6366F1', activeBg: '#6366F1' },
+  Learning: {
+    bg: 'rgba(16,185,129,0.18)',
+    text: '#10B981',
+    activeBg: '#10B981',
+  },
+  Habit: { bg: 'rgba(245,158,11,0.18)', text: '#F59E0B', activeBg: '#F59E0B' },
+  Reflection: {
+    bg: 'rgba(236,72,153,0.18)',
+    text: '#EC4899',
+    activeBg: '#EC4899',
+  },
 };
 
 export default function BrainDumpInput() {
@@ -29,7 +44,7 @@ export default function BrainDumpInput() {
   const [mode, setMode] = useState('task'); // 'task' | 'thought'
 
   const predictedCategory = text.trim() ? classifyTask(text) : null;
-  const timeEstimate      = text.trim() ? estimateTaskTime(text) : null;
+  const timeEstimate = text.trim() ? estimateTaskTime(text) : null;
 
   const canSubmit = text.trim().length > 0;
 
@@ -55,15 +70,25 @@ export default function BrainDumpInput() {
     setSelectedTag(null);
   };
 
-  const handleTagPress = tagId => {
+  const handleTagPress = (tagId) => {
     triggerLightImpact();
-    setSelectedTag(prev => (prev === tagId ? null : tagId));
+    setSelectedTag((prev) => (prev === tagId ? null : tagId));
   };
 
   const tagStyle = selectedTag ? TAG_COLORS[selectedTag] : null;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.bgCard, borderColor: selectedTag ? (tagStyle?.text || colors.borderColor) : colors.borderColor }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.bgCard,
+          borderColor: selectedTag
+            ? tagStyle?.text || colors.borderColor
+            : colors.borderColor,
+        },
+      ]}
+    >
       {/* ── Input Row ─────────────────────────────────────────────────────── */}
       <View style={styles.inputRow}>
         <Ionicons
@@ -92,7 +117,7 @@ export default function BrainDumpInput() {
             styles.addButton,
             {
               backgroundColor: canSubmit
-                ? (tagStyle?.activeBg || colors.primaryViolet)
+                ? tagStyle?.activeBg || colors.primaryViolet
                 : 'rgba(255,255,255,0.08)',
             },
           ]}
@@ -105,8 +130,10 @@ export default function BrainDumpInput() {
 
       {/* ── Tag Pill Selector ─────────────────────────────────────────────── */}
       <View style={styles.tagRow}>
-        <Text style={[styles.tagRowLabel, { color: colors.textSecondary }]}>Save to:</Text>
-        {TAGS.map(tag => {
+        <Text style={[styles.tagRowLabel, { color: colors.textSecondary }]}>
+          Save to:
+        </Text>
+        {TAGS.map((tag) => {
           const tc = TAG_COLORS[tag.id];
           const isActive = selectedTag === tag.id;
           return (
@@ -146,7 +173,11 @@ export default function BrainDumpInput() {
           </>
         ) : (
           <>
-            <Ionicons name="flash-outline" size={11} color={colors.textSecondary} />
+            <Ionicons
+              name="flash-outline"
+              size={11}
+              color={colors.textSecondary}
+            />
             <Text style={[styles.hintText, { color: colors.textSecondary }]}>
               → Task Inbox
             </Text>
@@ -155,14 +186,28 @@ export default function BrainDumpInput() {
 
         {!selectedTag && text.trim().length > 0 && (
           <>
-            <View style={[styles.aiBadge, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
-              <Text style={[styles.aiBadgeText, { color: colors.primaryViolet }]}>
+            <View
+              style={[
+                styles.aiBadge,
+                { backgroundColor: 'rgba(99,102,241,0.15)' },
+              ]}
+            >
+              <Text
+                style={[styles.aiBadgeText, { color: colors.primaryViolet }]}
+              >
                 🤖 {predictedCategory?.toUpperCase() || 'INBOX'}
               </Text>
             </View>
             {timeEstimate && (
-              <View style={[styles.aiBadge, { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
-                <Text style={[styles.aiBadgeText, { color: colors.textSecondary }]}>
+              <View
+                style={[
+                  styles.aiBadge,
+                  { backgroundColor: 'rgba(255,255,255,0.06)' },
+                ]}
+              >
+                <Text
+                  style={[styles.aiBadgeText, { color: colors.textSecondary }]}
+                >
                   ⏱ {timeEstimate.label}
                 </Text>
               </View>

@@ -8,10 +8,10 @@ export default function HabitTracker() {
   const dispatch = useStoreDispatch();
   const colors = theme.colors;
 
-  const completedCount = habits.filter(h => h.done).length;
+  const completedCount = habits.filter((h) => h.done).length;
   const progressPercent = Math.round((completedCount / habits.length) * 100);
 
-  const handleToggleHabit = id => {
+  const handleToggleHabit = (id) => {
     triggerTaskCompletionHaptic();
     dispatch({ type: 'TOGGLE_HABIT', id });
   };
@@ -19,9 +19,16 @@ export default function HabitTracker() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Overview Card */}
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         <View style={styles.cardHeader}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>🌿 Daily Micro-Habits</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            🌿 Daily Micro-Habits
+          </Text>
           <Text style={[styles.progressText, { color: colors.primaryViolet }]}>
             {completedCount}/{habits.length} Done ({progressPercent}%)
           </Text>
@@ -32,7 +39,10 @@ export default function HabitTracker() {
           <View
             style={[
               styles.progressBarFill,
-              { width: `${progressPercent}%`, backgroundColor: colors.primaryViolet },
+              {
+                width: `${progressPercent}%`,
+                backgroundColor: colors.primaryViolet,
+              },
             ]}
           />
         </View>
@@ -40,20 +50,27 @@ export default function HabitTracker() {
 
       {/* Habit List */}
       <View style={styles.habitGrid}>
-        {habits.map(habit => (
+        {habits.map((habit) => (
           <Pressable
             key={habit.id}
             style={[
               styles.habitCard,
               {
-                backgroundColor: habit.done ? 'rgba(34, 197, 94, 0.15)' : colors.bgCard,
+                backgroundColor: habit.done
+                  ? 'rgba(34, 197, 94, 0.15)'
+                  : colors.bgCard,
                 borderColor: habit.done ? '#22c55e' : colors.borderColor,
               },
             ]}
             onPress={() => handleToggleHabit(habit.id)}
           >
             <Text style={styles.habitEmoji}>{habit.emoji}</Text>
-            <Text style={[styles.habitLabel, { color: habit.done ? '#22c55e' : colors.textPrimary }]}>
+            <Text
+              style={[
+                styles.habitLabel,
+                { color: habit.done ? '#22c55e' : colors.textPrimary },
+              ]}
+            >
               {habit.label}
             </Text>
             <View
@@ -72,11 +89,21 @@ export default function HabitTracker() {
       </View>
 
       {/* History Heatmap Preview */}
-      <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 16 }]}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: colors.textSecondary, marginTop: 16 },
+        ]}
+      >
         Habit History (Last 14 Days)
       </Text>
 
-      <View style={[styles.heatmapCard, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.heatmapCard,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         <View style={styles.heatmapRow}>
           {Array.from({ length: 14 }).map((_, i) => {
             const hEntry = history[i];
@@ -86,7 +113,12 @@ export default function HabitTracker() {
             else if (count > 2) bg = 'rgba(34, 197, 94, 0.6)';
             else if (count > 0) bg = 'rgba(34, 197, 94, 0.3)';
 
-            return <View key={i} style={[styles.heatmapSquare, { backgroundColor: bg }]} />;
+            return (
+              <View
+                key={i}
+                style={[styles.heatmapSquare, { backgroundColor: bg }]}
+              />
+            );
           })}
         </View>
       </View>

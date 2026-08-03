@@ -1,5 +1,19 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { loadSavedState, saveAppState, getSavedThemeId, saveThemeId } from '../services/storage';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
+import {
+  loadSavedState,
+  saveAppState,
+  getSavedThemeId,
+  saveThemeId,
+} from '../services/storage';
 import { classifyTask, estimateTaskTime } from '../services/aiClassifier';
 import { THEMES, DEFAULT_THEME } from '../theme/themes';
 import { supabase } from '../services/supabase';
@@ -39,7 +53,9 @@ function getInitialState() {
 }
 
 const XP_MAP = { q1: 50, q2: 40, q3: 20, q4: 10, inbox: 5 };
-function calculateLevel(xp) { return Math.floor(Math.sqrt(xp / 100)) + 1; }
+function calculateLevel(xp) {
+  return Math.floor(Math.sqrt(xp / 100)) + 1;
+}
 
 function reducer(state, action) {
   switch (action.type) {
@@ -77,7 +93,7 @@ function reducer(state, action) {
         id: generateId(),
         text: raw.text.trim(),
         tag: raw.tag || 'Idea',
-        status: 'active',   // 'active' | 'reviewed' | 'archived'
+        status: 'active', // 'active' | 'reviewed' | 'archived'
         pinned: false,
         createdAt: Date.now(),
       };
@@ -91,8 +107,8 @@ function reducer(state, action) {
     case 'UPDATE_THOUGHT_STATUS': {
       return {
         ...state,
-        thoughts: (state.thoughts || []).map(t =>
-          t.id === action.id ? { ...t, status: action.status } : t
+        thoughts: (state.thoughts || []).map((t) =>
+          t.id === action.id ? { ...t, status: action.status } : t,
         ),
       };
     }
@@ -100,8 +116,8 @@ function reducer(state, action) {
     case 'PIN_THOUGHT': {
       return {
         ...state,
-        thoughts: (state.thoughts || []).map(t =>
-          t.id === action.id ? { ...t, pinned: !t.pinned } : t
+        thoughts: (state.thoughts || []).map((t) =>
+          t.id === action.id ? { ...t, pinned: !t.pinned } : t,
         ),
       };
     }
@@ -109,8 +125,8 @@ function reducer(state, action) {
     case 'ARCHIVE_THOUGHT': {
       return {
         ...state,
-        thoughts: (state.thoughts || []).map(t =>
-          t.id === action.id ? { ...t, status: 'archived', pinned: false } : t
+        thoughts: (state.thoughts || []).map((t) =>
+          t.id === action.id ? { ...t, status: 'archived', pinned: false } : t,
         ),
       };
     }
@@ -118,7 +134,7 @@ function reducer(state, action) {
     case 'DELETE_THOUGHT': {
       return {
         ...state,
-        thoughts: (state.thoughts || []).filter(t => t.id !== action.id),
+        thoughts: (state.thoughts || []).filter((t) => t.id !== action.id),
       };
     }
     // ─────────────────────────────────────────────────────────────────────────
@@ -126,18 +142,22 @@ function reducer(state, action) {
     case 'DELETE_TASK':
       return {
         ...state,
-        tasks: state.tasks.filter(t => t.id !== action.id),
+        tasks: state.tasks.filter((t) => t.id !== action.id),
         focusSlots: Object.fromEntries(
-          Object.entries(state.focusSlots).map(([k, v]) => [k, v === action.id ? null : v])
+          Object.entries(state.focusSlots).map(([k, v]) => [
+            k,
+            v === action.id ? null : v,
+          ]),
         ),
       };
 
     case 'TOGGLE_TASK': {
       const today = new Date().toISOString().split('T')[0];
-      const task = state.tasks.find(t => t.id === action.id);
+      const task = state.tasks.find((t) => t.id === action.id);
       if (!task) return state;
 
-      const isCompleting = action.completing !== undefined ? action.completing : !task.completed;
+      const isCompleting =
+        action.completing !== undefined ? action.completing : !task.completed;
       let newXp = state.xp || 0;
       let newBadges = [...(state.badges || [])];
 
@@ -151,7 +171,8 @@ function reducer(state, action) {
       }
 
       const newLevel = calculateLevel(newXp);
-      const todayCount = (state.completedTaskLog[today] || 0) + (isCompleting ? 1 : -1);
+      const todayCount =
+        (state.completedTaskLog[today] || 0) + (isCompleting ? 1 : -1);
       if (todayCount >= 10 && !newBadges.includes('task-crusher')) {
         newBadges.push('task-crusher');
       }
@@ -170,7 +191,7 @@ function reducer(state, action) {
           ...prevArchive,
         ];
       } else {
-        newArchive = prevArchive.filter(a => a.id !== task.id);
+        newArchive = prevArchive.filter((a) => a.id !== task.id);
       }
 
       return {
@@ -178,7 +199,9 @@ function reducer(state, action) {
         xp: newXp,
         level: newLevel,
         badges: newBadges,
-        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, completed: isCompleting } : t)),
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, completed: isCompleting } : t,
+        ),
         completedTaskLog: {
           ...state.completedTaskLog,
           [today]: Math.max(0, todayCount),
@@ -190,7 +213,9 @@ function reducer(state, action) {
     case 'MOVE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, category: action.category } : t)),
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, category: action.category } : t,
+        ),
       };
 
     case 'SET_FOCUS_SLOT': {
@@ -206,19 +231,23 @@ function reducer(state, action) {
     case 'SET_TASK_DUE_DATE':
       return {
         ...state,
-        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, dueDate: action.dueDate } : t)),
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, dueDate: action.dueDate } : t,
+        ),
       };
 
     case 'UPDATE_TASK_NOTES':
       return {
         ...state,
-        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, notes: action.notes } : t)),
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, notes: action.notes } : t,
+        ),
       };
 
     case 'ADD_SUBTASK':
       return {
         ...state,
-        tasks: state.tasks.map(t =>
+        tasks: state.tasks.map((t) =>
           t.id === action.id
             ? {
                 ...t,
@@ -227,39 +256,48 @@ function reducer(state, action) {
                   { id: generateId(), text: action.text, completed: false },
                 ],
               }
-            : t
+            : t,
         ),
       };
 
     case 'TOGGLE_SUBTASK':
       return {
         ...state,
-        tasks: state.tasks.map(t =>
+        tasks: state.tasks.map((t) =>
           t.id === action.id
             ? {
                 ...t,
-                subtasks: (t.subtasks || []).map(s =>
-                  s.id === action.subtaskId ? { ...s, completed: action.completed } : s
+                subtasks: (t.subtasks || []).map((s) =>
+                  s.id === action.subtaskId
+                    ? { ...s, completed: action.completed }
+                    : s,
                 ),
               }
-            : t
+            : t,
         ),
       };
 
     case 'DELETE_SUBTASK':
       return {
         ...state,
-        tasks: state.tasks.map(t =>
+        tasks: state.tasks.map((t) =>
           t.id === action.id
-            ? { ...t, subtasks: (t.subtasks || []).filter(s => s.id !== action.subtaskId) }
-            : t
+            ? {
+                ...t,
+                subtasks: (t.subtasks || []).filter(
+                  (s) => s.id !== action.subtaskId,
+                ),
+              }
+            : t,
         ),
       };
 
     case 'TOGGLE_HABIT':
       return {
         ...state,
-        habits: state.habits.map(h => (h.id === action.id ? { ...h, done: !h.done } : h)),
+        habits: state.habits.map((h) =>
+          h.id === action.id ? { ...h, done: !h.done } : h,
+        ),
       };
 
     case 'SET_MOOD': {
@@ -275,11 +313,11 @@ function reducer(state, action) {
       return { ...state, pomodoroSessions: action.sessions };
 
     case 'DAILY_RESET': {
-      const completedCount = state.tasks.filter(t => t.completed).length;
+      const completedCount = state.tasks.filter((t) => t.completed).length;
       const todayStr = new Date().toISOString().split('T')[0];
 
       const qb = { q1: 0, q2: 0, q3: 0, q4: 0 };
-      state.tasks.forEach(t => {
+      state.tasks.forEach((t) => {
         if (t.completed && qb[t.category] !== undefined) qb[t.category]++;
       });
 
@@ -287,37 +325,42 @@ function reducer(state, action) {
         date: todayStr,
         tasksCompleted: completedCount,
         totalTasks: state.tasks.length,
-        habitsCompleted: state.habits.filter(h => h.done).length,
+        habitsCompleted: state.habits.filter((h) => h.done).length,
         totalHabits: state.habits.length,
         quadrantBreakdown: qb,
         mood: state.moodToday || 0,
         pomodoroSessions: state.pomodoroSessions || 0,
       };
 
-      const existingIndex = (state.history || []).findIndex(h => h.date === todayStr);
+      const existingIndex = (state.history || []).findIndex(
+        (h) => h.date === todayStr,
+      );
       let newHistory;
       if (existingIndex >= 0) {
-        newHistory = state.history.map((h, i) => (i === existingIndex ? historyEntry : h));
+        newHistory = state.history.map((h, i) =>
+          i === existingIndex ? historyEntry : h,
+        );
       } else {
         newHistory = [historyEntry, ...(state.history || [])].slice(0, 90);
       }
 
-      const newStreak = completedCount > 0 ? (state.streak || 0) + 1 : state.streak || 0;
+      const newStreak =
+        completedCount > 0 ? (state.streak || 0) + 1 : state.streak || 0;
 
-      const shouldRegenerate = text => {
+      const shouldRegenerate = (text) => {
         const lower = text.toLowerCase();
         if (lower.includes('#daily') || lower.includes('@daily')) return true;
         return false;
       };
 
       const newTasks = state.tasks
-        .filter(t => !t.completed || shouldRegenerate(t.text))
-        .map(t => (t.completed ? { ...t, completed: false } : t));
+        .filter((t) => !t.completed || shouldRegenerate(t.text))
+        .map((t) => (t.completed ? { ...t, completed: false } : t));
 
       return {
         ...state,
         tasks: newTasks,
-        habits: state.habits.map(h => ({ ...h, done: false })),
+        habits: state.habits.map((h) => ({ ...h, done: false })),
         moodToday: 0,
         history: newHistory,
         streak: newStreak,
@@ -330,7 +373,9 @@ function reducer(state, action) {
     case 'CLEAR_COMPLETED_INBOX':
       return {
         ...state,
-        tasks: state.tasks.filter(t => !(t.category === 'inbox' && t.completed)),
+        tasks: state.tasks.filter(
+          (t) => !(t.category === 'inbox' && t.completed),
+        ),
       };
 
     case 'SET_THEME':
@@ -360,14 +405,19 @@ export function StoreProvider({ children }) {
       const saved = await loadSavedState();
       const themeId = await getSavedThemeId();
       if (saved) {
-        dispatch({ type: 'LOAD_STATE', payload: { ...saved, activeThemeId: themeId } });
+        dispatch({
+          type: 'LOAD_STATE',
+          payload: { ...saved, activeThemeId: themeId },
+        });
       } else {
         dispatch({ type: 'SET_THEME', themeId });
       }
 
       // Check Supabase session
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         setUser(session?.user || null);
       } catch (e) {}
 
@@ -377,9 +427,11 @@ export function StoreProvider({ children }) {
     initStore();
 
     // Supabase auth state listener
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      },
+    );
 
     return () => {
       authListener?.subscription?.unsubscribe();
@@ -398,22 +450,23 @@ export function StoreProvider({ children }) {
   }, [state, isLoaded]);
 
   // Sync active theme object
-  const activeTheme = THEMES.find(t => t.id === state.activeThemeId) || DEFAULT_THEME;
+  const activeTheme =
+    THEMES.find((t) => t.id === state.activeThemeId) || DEFAULT_THEME;
 
-  const setTheme = useCallback(async themeId => {
+  const setTheme = useCallback(async (themeId) => {
     dispatch({ type: 'SET_THEME', themeId });
     await saveThemeId(themeId);
   }, []);
 
   // ── Derived Clarity Score (0–100) ─────────────────────────────────────────
   const clarityScore = useMemo(() => {
-    const habitsDone = (state.habits || []).filter(h => h.done).length;
+    const habitsDone = (state.habits || []).filter((h) => h.done).length;
     const habitsTotal = (state.habits || []).length || 1;
     const habitPct = Math.round((habitsDone / habitsTotal) * 40); // 40 pts
 
     const moodPts = Math.round(((state.moodToday || 0) / 5) * 30); // 30 pts
 
-    const tasksDone = (state.tasks || []).filter(t => t.completed).length;
+    const tasksDone = (state.tasks || []).filter((t) => t.completed).length;
     const tasksTotal = (state.tasks || []).length || 1;
     const taskPct = Math.min(tasksDone, tasksTotal);
     const tasksPts = Math.round((taskPct / tasksTotal) * 30); // 30 pts
@@ -422,7 +475,9 @@ export function StoreProvider({ children }) {
   }, [state.habits, state.moodToday, state.tasks]);
 
   return (
-    <StateContext.Provider value={{ ...state, theme: activeTheme, isLoaded, clarityScore }}>
+    <StateContext.Provider
+      value={{ ...state, theme: activeTheme, isLoaded, clarityScore }}
+    >
       <DispatchContext.Provider value={dispatch}>
         <AuthContext.Provider value={{ user, setUser, setTheme }}>
           {children}
@@ -440,7 +495,8 @@ export function useStoreState() {
 
 export function useStoreDispatch() {
   const ctx = useContext(DispatchContext);
-  if (!ctx) throw new Error('useStoreDispatch must be used within StoreProvider');
+  if (!ctx)
+    throw new Error('useStoreDispatch must be used within StoreProvider');
   return ctx;
 }
 

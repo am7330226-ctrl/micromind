@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { generateSubtasks } from '../services/aiClassifier';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,10 +36,15 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
 
   const handleToggleSubtask = (subtaskId, completed) => {
     triggerLightImpact();
-    dispatch({ type: 'TOGGLE_SUBTASK', id: task.id, subtaskId, completed: !completed });
+    dispatch({
+      type: 'TOGGLE_SUBTASK',
+      id: task.id,
+      subtaskId,
+      completed: !completed,
+    });
   };
 
-  const handleDeleteSubtask = subtaskId => {
+  const handleDeleteSubtask = (subtaskId) => {
     triggerLightImpact();
     dispatch({ type: 'DELETE_SUBTASK', id: task.id, subtaskId });
   };
@@ -44,7 +58,7 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
     setIsAiLoading(true);
     try {
       const generated = await generateSubtasks(task.text);
-      generated.forEach(st => {
+      generated.forEach((st) => {
         dispatch({ type: 'ADD_SUBTASK', id: task.id, text: st });
       });
     } catch (e) {
@@ -53,18 +67,34 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
     }
   };
 
-  const handleMoveCategory = newCat => {
+  const handleMoveCategory = (newCat) => {
     triggerLightImpact();
     dispatch({ type: 'MOVE_TASK', id: task.id, category: newCat });
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
-        <View style={[styles.sheet, { backgroundColor: colors.bgSidebar, borderColor: colors.borderColor }]}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.bgSidebar,
+              borderColor: colors.borderColor,
+            },
+          ]}
+        >
           {/* Header */}
           <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, { color: colors.textPrimary }]} numberOfLines={1}>
+            <Text
+              style={[styles.sheetTitle, { color: colors.textPrimary }]}
+              numberOfLines={1}
+            >
               {task.text}
             </Text>
             <Pressable onPress={onClose} style={styles.closeButton}>
@@ -72,9 +102,16 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
             </Pressable>
           </View>
 
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Category Selector */}
-            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Category</Text>
+            <Text
+              style={[styles.sectionTitle, { color: colors.textSecondary }]}
+            >
+              Category
+            </Text>
             <View style={styles.categoryRow}>
               {[
                 { id: 'q1', label: 'Q1 Do First', color: '#ef4444' },
@@ -82,19 +119,35 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
                 { id: 'q3', label: 'Q3 Delegate', color: '#eab308' },
                 { id: 'q4', label: 'Q4 Eliminate', color: '#94a3b8' },
                 { id: 'inbox', label: 'Inbox', color: '#a855f7' },
-              ].map(cat => (
+              ].map((cat) => (
                 <Pressable
                   key={cat.id}
                   style={[
                     styles.catChip,
                     {
-                      backgroundColor: task.category === cat.id ? `${cat.color}25` : colors.bgCard,
-                      borderColor: task.category === cat.id ? cat.color : colors.borderColor,
+                      backgroundColor:
+                        task.category === cat.id
+                          ? `${cat.color}25`
+                          : colors.bgCard,
+                      borderColor:
+                        task.category === cat.id
+                          ? cat.color
+                          : colors.borderColor,
                     },
                   ]}
                   onPress={() => handleMoveCategory(cat.id)}
                 >
-                  <Text style={[styles.catChipText, { color: task.category === cat.id ? cat.color : colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.catChipText,
+                      {
+                        color:
+                          task.category === cat.id
+                            ? cat.color
+                            : colors.textSecondary,
+                      },
+                    ]}
+                  >
                     {cat.label}
                   </Text>
                 </Pressable>
@@ -103,28 +156,54 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
 
             {/* Subtasks Section */}
             <View style={styles.sectionHeaderRow}>
-              <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Subtasks</Text>
+              <Text
+                style={[styles.sectionTitle, { color: colors.textSecondary }]}
+              >
+                Subtasks
+              </Text>
 
               <Pressable
-                style={[styles.aiBreakdownBtn, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}
+                style={[
+                  styles.aiBreakdownBtn,
+                  { backgroundColor: 'rgba(168, 85, 247, 0.15)' },
+                ]}
                 onPress={handleAiBreakdown}
                 disabled={isAiLoading}
               >
                 {isAiLoading ? (
-                  <ActivityIndicator size="small" color={colors.primaryViolet} />
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.primaryViolet}
+                  />
                 ) : (
                   <>
-                    <Ionicons name="sparkles" size={12} color={colors.primaryViolet} />
-                    <Text style={[styles.aiBreakdownBtnText, { color: colors.primaryViolet }]}>AI Breakdown</Text>
+                    <Ionicons
+                      name="sparkles"
+                      size={12}
+                      color={colors.primaryViolet}
+                    />
+                    <Text
+                      style={[
+                        styles.aiBreakdownBtnText,
+                        { color: colors.primaryViolet },
+                      ]}
+                    >
+                      AI Breakdown
+                    </Text>
                   </>
                 )}
               </Pressable>
             </View>
 
             {/* Subtask items */}
-            {subtasks.map(st => (
-              <View key={st.id} style={[styles.subtaskRow, { borderColor: colors.borderColor }]}>
-                <Pressable onPress={() => handleToggleSubtask(st.id, st.completed)}>
+            {subtasks.map((st) => (
+              <View
+                key={st.id}
+                style={[styles.subtaskRow, { borderColor: colors.borderColor }]}
+              >
+                <Pressable
+                  onPress={() => handleToggleSubtask(st.id, st.completed)}
+                >
                   <Ionicons
                     name={st.completed ? 'checkbox' : 'square-outline'}
                     size={18}
@@ -135,21 +214,37 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
                   style={[
                     styles.subtaskText,
                     {
-                      color: st.completed ? colors.textSecondary : colors.textPrimary,
-                      textDecorationLine: st.completed ? 'line-through' : 'none',
+                      color: st.completed
+                        ? colors.textSecondary
+                        : colors.textPrimary,
+                      textDecorationLine: st.completed
+                        ? 'line-through'
+                        : 'none',
                     },
                   ]}
                 >
                   {st.text}
                 </Text>
                 <Pressable onPress={() => handleDeleteSubtask(st.id)}>
-                  <Ionicons name="close-circle-outline" size={16} color={colors.textSecondary} />
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={16}
+                    color={colors.textSecondary}
+                  />
                 </Pressable>
               </View>
             ))}
 
             {/* Add Subtask Input */}
-            <View style={[styles.addSubtaskRow, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+            <View
+              style={[
+                styles.addSubtaskRow,
+                {
+                  backgroundColor: colors.bgCard,
+                  borderColor: colors.borderColor,
+                },
+              ]}
+            >
               <TextInput
                 style={[styles.subtaskInput, { color: colors.textPrimary }]}
                 placeholder="Add subtask..."
@@ -159,14 +254,32 @@ export default function TaskDetailSheet({ task, visible, onClose }) {
                 onSubmitEditing={handleAddSubtask}
               />
               <Pressable onPress={handleAddSubtask}>
-                <Ionicons name="add-circle" size={24} color={colors.primaryViolet} />
+                <Ionicons
+                  name="add-circle"
+                  size={24}
+                  color={colors.primaryViolet}
+                />
               </Pressable>
             </View>
 
             {/* Notes Section */}
-            <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 16 }]}>Notes</Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: colors.textSecondary, marginTop: 16 },
+              ]}
+            >
+              Notes
+            </Text>
             <TextInput
-              style={[styles.notesInput, { backgroundColor: colors.bgCard, borderColor: colors.borderColor, color: colors.textPrimary }]}
+              style={[
+                styles.notesInput,
+                {
+                  backgroundColor: colors.bgCard,
+                  borderColor: colors.borderColor,
+                  color: colors.textPrimary,
+                },
+              ]}
               placeholder="Add extra details or notes..."
               placeholderTextColor={colors.textSecondary}
               multiline

@@ -7,8 +7,12 @@ import {
   Pressable,
   Switch,
 } from 'react-native';
-import { useStoreState, useStoreDispatch, useAuth } from '../store/StoreContext';
-import { Ionicons } from '@expo/vector-icons'
+import {
+  useStoreState,
+  useStoreDispatch,
+  useAuth,
+} from '../store/StoreContext';
+import { Ionicons } from '@expo/vector-icons';
 import { THEMES } from '../theme/themes';
 import AuthModal from '../components/AuthModal';
 import VoiceBriefingModal from '../components/VoiceBriefingModal';
@@ -16,15 +20,41 @@ import { triggerLightImpact, triggerMediumImpact } from '../services/haptics';
 
 // Sub-navigation sections
 const TOOL_SECTIONS = [
-  { id: 'matrix',   icon: 'grid-outline',       label: 'Eisenhower Matrix',   desc: 'Prioritize by urgency & importance' },
-  { id: 'focus',    icon: 'disc-outline',        label: 'Focus Three',          desc: 'Lock in your top 3 commitments' },
-  { id: 'pomodoro', icon: 'timer-outline',       label: 'Pomodoro Timer',       desc: '25-min deep work sprints' },
-  { id: 'habits',   icon: 'leaf-outline',        label: 'Habit Tracker',        desc: 'Build daily micro-habits' },
-  { id: 'stats',    icon: 'stats-chart-outline', label: 'Analytics',            desc: 'Track progress & mood trends' },
+  {
+    id: 'matrix',
+    icon: 'grid-outline',
+    label: 'Eisenhower Matrix',
+    desc: 'Prioritize by urgency & importance',
+  },
+  {
+    id: 'focus',
+    icon: 'disc-outline',
+    label: 'Focus Three',
+    desc: 'Lock in your top 3 commitments',
+  },
+  {
+    id: 'pomodoro',
+    icon: 'timer-outline',
+    label: 'Pomodoro Timer',
+    desc: '25-min deep work sprints',
+  },
+  {
+    id: 'habits',
+    icon: 'leaf-outline',
+    label: 'Habit Tracker',
+    desc: 'Build daily micro-habits',
+  },
+  {
+    id: 'stats',
+    icon: 'stats-chart-outline',
+    label: 'Analytics',
+    desc: 'Track progress & mood trends',
+  },
 ];
 
 export default function SettingsScreen({ navigation }) {
-  const { theme, xp, level, streak, tasks, thoughts, habits, clarityScore } = useStoreState();
+  const { theme, xp, level, streak, tasks, thoughts, habits, clarityScore } =
+    useStoreState();
   const dispatch = useStoreDispatch();
   const { user, setTheme } = useAuth();
   const colors = theme.colors;
@@ -46,23 +76,45 @@ export default function SettingsScreen({ navigation }) {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Profile Banner ─────────────────────────────────────────────────── */}
-      <View style={[styles.profileCard, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.profileCard,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         <View style={styles.profileLeft}>
-          <View style={[styles.avatarCircle, { backgroundColor: 'rgba(99,102,241,0.2)', borderColor: colors.primaryViolet }]}>
-            <Ionicons name={user ? 'person' : 'person-outline'} size={28} color={colors.primaryViolet} />
+          <View
+            style={[
+              styles.avatarCircle,
+              {
+                backgroundColor: 'rgba(99,102,241,0.2)',
+                borderColor: colors.primaryViolet,
+              },
+            ]}
+          >
+            <Ionicons
+              name={user ? 'person' : 'person-outline'}
+              size={28}
+              color={colors.primaryViolet}
+            />
           </View>
           <View>
             <Text style={[styles.profileName, { color: colors.textPrimary }]}>
               {user ? user.email.split('@')[0] : 'MicroMind User'}
             </Text>
-            <Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.profileEmail, { color: colors.textSecondary }]}
+            >
               {user ? user.email : 'Sign in to sync across devices'}
             </Text>
           </View>
         </View>
         <Pressable
           style={[styles.authBtn, { borderColor: colors.primaryViolet }]}
-          onPress={() => { triggerLightImpact(); setAuthVisible(true); }}
+          onPress={() => {
+            triggerLightImpact();
+            setAuthVisible(true);
+          }}
         >
           <Text style={[styles.authBtnText, { color: colors.primaryViolet }]}>
             {user ? 'Account' : 'Sign In'}
@@ -73,22 +125,42 @@ export default function SettingsScreen({ navigation }) {
       {/* ── Stats Strip ────────────────────────────────────────────────────── */}
       <View style={styles.statsStrip}>
         {[
-          { label: 'Streak',  value: `🔥 ${streak}d`,   color: '#F59E0B' },
-          { label: 'Level',   value: `⚡ ${level}`,      color: colors.primaryViolet },
-          { label: 'XP',      value: `${xp} XP`,         color: '#10B981' },
-          { label: 'Clarity', value: `${clarityScore}%`,  color: '#EC4899' },
-        ].map(s => (
-          <View key={s.label} style={[styles.statBlock, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-            <Text style={[styles.statBlockVal, { color: s.color }]}>{s.value}</Text>
-            <Text style={[styles.statBlockLabel, { color: colors.textSecondary }]}>{s.label}</Text>
+          { label: 'Streak', value: `🔥 ${streak}d`, color: '#F59E0B' },
+          { label: 'Level', value: `⚡ ${level}`, color: colors.primaryViolet },
+          { label: 'XP', value: `${xp} XP`, color: '#10B981' },
+          { label: 'Clarity', value: `${clarityScore}%`, color: '#EC4899' },
+        ].map((s) => (
+          <View
+            key={s.label}
+            style={[
+              styles.statBlock,
+              {
+                backgroundColor: colors.bgCard,
+                borderColor: colors.borderColor,
+              },
+            ]}
+          >
+            <Text style={[styles.statBlockVal, { color: s.color }]}>
+              {s.value}
+            </Text>
+            <Text
+              style={[styles.statBlockLabel, { color: colors.textSecondary }]}
+            >
+              {s.label}
+            </Text>
           </View>
         ))}
       </View>
 
       {/* ── Theme Picker ───────────────────────────────────────────────────── */}
       <SectionHeader label="🎨 Theme" colors={colors} />
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-        {THEMES.map(t => {
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
+        {THEMES.map((t) => {
           const isActive = t.id === theme.id;
           return (
             <Pressable
@@ -96,25 +168,53 @@ export default function SettingsScreen({ navigation }) {
               style={[
                 styles.themeRow,
                 {
-                  backgroundColor: isActive ? `${colors.primaryViolet}15` : 'transparent',
+                  backgroundColor: isActive
+                    ? `${colors.primaryViolet}15`
+                    : 'transparent',
                   borderColor: isActive ? colors.primaryViolet : 'transparent',
                 },
               ]}
-              onPress={() => { triggerLightImpact(); setTheme(t.id); }}
+              onPress={() => {
+                triggerLightImpact();
+                setTheme(t.id);
+              }}
             >
               <Text style={styles.themeEmoji}>{t.emoji}</Text>
               <View style={styles.themeInfo}>
-                <Text style={[styles.themeName, { color: colors.textPrimary }]}>{t.name}</Text>
-                <Text style={[styles.themeDesc, { color: colors.textSecondary }]}>{t.description}</Text>
+                <Text style={[styles.themeName, { color: colors.textPrimary }]}>
+                  {t.name}
+                </Text>
+                <Text
+                  style={[styles.themeDesc, { color: colors.textSecondary }]}
+                >
+                  {t.description}
+                </Text>
               </View>
               {t.unlockLevel > 0 && level < t.unlockLevel && (
-                <View style={[styles.lockBadge, { backgroundColor: 'rgba(255,255,255,0.07)' }]}>
-                  <Ionicons name="lock-closed" size={12} color={colors.textSecondary} />
-                  <Text style={[styles.lockText, { color: colors.textSecondary }]}>Lv{t.unlockLevel}</Text>
+                <View
+                  style={[
+                    styles.lockBadge,
+                    { backgroundColor: 'rgba(255,255,255,0.07)' },
+                  ]}
+                >
+                  <Ionicons
+                    name="lock-closed"
+                    size={12}
+                    color={colors.textSecondary}
+                  />
+                  <Text
+                    style={[styles.lockText, { color: colors.textSecondary }]}
+                  >
+                    Lv{t.unlockLevel}
+                  </Text>
                 </View>
               )}
               {isActive && (
-                <Ionicons name="checkmark-circle" size={20} color={colors.primaryViolet} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={colors.primaryViolet}
+                />
               )}
             </Pressable>
           );
@@ -123,27 +223,52 @@ export default function SettingsScreen({ navigation }) {
 
       {/* ── Productivity Tools ─────────────────────────────────────────────── */}
       <SectionHeader label="🛠️ Productivity Tools" colors={colors} />
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         {TOOL_SECTIONS.map((tool, idx) => (
           <Pressable
             key={tool.id}
             style={[
               styles.toolRow,
-              idx < TOOL_SECTIONS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.borderColor },
+              idx < TOOL_SECTIONS.length - 1 && {
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderColor,
+              },
             ]}
             onPress={() => {
               triggerLightImpact();
               // navigation would go here in a stack navigator
             }}
           >
-            <View style={[styles.toolIconBox, { backgroundColor: 'rgba(99,102,241,0.1)' }]}>
-              <Ionicons name={tool.icon} size={18} color={colors.primaryViolet} />
+            <View
+              style={[
+                styles.toolIconBox,
+                { backgroundColor: 'rgba(99,102,241,0.1)' },
+              ]}
+            >
+              <Ionicons
+                name={tool.icon}
+                size={18}
+                color={colors.primaryViolet}
+              />
             </View>
             <View style={styles.toolTextBlock}>
-              <Text style={[styles.toolLabel, { color: colors.textPrimary }]}>{tool.label}</Text>
-              <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>{tool.desc}</Text>
+              <Text style={[styles.toolLabel, { color: colors.textPrimary }]}>
+                {tool.label}
+              </Text>
+              <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>
+                {tool.desc}
+              </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={colors.textSecondary}
+            />
           </Pressable>
         ))}
       </View>
@@ -151,36 +276,95 @@ export default function SettingsScreen({ navigation }) {
       {/* ── Voice Briefing ─────────────────────────────────────────────────── */}
       <SectionHeader label="🎙️ AI Features" colors={colors} />
       <Pressable
-        style={[styles.card, styles.singleRow, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}
-        onPress={() => { triggerLightImpact(); setVoiceVisible(true); }}
+        style={[
+          styles.card,
+          styles.singleRow,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+        onPress={() => {
+          triggerLightImpact();
+          setVoiceVisible(true);
+        }}
       >
-        <View style={[styles.toolIconBox, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
+        <View
+          style={[
+            styles.toolIconBox,
+            { backgroundColor: 'rgba(245,158,11,0.1)' },
+          ]}
+        >
           <Ionicons name="volume-medium-outline" size={18} color="#F59E0B" />
         </View>
         <View style={styles.toolTextBlock}>
-          <Text style={[styles.toolLabel, { color: colors.textPrimary }]}>Daily Voice Briefing</Text>
-          <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>AI reads your priorities aloud</Text>
+          <Text style={[styles.toolLabel, { color: colors.textPrimary }]}>
+            Daily Voice Briefing
+          </Text>
+          <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>
+            AI reads your priorities aloud
+          </Text>
         </View>
-        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+        <Ionicons
+          name="chevron-forward"
+          size={16}
+          color={colors.textSecondary}
+        />
       </Pressable>
 
       {/* ── Data & Reset ───────────────────────────────────────────────────── */}
       <SectionHeader label="⚙️ Data" colors={colors} />
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         <View style={styles.dataRow}>
-          <Ionicons name="albums-outline" size={16} color={colors.textSecondary} />
-          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>Tasks stored</Text>
-          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>{tasks.length}</Text>
+          <Ionicons
+            name="albums-outline"
+            size={16}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>
+            Tasks stored
+          </Text>
+          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>
+            {tasks.length}
+          </Text>
         </View>
-        <View style={[styles.dataRow, { borderTopWidth: 1, borderTopColor: colors.borderColor }]}>
-          <Ionicons name="bulb-outline" size={16} color={colors.textSecondary} />
-          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>Thoughts captured</Text>
-          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>{(thoughts || []).length}</Text>
+        <View
+          style={[
+            styles.dataRow,
+            { borderTopWidth: 1, borderTopColor: colors.borderColor },
+          ]}
+        >
+          <Ionicons
+            name="bulb-outline"
+            size={16}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>
+            Thoughts captured
+          </Text>
+          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>
+            {(thoughts || []).length}
+          </Text>
         </View>
-        <View style={[styles.dataRow, { borderTopWidth: 1, borderTopColor: colors.borderColor }]}>
-          <Ionicons name="leaf-outline" size={16} color={colors.textSecondary} />
-          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>Habits tracked</Text>
-          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>{habits.length}</Text>
+        <View
+          style={[
+            styles.dataRow,
+            { borderTopWidth: 1, borderTopColor: colors.borderColor },
+          ]}
+        >
+          <Ionicons
+            name="leaf-outline"
+            size={16}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.dataLabel, { color: colors.textSecondary }]}>
+            Habits tracked
+          </Text>
+          <Text style={[styles.dataVal, { color: colors.textPrimary }]}>
+            {habits.length}
+          </Text>
         </View>
       </View>
 
@@ -200,14 +384,19 @@ export default function SettingsScreen({ navigation }) {
       </View>
 
       <AuthModal visible={authVisible} onClose={() => setAuthVisible(false)} />
-      <VoiceBriefingModal visible={voiceVisible} onClose={() => setVoiceVisible(false)} />
+      <VoiceBriefingModal
+        visible={voiceVisible}
+        onClose={() => setVoiceVisible(false)}
+      />
     </ScrollView>
   );
 }
 
 function SectionHeader({ label, colors }) {
   return (
-    <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>{label}</Text>
+    <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+      {label}
+    </Text>
   );
 }
 

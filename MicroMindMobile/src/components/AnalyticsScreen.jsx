@@ -5,19 +5,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { triggerMediumImpact, triggerLightImpact } from '../services/haptics';
 
 export default function AnalyticsScreen() {
-  const { tasks, habits, moodToday, xp, level, badges, theme } = useStoreState();
+  const { tasks, habits, moodToday, xp, level, badges, theme } =
+    useStoreState();
   const dispatch = useStoreDispatch();
   const colors = theme.colors;
 
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.completed).length;
+  const completedTasks = tasks.filter((t) => t.completed).length;
 
-  const q1Count = tasks.filter(t => t.category === 'q1').length;
-  const q2Count = tasks.filter(t => t.category === 'q2').length;
-  const q3Count = tasks.filter(t => t.category === 'q3').length;
-  const q4Count = tasks.filter(t => t.category === 'q4').length;
+  const q1Count = tasks.filter((t) => t.category === 'q1').length;
+  const q2Count = tasks.filter((t) => t.category === 'q2').length;
+  const q3Count = tasks.filter((t) => t.category === 'q3').length;
+  const q4Count = tasks.filter((t) => t.category === 'q4').length;
 
-  const handleSetMood = mood => {
+  const handleSetMood = (mood) => {
     triggerLightImpact();
     dispatch({ type: 'SET_MOOD', mood });
   };
@@ -28,16 +29,38 @@ export default function AnalyticsScreen() {
   };
 
   const BADGE_DEFINITIONS = [
-    { id: 'task-crusher', title: 'Task Crusher', emoji: '⚔️', desc: 'Completed 10 tasks in a day' },
-    { id: '7-day-warrior', title: '7-Day Warrior', emoji: '🛡️', desc: 'Maintained a 7-day streak' },
-    { id: 'focus-master', title: 'Focus Master', emoji: '🧘', desc: 'Completed 5 Pomodoro sessions' },
+    {
+      id: 'task-crusher',
+      title: 'Task Crusher',
+      emoji: '⚔️',
+      desc: 'Completed 10 tasks in a day',
+    },
+    {
+      id: '7-day-warrior',
+      title: '7-Day Warrior',
+      emoji: '🛡️',
+      desc: 'Maintained a 7-day streak',
+    },
+    {
+      id: 'focus-master',
+      title: 'Focus Master',
+      emoji: '🧘',
+      desc: 'Completed 5 Pomodoro sessions',
+    },
   ];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Mood Tracker Widget */}
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>😊 How is your focus & mood today?</Text>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+          😊 How is your focus & mood today?
+        </Text>
         <View style={styles.moodRow}>
           {[
             { level: 1, emoji: '😫', label: 'Drained' },
@@ -45,20 +68,28 @@ export default function AnalyticsScreen() {
             { level: 3, emoji: '😐', label: 'Okay' },
             { level: 4, emoji: '🙂', label: 'Good' },
             { level: 5, emoji: '🔥', label: 'Peak' },
-          ].map(m => (
+          ].map((m) => (
             <Pressable
               key={m.level}
               style={[
                 styles.moodBtn,
                 {
-                  backgroundColor: moodToday === m.level ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255,255,255,0.05)',
-                  borderColor: moodToday === m.level ? colors.primaryViolet : 'transparent',
+                  backgroundColor:
+                    moodToday === m.level
+                      ? 'rgba(168, 85, 247, 0.25)'
+                      : 'rgba(255,255,255,0.05)',
+                  borderColor:
+                    moodToday === m.level
+                      ? colors.primaryViolet
+                      : 'transparent',
                 },
               ]}
               onPress={() => handleSetMood(m.level)}
             >
               <Text style={{ fontSize: 24 }}>{m.emoji}</Text>
-              <Text style={[styles.moodLabel, { color: colors.textSecondary }]}>{m.label}</Text>
+              <Text style={[styles.moodLabel, { color: colors.textSecondary }]}>
+                {m.label}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -66,38 +97,74 @@ export default function AnalyticsScreen() {
 
       {/* Stats Summary Grid */}
       <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-          <Text style={[styles.statVal, { color: colors.primaryViolet }]}>{completedTasks}/{totalTasks}</Text>
-          <Text style={[styles.statLbl, { color: colors.textSecondary }]}>Tasks Completed</Text>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+          ]}
+        >
+          <Text style={[styles.statVal, { color: colors.primaryViolet }]}>
+            {completedTasks}/{totalTasks}
+          </Text>
+          <Text style={[styles.statLbl, { color: colors.textSecondary }]}>
+            Tasks Completed
+          </Text>
         </View>
 
-        <View style={[styles.statCard, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+        <View
+          style={[
+            styles.statCard,
+            { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+          ]}
+        >
           <Text style={[styles.statVal, { color: '#22c55e' }]}>{xp} XP</Text>
-          <Text style={[styles.statLbl, { color: colors.textSecondary }]}>Level {level}</Text>
+          <Text style={[styles.statLbl, { color: colors.textSecondary }]}>
+            Level {level}
+          </Text>
         </View>
       </View>
 
       {/* Eisenhower Distribution Breakdown */}
-      <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 16 }]}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: colors.textSecondary, marginTop: 16 },
+        ]}
+      >
         📊 Quadrant Distribution
       </Text>
 
-      <View style={[styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
         {[
           { label: 'Q1 Do First', count: q1Count, color: '#ef4444' },
           { label: 'Q2 Schedule', count: q2Count, color: '#3b82f6' },
           { label: 'Q3 Delegate', count: q3Count, color: '#eab308' },
           { label: 'Q4 Eliminate', count: q4Count, color: '#94a3b8' },
-        ].map(item => {
-          const pct = totalTasks > 0 ? Math.round((item.count / totalTasks) * 100) : 0;
+        ].map((item) => {
+          const pct =
+            totalTasks > 0 ? Math.round((item.count / totalTasks) * 100) : 0;
           return (
             <View key={item.label} style={styles.distRow}>
               <View style={styles.distLabelRow}>
-                <Text style={[styles.distLabel, { color: colors.textPrimary }]}>{item.label}</Text>
-                <Text style={[styles.distPct, { color: item.color }]}>{item.count} ({pct}%)</Text>
+                <Text style={[styles.distLabel, { color: colors.textPrimary }]}>
+                  {item.label}
+                </Text>
+                <Text style={[styles.distPct, { color: item.color }]}>
+                  {item.count} ({pct}%)
+                </Text>
               </View>
               <View style={styles.distBarBg}>
-                <View style={[styles.distBarFill, { width: `${pct}%`, backgroundColor: item.color }]} />
+                <View
+                  style={[
+                    styles.distBarFill,
+                    { width: `${pct}%`, backgroundColor: item.color },
+                  ]}
+                />
               </View>
             </View>
           );
@@ -105,12 +172,17 @@ export default function AnalyticsScreen() {
       </View>
 
       {/* Badges Unlocked */}
-      <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 16 }]}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: colors.textSecondary, marginTop: 16 },
+        ]}
+      >
         🏆 Badges & Achievements
       </Text>
 
       <View style={styles.badgeGrid}>
-        {BADGE_DEFINITIONS.map(b => {
+        {BADGE_DEFINITIONS.map((b) => {
           const isUnlocked = badges.includes(b.id);
 
           return (
@@ -119,17 +191,28 @@ export default function AnalyticsScreen() {
               style={[
                 styles.badgeCard,
                 {
-                  backgroundColor: isUnlocked ? 'rgba(234, 179, 8, 0.15)' : colors.bgCard,
+                  backgroundColor: isUnlocked
+                    ? 'rgba(234, 179, 8, 0.15)'
+                    : colors.bgCard,
                   borderColor: isUnlocked ? '#eab308' : colors.borderColor,
                   opacity: isUnlocked ? 1 : 0.5,
                 },
               ]}
             >
               <Text style={{ fontSize: 24 }}>{b.emoji}</Text>
-              <Text style={[styles.badgeCardTitle, { color: isUnlocked ? '#eab308' : colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.badgeCardTitle,
+                  { color: isUnlocked ? '#eab308' : colors.textSecondary },
+                ]}
+              >
                 {b.title}
               </Text>
-              <Text style={[styles.badgeCardDesc, { color: colors.textSecondary }]}>{b.desc}</Text>
+              <Text
+                style={[styles.badgeCardDesc, { color: colors.textSecondary }]}
+              >
+                {b.desc}
+              </Text>
             </View>
           );
         })}

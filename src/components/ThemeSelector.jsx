@@ -10,10 +10,10 @@ import { useAppState } from '../store.jsx';
 import { THEMES, getSavedThemeId, applyTheme } from '../utils/themes.js';
 
 export default function ThemeSelector({ showToast }) {
-  const state  = useAppState();
-  const level  = state.level || 1;
+  const state = useAppState();
+  const level = state.level || 1;
 
-  const [activeId,  setActiveId]  = useState(getSavedThemeId);
+  const [activeId, setActiveId] = useState(getSavedThemeId);
   const [panelOpen, setPanelOpen] = useState(false);
   const [lockedHint, setLockedHint] = useState(null); // { id, msg }
   const panelRef = useRef(null);
@@ -35,7 +35,7 @@ export default function ThemeSelector({ showToast }) {
         ignoreOutside = false;
       }, 300);
     }
-    
+
     document.addEventListener('open-theme-selector', onOpenEvent);
     if (panelOpen) {
       const timer = setTimeout(() => {
@@ -56,15 +56,22 @@ export default function ThemeSelector({ showToast }) {
 
   // Apply saved theme on mount
   useEffect(() => {
-    const theme = THEMES.find(t => t.id === activeId) || THEMES[0];
+    const theme = THEMES.find((t) => t.id === activeId) || THEMES[0];
     applyTheme(theme);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSelect(theme) {
     if (theme.unlockLevel > level) {
-      setLockedHint({ id: theme.id, msg: `Unlocks at Level ${theme.unlockLevel}!` });
+      setLockedHint({
+        id: theme.id,
+        msg: `Unlocks at Level ${theme.unlockLevel}!`,
+      });
       setTimeout(() => setLockedHint(null), 2200);
-      if (showToast) showToast(`🔒 "${theme.name}" unlocks at Level ${theme.unlockLevel}`, '⭐');
+      if (showToast)
+        showToast(
+          `🔒 "${theme.name}" unlocks at Level ${theme.unlockLevel}`,
+          '⭐',
+        );
       return;
     }
     applyTheme(theme);
@@ -73,7 +80,7 @@ export default function ThemeSelector({ showToast }) {
     if (showToast) showToast(`Theme switched to "${theme.name}"`, theme.emoji);
   }
 
-  const activeTheme = THEMES.find(t => t.id === activeId) || THEMES[0];
+  const activeTheme = THEMES.find((t) => t.id === activeId) || THEMES[0];
 
   return (
     <div className="theme-selector-container" ref={panelRef}>
@@ -82,7 +89,7 @@ export default function ThemeSelector({ showToast }) {
         type="button"
         id="theme-toggle-btn"
         className={`utility-tool-btn${panelOpen ? ' active-tool' : ''}`}
-        onClick={() => setPanelOpen(o => !o)}
+        onClick={() => setPanelOpen((o) => !o)}
         title="Choose Theme"
         aria-label="Theme Selector"
         aria-expanded={panelOpen}
@@ -94,12 +101,17 @@ export default function ThemeSelector({ showToast }) {
       {/* Theme picker panel */}
       {panelOpen && (
         <div className="theme-panel" role="dialog" aria-label="Theme Selector">
-          <div className="theme-panel-header" style={{ justifyContent: 'space-between' }}>
+          <div
+            className="theme-panel-header"
+            style={{ justifyContent: 'space-between' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>🎨</span>
               <div>
                 <div className="theme-panel-title">Choose Theme</div>
-                <div className="theme-panel-sub">Level {level} · Earn XP to unlock more</div>
+                <div className="theme-panel-sub">
+                  Level {level} · Earn XP to unlock more
+                </div>
               </div>
             </div>
             <button
@@ -122,10 +134,10 @@ export default function ThemeSelector({ showToast }) {
           </div>
 
           <div className="theme-grid">
-            {THEMES.map(theme => {
-              const isLocked   = theme.unlockLevel > level;
-              const isActive   = theme.id === activeId;
-              const showBadge  = lockedHint?.id === theme.id;
+            {THEMES.map((theme) => {
+              const isLocked = theme.unlockLevel > level;
+              const isActive = theme.id === activeId;
+              const showBadge = lockedHint?.id === theme.id;
 
               return (
                 <button
@@ -134,12 +146,20 @@ export default function ThemeSelector({ showToast }) {
                   className={`theme-card${isActive ? ' active' : ''}${isLocked ? ' locked' : ''}`}
                   onClick={() => handleSelect(theme)}
                   aria-pressed={isActive}
-                  title={isLocked ? `Unlocks at Level ${theme.unlockLevel}` : theme.description}
+                  title={
+                    isLocked
+                      ? `Unlocks at Level ${theme.unlockLevel}`
+                      : theme.description
+                  }
                 >
                   {/* Colour swatch */}
                   <div
                     className="theme-swatch"
-                    style={{ background: theme.vars['--gradient-brand'] || theme.vars['--bg-app'] }}
+                    style={{
+                      background:
+                        theme.vars['--gradient-brand'] ||
+                        theme.vars['--bg-app'],
+                    }}
                   />
 
                   <div className="theme-info">
@@ -152,12 +172,19 @@ export default function ThemeSelector({ showToast }) {
 
                   {/* Active check */}
                   {isActive && (
-                    <span className="theme-active-check" aria-label="Active theme">✓</span>
+                    <span
+                      className="theme-active-check"
+                      aria-label="Active theme"
+                    >
+                      ✓
+                    </span>
                   )}
 
                   {/* Lock badge */}
                   {isLocked && (
-                    <span className={`theme-lock-badge${showBadge ? ' shake' : ''}`}>
+                    <span
+                      className={`theme-lock-badge${showBadge ? ' shake' : ''}`}
+                    >
                       🔒 Lvl {theme.unlockLevel}
                     </span>
                   )}

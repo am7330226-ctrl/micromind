@@ -9,19 +9,23 @@ import {
 } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { Ionicons } from '@expo/vector-icons';
-import { triggerLightImpact, triggerMediumImpact, triggerTaskCompletionHaptic } from '../services/haptics';
+import {
+  triggerLightImpact,
+  triggerMediumImpact,
+  triggerTaskCompletionHaptic,
+} from '../services/haptics';
 
 const TAG_FILTERS = ['All', 'Idea', 'Learning', 'Habit', 'Reflection'];
 
 const TAG_COLORS = {
-  Idea:       { bg: 'rgba(99,102,241,0.18)',  text: '#6366F1' },
-  Learning:   { bg: 'rgba(16,185,129,0.18)',  text: '#10B981' },
-  Habit:      { bg: 'rgba(245,158,11,0.18)',  text: '#F59E0B' },
-  Reflection: { bg: 'rgba(236,72,153,0.18)',  text: '#EC4899' },
+  Idea: { bg: 'rgba(99,102,241,0.18)', text: '#6366F1' },
+  Learning: { bg: 'rgba(16,185,129,0.18)', text: '#10B981' },
+  Habit: { bg: 'rgba(245,158,11,0.18)', text: '#F59E0B' },
+  Reflection: { bg: 'rgba(236,72,153,0.18)', text: '#EC4899' },
 };
 
 const STATUS_CONFIG = {
-  active:   { label: 'Active',   color: '#94A3B8' },
+  active: { label: 'Active', color: '#94A3B8' },
   reviewed: { label: 'Reviewed', color: '#10B981' },
   archived: { label: 'Archived', color: '#6366F1' },
 };
@@ -55,43 +59,74 @@ export default function DeckScreen() {
     });
 
     if (activeFilter !== 'All') {
-      list = list.filter(t => t.tag === activeFilter);
+      list = list.filter((t) => t.tag === activeFilter);
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(t => t.text.toLowerCase().includes(q));
+      list = list.filter((t) => t.text.toLowerCase().includes(q));
     }
 
     return list;
   }, [thoughts, activeFilter, searchQuery]);
 
-  const activeCount  = (thoughts || []).filter(t => t.status === 'active').length;
-  const reviewedCount = (thoughts || []).filter(t => t.status === 'reviewed').length;
+  const activeCount = (thoughts || []).filter(
+    (t) => t.status === 'active',
+  ).length;
+  const reviewedCount = (thoughts || []).filter(
+    (t) => t.status === 'reviewed',
+  ).length;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bgMain }]}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={styles.topArea}>
         <View>
-          <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>Memory Deck</Text>
-          <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
+          <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>
+            Memory Deck
+          </Text>
+          <Text
+            style={[styles.screenSubtitle, { color: colors.textSecondary }]}
+          >
             {(thoughts || []).length} captured thoughts
           </Text>
         </View>
         <View style={styles.countPills}>
-          <View style={[styles.countPill, { backgroundColor: 'rgba(16,185,129,0.15)' }]}>
-            <Text style={[styles.countPillText, { color: '#10B981' }]}>✅ {reviewedCount}</Text>
+          <View
+            style={[
+              styles.countPill,
+              { backgroundColor: 'rgba(16,185,129,0.15)' },
+            ]}
+          >
+            <Text style={[styles.countPillText, { color: '#10B981' }]}>
+              ✅ {reviewedCount}
+            </Text>
           </View>
-          <View style={[styles.countPill, { backgroundColor: 'rgba(99,102,241,0.15)' }]}>
-            <Text style={[styles.countPillText, { color: '#6366F1' }]}>🔵 {activeCount}</Text>
+          <View
+            style={[
+              styles.countPill,
+              { backgroundColor: 'rgba(99,102,241,0.15)' },
+            ]}
+          >
+            <Text style={[styles.countPillText, { color: '#6366F1' }]}>
+              🔵 {activeCount}
+            </Text>
           </View>
         </View>
       </View>
 
       {/* ── Search ─────────────────────────────────────────────────────────── */}
-      <View style={[styles.searchRow, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-        <Ionicons name="search-outline" size={16} color={colors.textSecondary} />
+      <View
+        style={[
+          styles.searchRow,
+          { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+        ]}
+      >
+        <Ionicons
+          name="search-outline"
+          size={16}
+          color={colors.textSecondary}
+        />
         <TextInput
           style={[styles.searchInput, { color: colors.textPrimary }]}
           placeholder="Search thoughts..."
@@ -101,7 +136,11 @@ export default function DeckScreen() {
         />
         {searchQuery.length > 0 && (
           <Pressable onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={16} color={colors.textSecondary} />
+            <Ionicons
+              name="close-circle"
+              size={16}
+              color={colors.textSecondary}
+            />
           </Pressable>
         )}
       </View>
@@ -113,14 +152,18 @@ export default function DeckScreen() {
         style={styles.filterScroll}
         contentContainerStyle={styles.filterContent}
       >
-        {TAG_FILTERS.map(f => (
+        {TAG_FILTERS.map((f) => (
           <Pressable
             key={f}
             style={[
               styles.filterChip,
               {
-                backgroundColor: activeFilter === f ? colors.primaryViolet : colors.bgCard,
-                borderColor: activeFilter === f ? colors.primaryViolet : colors.borderColor,
+                backgroundColor:
+                  activeFilter === f ? colors.primaryViolet : colors.bgCard,
+                borderColor:
+                  activeFilter === f
+                    ? colors.primaryViolet
+                    : colors.borderColor,
               },
             ]}
             onPress={() => {
@@ -131,14 +174,20 @@ export default function DeckScreen() {
             <Text
               style={[
                 styles.filterChipText,
-                { color: activeFilter === f ? '#ffffff' : colors.textSecondary },
+                {
+                  color: activeFilter === f ? '#ffffff' : colors.textSecondary,
+                },
               ]}
             >
-              {f === 'All' ? '🗂 All' :
-               f === 'Idea' ? '💡 Idea' :
-               f === 'Learning' ? '🎓 Learning' :
-               f === 'Habit' ? '🌿 Habit' :
-               '🪞 Reflection'}
+              {f === 'All'
+                ? '🗂 All'
+                : f === 'Idea'
+                  ? '💡 Idea'
+                  : f === 'Learning'
+                    ? '🎓 Learning'
+                    : f === 'Habit'
+                      ? '🌿 Habit'
+                      : '🪞 Reflection'}
             </Text>
           </Pressable>
         ))}
@@ -154,16 +203,20 @@ export default function DeckScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🧠</Text>
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
-              {(thoughts || []).length === 0 ? 'No thoughts captured yet' : 'No results found'}
+              {(thoughts || []).length === 0
+                ? 'No thoughts captured yet'
+                : 'No results found'}
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
               {(thoughts || []).length === 0
                 ? 'Use Brain Dump in the Inbox tab to capture your first idea.'
                 : 'Try a different filter or search term.'}
             </Text>
           </View>
         ) : (
-          filtered.map(thought => (
+          filtered.map((thought) => (
             <ThoughtCard
               key={thought.id}
               thought={thought}
@@ -213,21 +266,25 @@ function ThoughtCard({ thought, colors, dispatch }) {
         styles.thoughtCard,
         {
           backgroundColor: colors.bgCard,
-          borderColor:
-            thought.pinned
-              ? 'rgba(245,158,11,0.5)'
-              : thought.status === 'reviewed'
+          borderColor: thought.pinned
+            ? 'rgba(245,158,11,0.5)'
+            : thought.status === 'reviewed'
               ? 'rgba(16,185,129,0.35)'
               : thought.status === 'archived'
-              ? 'rgba(99,102,241,0.25)'
-              : colors.borderColor,
+                ? 'rgba(99,102,241,0.25)'
+                : colors.borderColor,
           opacity: thought.status === 'archived' ? 0.65 : 1,
         },
       ]}
     >
       {/* Pin indicator strip */}
       {thought.pinned && (
-        <View style={[styles.pinStrip, { backgroundColor: 'rgba(245,158,11,0.12)' }]}>
+        <View
+          style={[
+            styles.pinStrip,
+            { backgroundColor: 'rgba(245,158,11,0.12)' },
+          ]}
+        >
           <Text style={styles.pinStripText}>📌 Pinned</Text>
         </View>
       )}
@@ -236,16 +293,22 @@ function ThoughtCard({ thought, colors, dispatch }) {
         {/* Tag + Time */}
         <View style={styles.cardMeta}>
           <View style={[styles.tagChip, { backgroundColor: tagStyle.bg }]}>
-            <Text style={[styles.tagChipText, { color: tagStyle.text }]}>{thought.tag}</Text>
+            <Text style={[styles.tagChipText, { color: tagStyle.text }]}>
+              {thought.tag}
+            </Text>
           </View>
           <Text style={[styles.timeText, { color: colors.textSecondary }]}>
             {timeAgo(thought.createdAt)}
           </Text>
-          <View style={[styles.statusDot, { backgroundColor: statusInfo.color }]} />
+          <View
+            style={[styles.statusDot, { backgroundColor: statusInfo.color }]}
+          />
         </View>
 
         {/* Thought text */}
-        <Text style={[styles.thoughtText, { color: colors.textPrimary }]}>{thought.text}</Text>
+        <Text style={[styles.thoughtText, { color: colors.textPrimary }]}>
+          {thought.text}
+        </Text>
 
         {/* Action buttons */}
         <View style={styles.actionRow}>
@@ -262,7 +325,12 @@ function ThoughtCard({ thought, colors, dispatch }) {
             onPress={handlePin}
           >
             <Text style={styles.actionBtnEmoji}>📌</Text>
-            <Text style={[styles.actionBtnLabel, { color: thought.pinned ? '#F59E0B' : colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.actionBtnLabel,
+                { color: thought.pinned ? '#F59E0B' : colors.textSecondary },
+              ]}
+            >
               {thought.pinned ? 'Unpin' : 'Pin'}
             </Text>
           </Pressable>
@@ -281,14 +349,25 @@ function ThoughtCard({ thought, colors, dispatch }) {
             onPress={handleReview}
           >
             <Ionicons
-              name={thought.status === 'reviewed' ? 'checkmark-circle' : 'checkmark-circle-outline'}
+              name={
+                thought.status === 'reviewed'
+                  ? 'checkmark-circle'
+                  : 'checkmark-circle-outline'
+              }
               size={14}
-              color={thought.status === 'reviewed' ? '#10B981' : colors.textSecondary}
+              color={
+                thought.status === 'reviewed' ? '#10B981' : colors.textSecondary
+              }
             />
             <Text
               style={[
                 styles.actionBtnLabel,
-                { color: thought.status === 'reviewed' ? '#10B981' : colors.textSecondary },
+                {
+                  color:
+                    thought.status === 'reviewed'
+                      ? '#10B981'
+                      : colors.textSecondary,
+                },
               ]}
             >
               Reviewed
@@ -309,14 +388,23 @@ function ThoughtCard({ thought, colors, dispatch }) {
             onPress={handleArchive}
           >
             <Ionicons
-              name={thought.status === 'archived' ? 'archive' : 'archive-outline'}
+              name={
+                thought.status === 'archived' ? 'archive' : 'archive-outline'
+              }
               size={14}
-              color={thought.status === 'archived' ? '#6366F1' : colors.textSecondary}
+              color={
+                thought.status === 'archived' ? '#6366F1' : colors.textSecondary
+              }
             />
             <Text
               style={[
                 styles.actionBtnLabel,
-                { color: thought.status === 'archived' ? '#6366F1' : colors.textSecondary },
+                {
+                  color:
+                    thought.status === 'archived'
+                      ? '#6366F1'
+                      : colors.textSecondary,
+                },
               ]}
             >
               Archive
@@ -391,12 +479,22 @@ const styles = StyleSheet.create({
   },
   pinStripText: { fontSize: 11, fontWeight: '700', color: '#F59E0B' },
   cardBody: { padding: 14 },
-  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  cardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
   tagChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   tagChipText: { fontSize: 11, fontWeight: '800' },
   timeText: { fontSize: 11, flex: 1 },
   statusDot: { width: 7, height: 7, borderRadius: 4 },
-  thoughtText: { fontSize: 15, fontWeight: '600', lineHeight: 22, marginBottom: 12 },
+  thoughtText: {
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 22,
+    marginBottom: 12,
+  },
 
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   actionBtn: {
@@ -414,6 +512,11 @@ const styles = StyleSheet.create({
   // Empty state
   emptyState: { alignItems: 'center', paddingTop: 64, paddingHorizontal: 32 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   emptySubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });

@@ -9,9 +9,9 @@ export function useToast() {
 
   const showToast = useCallback((message, emoji = '✓') => {
     const id = Math.random().toString(36).slice(2);
-    setToasts(prev => [...prev, { id, message, emoji }]);
+    setToasts((prev) => [...prev, { id, message, emoji }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
   }, []);
 

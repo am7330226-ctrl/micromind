@@ -8,10 +8,16 @@
 
 // ── API Key Resolution ───────────────────────────────────────────────────────
 export function getApiKey() {
-  if (typeof window !== 'undefined' && localStorage.getItem('micromind_gemini_api_key')) {
+  if (
+    typeof window !== 'undefined' &&
+    localStorage.getItem('micromind_gemini_api_key')
+  ) {
     return localStorage.getItem('micromind_gemini_api_key');
   }
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+  if (
+    typeof import.meta !== 'undefined' &&
+    import.meta.env?.VITE_GEMINI_API_KEY
+  ) {
     return import.meta.env.VITE_GEMINI_API_KEY;
   }
   if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
@@ -47,16 +53,22 @@ const TOOL_DECLARATIONS = [
     functionDeclarations: [
       {
         name: 'addNewTask',
-        description: 'Add a new task to MicroMind with title, priority category, and duration estimate.',
+        description:
+          'Add a new task to MicroMind with title, priority category, and duration estimate.',
         parameters: {
           type: 'OBJECT',
           properties: {
             title: { type: 'STRING', description: 'The task description' },
             priority: {
               type: 'STRING',
-              description: 'Target category: q1 (Do First), q2 (Schedule), q3 (Delegate), q4 (Dont Do), or inbox (Unsorted)',
+              description:
+                'Target category: q1 (Do First), q2 (Schedule), q3 (Delegate), q4 (Dont Do), or inbox (Unsorted)',
             },
-            duration: { type: 'NUMBER', description: 'Estimated focus time in minutes (e.g. 15, 30, 45, 60)' },
+            duration: {
+              type: 'NUMBER',
+              description:
+                'Estimated focus time in minutes (e.g. 15, 30, 45, 60)',
+            },
           },
           required: ['title'],
         },
@@ -67,8 +79,14 @@ const TOOL_DECLARATIONS = [
         parameters: {
           type: 'OBJECT',
           properties: {
-            taskId: { type: 'STRING', description: 'Task ID or text matching the task to move' },
-            newPriority: { type: 'STRING', description: 'Target quadrant: q1, q2, q3, q4, or inbox' },
+            taskId: {
+              type: 'STRING',
+              description: 'Task ID or text matching the task to move',
+            },
+            newPriority: {
+              type: 'STRING',
+              description: 'Target quadrant: q1, q2, q3, q4, or inbox',
+            },
           },
           required: ['taskId', 'newPriority'],
         },
@@ -79,18 +97,25 @@ const TOOL_DECLARATIONS = [
         parameters: {
           type: 'OBJECT',
           properties: {
-            minutes: { type: 'NUMBER', description: 'Focus duration in minutes (e.g. 25, 50, 15)' },
+            minutes: {
+              type: 'NUMBER',
+              description: 'Focus duration in minutes (e.g. 25, 50, 15)',
+            },
           },
         },
       },
       {
         name: 'answerHowToQuestion',
-        description: 'Provide structured advice or action steps for a learning/how-to question.',
+        description:
+          'Provide structured advice or action steps for a learning/how-to question.',
         parameters: {
           type: 'OBJECT',
           properties: {
             topic: { type: 'STRING', description: 'Topic or question asked' },
-            advice: { type: 'STRING', description: 'Concise step-by-step actionable advice' },
+            advice: {
+              type: 'STRING',
+              description: 'Concise step-by-step actionable advice',
+            },
           },
           required: ['topic', 'advice'],
         },
@@ -101,9 +126,11 @@ const TOOL_DECLARATIONS = [
 
 // ── Context-Aware System Instructions ──────────────────────────────────────
 function buildSystemInstruction(appState, userName) {
-  const tasks = (appState?.tasks || []).filter(t => t && typeof t === 'object');
-  const q1 = tasks.filter(t => t.category === 'q1' && !t.completed);
-  const inbox = tasks.filter(t => t.category === 'inbox' && !t.completed);
+  const tasks = (appState?.tasks || []).filter(
+    (t) => t && typeof t === 'object',
+  );
+  const q1 = tasks.filter((t) => t.category === 'q1' && !t.completed);
+  const inbox = tasks.filter((t) => t.category === 'inbox' && !t.completed);
   const habits = (appState?.habits || []).filter(Boolean);
 
   return `You are MicroMind AI Copilot, an intelligent productivity assistant embedded inside the MicroMind web app.
@@ -111,10 +138,10 @@ User Name: ${userName || 'Friend'}
 
 Current App Context:
 - Active Streak: ${appState?.streak || 0} days | Level: ${appState?.level || 1} | XP: ${appState?.xp || 0}
-- Q1 (Do First) Tasks: ${q1.map(t => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
-- Unsorted Inbox Tasks: ${inbox.map(t => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
-- Total Active Tasks: ${tasks.filter(t => !t.completed).length} | Completed Today: ${tasks.filter(t => t.completed).length}
-- Habits Progress: ${habits.filter(h => h.done).length}/${habits.length} checked
+- Q1 (Do First) Tasks: ${q1.map((t) => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
+- Unsorted Inbox Tasks: ${inbox.map((t) => `"${t.text || 'Task'}" [id:${t.id}]`).join(', ') || 'None'}
+- Total Active Tasks: ${tasks.filter((t) => !t.completed).length} | Completed Today: ${tasks.filter((t) => t.completed).length}
+- Habits Progress: ${habits.filter((h) => h.done).length}/${habits.length} checked
 
 Capabilities & Tools:
 1. Add tasks using 'addNewTask' function.
@@ -128,13 +155,27 @@ Guidelines: Always be concise (< 3 sentences unless explaining a topic), warm, a
 // ── Client-Side Intent Parser (Smart Local Engine) ─────────────────────────
 function parseClientIntent(messageText, appState) {
   const text = messageText.toLowerCase();
-  const activeTasksCount = (appState?.tasks || []).filter(t => !t.completed).length;
+  const activeTasksCount = (appState?.tasks || []).filter(
+    (t) => !t.completed,
+  ).length;
 
   // Match "add task ..."
-  if (text.includes('add task') || text.includes('create task') || text.startsWith('add ') || text.startsWith('new task')) {
-    let clean = messageText.replace(/^(add task|create task|add new task|add|new task)\s*:?/i, '').trim();
+  if (
+    text.includes('add task') ||
+    text.includes('create task') ||
+    text.startsWith('add ') ||
+    text.startsWith('new task')
+  ) {
+    let clean = messageText
+      .replace(/^(add task|create task|add new task|add|new task)\s*:?/i, '')
+      .trim();
     let priority = 'inbox';
-    if (text.includes('do first') || text.includes('q1') || text.includes('urgent')) priority = 'q1';
+    if (
+      text.includes('do first') ||
+      text.includes('q1') ||
+      text.includes('urgent')
+    )
+      priority = 'q1';
     else if (text.includes('schedule') || text.includes('q2')) priority = 'q2';
     else if (text.includes('delegate') || text.includes('q3')) priority = 'q3';
 
@@ -153,7 +194,11 @@ function parseClientIntent(messageText, appState) {
   }
 
   // Match "start pomodoro" or "timer"
-  if (text.includes('pomodoro') || text.includes('timer') || text.includes('focus session')) {
+  if (
+    text.includes('pomodoro') ||
+    text.includes('timer') ||
+    text.includes('focus session')
+  ) {
     const minMatch = text.match(/(\d+)\s*(m|min|minutes)/i);
     const minutes = minMatch ? parseInt(minMatch[1], 10) : 25;
     return {
@@ -166,7 +211,10 @@ function parseClientIntent(messageText, appState) {
   // Match "move ..."
   if (text.includes('move') || text.includes('assign')) {
     const tasks = appState?.tasks || [];
-    const firstTask = tasks.find(t => !t.completed) || { id: 'sample', text: 'Task' };
+    const firstTask = tasks.find((t) => !t.completed) || {
+      id: 'sample',
+      text: 'Task',
+    };
     let newPriority = 'q1';
     if (text.includes('q2') || text.includes('schedule')) newPriority = 'q2';
     if (text.includes('q3') || text.includes('delegate')) newPriority = 'q3';
@@ -179,7 +227,12 @@ function parseClientIntent(messageText, appState) {
   }
 
   // Match "break down" / "subtasks"
-  if (text.includes('break down') || text.includes('breakdown') || text.includes('subtask') || text.includes('steps')) {
+  if (
+    text.includes('break down') ||
+    text.includes('breakdown') ||
+    text.includes('subtask') ||
+    text.includes('steps')
+  ) {
     return {
       name: 'breakdownTasks',
       args: {},
@@ -204,7 +257,12 @@ function parseClientIntent(messageText, appState) {
  * @param {string} userName
  * @returns {Promise<{ responseText: string, toolCalls: Array, engine: string, error: string|null }>}
  */
-export async function sendCopilotMessage(userMessage, chatHistory = [], appState = {}, userName = 'Friend') {
+export async function sendCopilotMessage(
+  userMessage,
+  chatHistory = [],
+  appState = {},
+  userName = 'Friend',
+) {
   const fallbackIntent = parseClientIntent(userMessage, appState);
   const apiKey = getApiKey();
   const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
@@ -213,7 +271,10 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
   if (!isOnline || !apiKey) {
     return {
       responseText: fallbackIntent.text,
-      toolCalls: fallbackIntent.name !== 'generalOfflineResponse' ? [{ name: fallbackIntent.name, args: fallbackIntent.args }] : [],
+      toolCalls:
+        fallbackIntent.name !== 'generalOfflineResponse'
+          ? [{ name: fallbackIntent.name, args: fallbackIntent.args }]
+          : [],
       engine: isOnline ? 'local_no_key' : 'local_offline',
       error: null,
     };
@@ -223,7 +284,7 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
   try {
     const systemInstruction = buildSystemInstruction(appState, userName);
     const contents = [
-      ...chatHistory.map(m => ({
+      ...chatHistory.map((m) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }],
       })),
@@ -246,7 +307,9 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
 
     if (!response.ok) {
       const errText = await response.text().catch(() => '');
-      throw new Error(`Gemini API HTTP ${response.status}: ${errText || response.statusText}`);
+      throw new Error(
+        `Gemini API HTTP ${response.status}: ${errText || response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -264,7 +327,11 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
     }
 
     // Attach fallback intent if API gave plain text without tool calls for action commands
-    if (toolCalls.length === 0 && fallbackIntent && fallbackIntent.name !== 'generalOfflineResponse') {
+    if (
+      toolCalls.length === 0 &&
+      fallbackIntent &&
+      fallbackIntent.name !== 'generalOfflineResponse'
+    ) {
       toolCalls.push({ name: fallbackIntent.name, args: fallbackIntent.args });
       if (!responseText) responseText = fallbackIntent.text;
     }
@@ -275,12 +342,18 @@ export async function sendCopilotMessage(userMessage, chatHistory = [], appState
 
     return { responseText, toolCalls, engine: 'online', error: null };
   } catch (error) {
-    console.warn('AI Copilot Gemini Error (Falling back to Smart Local Engine):', error.message);
+    console.warn(
+      'AI Copilot Gemini Error (Falling back to Smart Local Engine):',
+      error.message,
+    );
 
     // Seamless auto-fallback to Smart Local Engine on API/Network failure
     return {
       responseText: fallbackIntent.text,
-      toolCalls: fallbackIntent.name !== 'generalOfflineResponse' ? [{ name: fallbackIntent.name, args: fallbackIntent.args }] : [],
+      toolCalls:
+        fallbackIntent.name !== 'generalOfflineResponse'
+          ? [{ name: fallbackIntent.name, args: fallbackIntent.args }]
+          : [],
       engine: 'local_fallback',
       error: null,
     };
@@ -344,13 +417,14 @@ export async function parseMultiTaskVoiceDump(transcript) {
   // Local fallback: split by punctuation and conjunctions ("and", "then", ",", ".")
   const parts = transcript
     .split(/\b(?:and|then|also|plus)\b|[,.;\n]/i)
-    .map(s => s.trim())
-    .filter(s => s.length > 2);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 2);
 
-  return parts.map(part => {
+  return parts.map((part) => {
     let priority = 'inbox';
     const lower = part.toLowerCase();
-    if (/\b(urgent|asap|today|critical|important)\b/.test(lower)) priority = 'q1';
+    if (/\b(urgent|asap|today|critical|important)\b/.test(lower))
+      priority = 'q1';
     else if (/\b(schedule|plan|study|read)\b/.test(lower)) priority = 'q2';
 
     let duration = 25;

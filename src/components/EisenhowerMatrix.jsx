@@ -73,27 +73,76 @@ function Quadrant({ quadrant, tasks, showToast }) {
       }}
     >
       {/* Header */}
-      <div className="quadrant-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
+      <div
+        className="quadrant-header"
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          width: '100%',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-          <span style={{ fontSize: '26px', fontWeight: '800', color: quadrant.accentColor, fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+          <span
+            style={{
+              fontSize: '26px',
+              fontWeight: '800',
+              color: quadrant.accentColor,
+              fontFamily: 'Outfit, sans-serif',
+              lineHeight: 1,
+            }}
+          >
             {quadrant.num}
           </span>
           <div>
-            <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div
+              style={{
+                fontSize: '17px',
+                fontWeight: '700',
+                color: 'var(--text-primary)',
+                fontFamily: 'Outfit, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
               <span>{quadrant.emoji}</span>
               <span>{quadrant.label}</span>
             </div>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '3px' }}>
+            <div
+              style={{
+                fontSize: '10px',
+                fontWeight: '700',
+                color: 'var(--text-secondary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginTop: '3px',
+              }}
+            >
               {quadrant.subtitle}
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexShrink: 0,
+          }}
+        >
           {quadrant.id === 'q1' && focusTime?.label && (
             <span
               className="q1-focus-time-badge"
-              style={{ padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '600', backgroundColor: 'rgba(249, 115, 22, 0.12)', color: '#c2410c' }}
+              style={{
+                padding: '3px 8px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                backgroundColor: 'rgba(249, 115, 22, 0.12)',
+                color: '#c2410c',
+              }}
               title={`Estimated total focus time: ${focusTime.label}`}
               aria-label={`Estimated total focus time for Do First tasks: ${focusTime.label}`}
             >
@@ -113,7 +162,7 @@ function Quadrant({ quadrant, tasks, showToast }) {
               lineHeight: 1,
             }}
           >
-            {tasks.filter(t => !t.completed).length}
+            {tasks.filter((t) => !t.completed).length}
             {quadrant.id === 'q1' ? '/3' : ''}
           </span>
         </div>
@@ -137,12 +186,21 @@ function Quadrant({ quadrant, tasks, showToast }) {
             }}
           >
             <span style={{ fontSize: '28px', color: '#93c5fd' }}>★</span>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4, maxWidth: '180px' }}>
-              Select category pill on a task<br />to move it here
+            <div
+              style={{
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.4,
+                maxWidth: '180px',
+              }}
+            >
+              Select category pill on a task
+              <br />
+              to move it here
             </div>
           </div>
         ) : (
-          tasks.map(task => (
+          tasks.map((task) => (
             <TaskItem
               key={task.id}
               task={task}
@@ -160,26 +218,61 @@ export default function EisenhowerMatrix({ showToast }) {
   const state = useAppState();
 
   const getQuadrantTasks = (qId) =>
-    (state.tasks || []).filter(t => t && t.category === qId);
+    (state.tasks || []).filter((t) => t && t.category === qId);
 
   return (
-    <div className="glass-panel eisenhower-matrix-container" id="section-priority-matrix">
+    <div
+      className="glass-panel eisenhower-matrix-container"
+      id="section-priority-matrix"
+    >
       <div className="matrix-header" style={{ marginBottom: '24px' }}>
         <div>
-          <h2 className="section-title" style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
+          <h2
+            className="section-title"
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              fontFamily: 'Outfit, sans-serif',
+              color: 'var(--text-primary)',
+              margin: '0 0 4px 0',
+            }}
+          >
             Priority Matrix
           </h2>
-          <p className="section-subtitle" style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 6px 0' }}>
-            1-Tap category pills to categorize tasks into the Eisenhower quadrants
+          <p
+            className="section-subtitle"
+            style={{
+              fontSize: '13px',
+              color: 'var(--text-secondary)',
+              margin: '0 0 6px 0',
+            }}
+          >
+            1-Tap category pills to categorize tasks into the Eisenhower
+            quadrants
           </p>
-          <div style={{ fontSize: '10px', fontWeight: '800', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div
+            style={{
+              fontSize: '10px',
+              fontWeight: '800',
+              color: '#d97706',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+            }}
+          >
             EISENHOWER METHOD
           </div>
         </div>
       </div>
 
-      <div className="matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-        {QUADRANTS.map(q => (
+      <div
+        className="matrix-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '20px',
+        }}
+      >
+        {QUADRANTS.map((q) => (
           <Quadrant
             key={q.id}
             quadrant={q}

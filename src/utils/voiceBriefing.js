@@ -14,9 +14,11 @@
  * @returns {boolean}
  */
 export function isVoiceSupported() {
-  return typeof window !== 'undefined' &&
+  return (
+    typeof window !== 'undefined' &&
     'speechSynthesis' in window &&
-    typeof SpeechSynthesisUtterance !== 'undefined';
+    typeof SpeechSynthesisUtterance !== 'undefined'
+  );
 }
 
 /**
@@ -39,16 +41,17 @@ function getGreeting() {
  */
 export function generateBriefingScript(state, userName) {
   const greeting = getGreeting();
-  const name = userName && userName !== 'Guest' ? `, ${userName.split(' ')[0]}` : '';
+  const name =
+    userName && userName !== 'Guest' ? `, ${userName.split(' ')[0]}` : '';
 
   const tasks = state.tasks || [];
-  const q1Tasks = tasks.filter(t => t.category === 'q1' && !t.completed);
-  const totalIncomplete = tasks.filter(t => !t.completed).length;
-  const totalComplete = tasks.filter(t => t.completed).length;
+  const q1Tasks = tasks.filter((t) => t.category === 'q1' && !t.completed);
+  const totalIncomplete = tasks.filter((t) => !t.completed).length;
+  const totalComplete = tasks.filter((t) => t.completed).length;
   const streak = state.streak || 0;
   const level = state.level || 1;
   const habits = state.habits || [];
-  const habitsDone = habits.filter(h => h.done).length;
+  const habitsDone = habits.filter((h) => h.done).length;
 
   const lines = [];
 
@@ -58,20 +61,24 @@ export function generateBriefingScript(state, userName) {
   // ── Task Overview ──────────────────────────────────────────────────────────
   if (q1Tasks.length > 0) {
     lines.push(
-      `You have ${q1Tasks.length} urgent ${q1Tasks.length === 1 ? 'task' : 'tasks'} in your Do First list that need immediate attention.`
+      `You have ${q1Tasks.length} urgent ${q1Tasks.length === 1 ? 'task' : 'tasks'} in your Do First list that need immediate attention.`,
     );
     const topTask = q1Tasks[0];
     lines.push(`Your top priority right now is: "${topTask.text}".`);
   } else if (totalIncomplete > 0) {
-    lines.push(`You have ${totalIncomplete} ${totalIncomplete === 1 ? 'task' : 'tasks'} remaining across your priority matrix.`);
+    lines.push(
+      `You have ${totalIncomplete} ${totalIncomplete === 1 ? 'task' : 'tasks'} remaining across your priority matrix.`,
+    );
   } else {
-    lines.push(`Your task board is completely clear! Great job staying on top of things.`);
+    lines.push(
+      `Your task board is completely clear! Great job staying on top of things.`,
+    );
   }
 
   // ── Completed Work ─────────────────────────────────────────────────────────
   if (totalComplete > 0) {
     lines.push(
-      `You've already completed ${totalComplete} ${totalComplete === 1 ? 'task' : 'tasks'} today. Keep up the momentum!`
+      `You've already completed ${totalComplete} ${totalComplete === 1 ? 'task' : 'tasks'} today. Keep up the momentum!`,
     );
   }
 
@@ -80,9 +87,13 @@ export function generateBriefingScript(state, userName) {
     if (habitsDone === habits.length) {
       lines.push(`Amazing! All ${habits.length} daily habits are checked off.`);
     } else if (habitsDone > 0) {
-      lines.push(`You've completed ${habitsDone} out of ${habits.length} daily habits so far.`);
+      lines.push(
+        `You've completed ${habitsDone} out of ${habits.length} daily habits so far.`,
+      );
     } else {
-      lines.push(`Your daily habits are waiting for you — don't forget to check them off!`);
+      lines.push(
+        `Your daily habits are waiting for you — don't forget to check them off!`,
+      );
     }
   }
 
@@ -91,12 +102,14 @@ export function generateBriefingScript(state, userName) {
     lines.push(
       streak >= 7
         ? `Impressive! You're on a ${streak}-day productivity streak. You're on fire!`
-        : `You're on a ${streak}-day streak. Keep it going!`
+        : `You're on a ${streak}-day streak. Keep it going!`,
     );
   }
 
   if (level > 1) {
-    lines.push(`You're at Level ${level}. Every task completed earns you more experience points.`);
+    lines.push(
+      `You're at Level ${level}. Every task completed earns you more experience points.`,
+    );
   }
 
   // ── Motivational Close ─────────────────────────────────────────────────────

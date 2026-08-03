@@ -8,7 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [tailwindcss(), react()],
     define: {
-      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || ''),
+      'process.env.VITE_GEMINI_API_KEY': JSON.stringify(
+        env.VITE_GEMINI_API_KEY || '',
+      ),
     },
     server: {
       port: 5173,
@@ -22,4 +24,3 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
-

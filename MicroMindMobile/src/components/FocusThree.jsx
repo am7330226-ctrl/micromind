@@ -14,7 +14,7 @@ export default function FocusThree({ onOpenDetail }) {
 
   // Available tasks to assign to focus slots
   const unassignedTasks = tasks.filter(
-    t => !t.completed && !Object.values(focusSlots).includes(t.id)
+    (t) => !t.completed && !Object.values(focusSlots).includes(t.id),
   );
 
   const handleAssignSlot = (slotId, taskId) => {
@@ -22,7 +22,7 @@ export default function FocusThree({ onOpenDetail }) {
     dispatch({ type: 'SET_FOCUS_SLOT', slotId, taskId });
   };
 
-  const handleClearSlot = slotId => {
+  const handleClearSlot = (slotId) => {
     triggerLightImpact();
     dispatch({ type: 'SET_FOCUS_SLOT', slotId, taskId: null });
   };
@@ -30,7 +30,9 @@ export default function FocusThree({ onOpenDetail }) {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerBox}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>🎯 Today's Focus Three</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          🎯 Today's Focus Three
+        </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Limit work-in-progress to 3 high-impact commitments.
         </Text>
@@ -39,24 +41,36 @@ export default function FocusThree({ onOpenDetail }) {
       {/* Focus Slots */}
       {slots.map((slotId, index) => {
         const assignedTaskId = focusSlots[slotId];
-        const assignedTask = tasks.find(t => t.id === assignedTaskId);
+        const assignedTask = tasks.find((t) => t.id === assignedTaskId);
 
         return (
           <View
             key={slotId}
             style={[
               styles.slotCard,
-              { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+              {
+                backgroundColor: colors.bgCard,
+                borderColor: colors.borderColor,
+              },
             ]}
           >
             <View style={styles.slotHeader}>
-              <View style={[styles.slotBadge, { backgroundColor: colors.primaryViolet }]}>
+              <View
+                style={[
+                  styles.slotBadge,
+                  { backgroundColor: colors.primaryViolet },
+                ]}
+              >
                 <Text style={styles.slotBadgeText}>Priority #{index + 1}</Text>
               </View>
 
               {assignedTask && (
                 <Pressable onPress={() => handleClearSlot(slotId)}>
-                  <Ionicons name="close-circle-outline" size={18} color={colors.textSecondary} />
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
                 </Pressable>
               )}
             </View>
@@ -65,7 +79,12 @@ export default function FocusThree({ onOpenDetail }) {
               <TaskCard task={assignedTask} onOpenDetail={onOpenDetail} />
             ) : (
               <View style={styles.unassignedBox}>
-                <Text style={[styles.unassignedText, { color: colors.textSecondary }]}>
+                <Text
+                  style={[
+                    styles.unassignedText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   Slot Empty — Select a task below to commit
                 </Text>
               </View>
@@ -75,26 +94,55 @@ export default function FocusThree({ onOpenDetail }) {
       })}
 
       {/* Available Tasks Picker */}
-      <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 16 }]}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: colors.textSecondary, marginTop: 16 },
+        ]}
+      >
         Unassigned Tasks ({unassignedTasks.length})
       </Text>
 
       {unassignedTasks.length === 0 ? (
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No unassigned tasks available</Text>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          No unassigned tasks available
+        </Text>
       ) : (
-        unassignedTasks.map(task => (
-          <View key={task.id} style={[styles.assignRow, { backgroundColor: colors.bgCard, borderColor: colors.borderColor }]}>
-            <Text style={[styles.assignTaskText, { color: colors.textPrimary }]} numberOfLines={1}>
+        unassignedTasks.map((task) => (
+          <View
+            key={task.id}
+            style={[
+              styles.assignRow,
+              {
+                backgroundColor: colors.bgCard,
+                borderColor: colors.borderColor,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.assignTaskText, { color: colors.textPrimary }]}
+              numberOfLines={1}
+            >
               {task.text}
             </Text>
             <View style={styles.assignButtons}>
               {slots.map((slotId, idx) => (
                 <Pressable
                   key={slotId}
-                  style={[styles.assignChip, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}
+                  style={[
+                    styles.assignChip,
+                    { backgroundColor: 'rgba(168, 85, 247, 0.15)' },
+                  ]}
                   onPress={() => handleAssignSlot(slotId, task.id)}
                 >
-                  <Text style={[styles.assignChipText, { color: colors.primaryViolet }]}>+#{idx + 1}</Text>
+                  <Text
+                    style={[
+                      styles.assignChipText,
+                      { color: colors.primaryViolet },
+                    ]}
+                  >
+                    +#{idx + 1}
+                  </Text>
                 </Pressable>
               ))}
             </View>

@@ -10,8 +10,14 @@ function MainContainer() {
   const colors = theme.colors;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgMain }} edges={['top', 'left', 'right']}>
-      <StatusBar style={colors.isDark ? 'light' : 'dark'} backgroundColor={colors.bgHeader} />
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bgMain }}
+      edges={['top', 'left', 'right']}
+    >
+      <StatusBar
+        style={colors.isDark ? 'light' : 'dark'}
+        backgroundColor={colors.bgHeader}
+      />
       <TabNavigator />
     </SafeAreaView>
   );

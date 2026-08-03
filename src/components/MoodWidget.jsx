@@ -19,7 +19,10 @@ export default function MoodWidget({ showToast }) {
     const newMood = currentMood === val ? 0 : val;
     dispatch({ type: 'SET_MOOD', mood: newMood });
     if (newMood > 0) {
-      showToast(`Mood set: ${MOOD_LABELS[newMood]} ${'⭐'.repeat(newMood)}`, '😊');
+      showToast(
+        `Mood set: ${MOOD_LABELS[newMood]} ${'⭐'.repeat(newMood)}`,
+        '😊',
+      );
     }
   };
 
@@ -27,11 +30,18 @@ export default function MoodWidget({ showToast }) {
     <div className="glass-panel mood-panel">
       <div className="panel-header">
         <h2>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M8 13s1.5 2 4 2 4-2 4-2"/>
-            <line x1="9" y1="9" x2="9.01" y2="9"/>
-            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 13s1.5 2 4 2 4-2 4-2" />
+            <line x1="9" y1="9" x2="9.01" y2="9" />
+            <line x1="15" y1="9" x2="15.01" y2="9" />
           </svg>
           Today's Mood
         </h2>

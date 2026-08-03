@@ -5,9 +5,17 @@
 
 function escapeHTML(str) {
   if (!str) return '';
-  return str.replace(/[&<>'"]/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
-  }[tag] || tag));
+  return str.replace(
+    /[&<>'"]/g,
+    (tag) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;',
+      })[tag] || tag,
+  );
 }
 
 export function parseRichText(text) {
@@ -24,8 +32,10 @@ export function parseRichText(text) {
     const clean = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
     return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
   });
-  s = s.replace(/(^|\s)#([\w-]+)/g, (_, prefix, tag) =>
-    `${prefix}<span class="task-tag" data-tag="${tag.toLowerCase()}">#${tag}</span>`
+  s = s.replace(
+    /(^|\s)#([\w-]+)/g,
+    (_, prefix, tag) =>
+      `${prefix}<span class="task-tag" data-tag="${tag.toLowerCase()}">#${tag}</span>`,
   );
   return s;
 }

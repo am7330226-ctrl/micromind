@@ -20,12 +20,12 @@ export default function Header({
   onToggleSidebar,
 }) {
   const dispatch = useDispatch();
-  const state    = useAppState();
+  const state = useAppState();
 
-  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [search,     setSearch]     = useState('');
-  const menuRef   = useRef(null);
+  const [search, setSearch] = useState('');
+  const menuRef = useRef(null);
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -46,25 +46,38 @@ export default function Header({
 
   const handleReset = () => {
     dispatch({ type: 'DAILY_RESET' });
-    if (showToast) showToast('Daily reset performed! Habits reset & completed tasks archived.', '🌙');
+    if (showToast)
+      showToast(
+        'Daily reset performed! Habits reset & completed tasks archived.',
+        '🌙',
+      );
   };
 
-  const xp    = state.xp    || 0;
+  const xp = state.xp || 0;
   const level = state.level || 1;
 
   return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 40,
-      backgroundColor: 'var(--bg-header, rgba(255, 255, 255, 0.85))',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      borderBottom: '1px solid var(--border-color, #e2e8f0)',
-      transition: 'background-color 0.2s ease, border-color 0.2s ease',
-      boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
-      padding: '0 24px', height: '56px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
-      width: '100%', boxSizing: 'border-box'
-    }}>
+    <header
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+        backgroundColor: 'var(--bg-header, rgba(255, 255, 255, 0.85))',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: '1px solid var(--border-color, #e2e8f0)',
+        transition: 'background-color 0.2s ease, border-color 0.2s ease',
+        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
+        padding: '0 24px',
+        height: '56px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '16px',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Left: Mobile Toggle + Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
@@ -73,16 +86,38 @@ export default function Header({
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar"
           style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: '6px', borderRadius: '8px', color: '#630ed4', display: 'flex'
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '6px',
+            borderRadius: '8px',
+            color: '#630ed4',
+            display: 'flex',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu</span>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: '24px' }}
+          >
+            menu
+          </span>
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '13px',
+          }}
+        >
           <span style={{ color: '#4a4455', fontWeight: '500' }}>Dashboard</span>
-          <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#4a4455' }}>chevron_right</span>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: '14px', color: '#4a4455' }}
+          >
+            chevron_right
+          </span>
           <span style={{ color: '#630ed4', fontWeight: '700' }}>Overview</span>
         </div>
       </div>
@@ -90,31 +125,62 @@ export default function Header({
       {/* Right: Tools + Badges + Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {/* Search */}
-        <div style={{
-          display: 'flex', alignItems: 'center', backgroundColor: '#f0f3ff', borderRadius: '999px',
-          border: searchOpen ? '1.5px solid #630ed4' : '1px solid rgba(204,195,216,0.3)',
-          padding: '0 10px', height: '34px', width: searchOpen ? '180px' : '34px',
-          transition: 'all 0.2s ease', overflow: 'hidden'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#f0f3ff',
+            borderRadius: '999px',
+            border: searchOpen
+              ? '1.5px solid #630ed4'
+              : '1px solid rgba(204,195,216,0.3)',
+            padding: '0 10px',
+            height: '34px',
+            width: searchOpen ? '180px' : '34px',
+            transition: 'all 0.2s ease',
+            overflow: 'hidden',
+          }}
+        >
           <button
             type="button"
-            onClick={() => { setSearchOpen(true); searchRef.current?.focus(); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+            onClick={() => {
+              setSearchOpen(true);
+              searchRef.current?.focus();
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+            }}
             aria-label="Open search"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#4a4455' }}>search</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '18px', color: '#4a4455' }}
+            >
+              search
+            </span>
           </button>
           <input
             ref={searchRef}
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            onBlur={() => { if (!search) setSearchOpen(false); }}
+            onChange={(e) => setSearch(e.target.value)}
+            onBlur={() => {
+              if (!search) setSearchOpen(false);
+            }}
             placeholder="Search tasks..."
             style={{
-              background: 'transparent', border: 'none', outline: 'none',
-              fontSize: '13px', color: '#111c2d', width: searchOpen ? '100%' : '0',
-              opacity: searchOpen ? 1 : 0, padding: searchOpen ? '0 0 0 6px' : 0
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              fontSize: '13px',
+              color: '#111c2d',
+              width: searchOpen ? '100%' : '0',
+              opacity: searchOpen ? 1 : 0,
+              padding: searchOpen ? '0 0 0 6px' : 0,
             }}
             aria-label="Search"
           />
@@ -127,9 +193,16 @@ export default function Header({
           type="button"
           onClick={onOpenPomodoro}
           style={{
-            display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px',
-            backgroundColor: '#f0f3ff', border: '1px solid rgba(204,195,216,0.3)',
-            borderRadius: '12px', cursor: 'pointer', fontSize: '13px', color: '#111c2d'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: '#f0f3ff',
+            border: '1px solid rgba(204,195,216,0.3)',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            color: '#111c2d',
           }}
           title="Pomodoro Focus Timer"
         >
@@ -141,9 +214,16 @@ export default function Header({
           type="button"
           onClick={onOpenAnalytics}
           style={{
-            display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px',
-            backgroundColor: '#f0f3ff', border: '1px solid rgba(204,195,216,0.3)',
-            borderRadius: '12px', cursor: 'pointer', fontSize: '13px', color: '#111c2d'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: '#f0f3ff',
+            border: '1px solid rgba(204,195,216,0.3)',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            color: '#111c2d',
           }}
           title="Analytics"
         >
@@ -158,9 +238,17 @@ export default function Header({
           type="button"
           onClick={handleReset}
           style={{
-            display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px',
-            backgroundColor: '#fff1f2', border: '1px solid #fecdd3', color: '#e11d48',
-            borderRadius: '12px', cursor: 'pointer', fontSize: '13px', fontWeight: '600'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '6px 12px',
+            backgroundColor: '#fff1f2',
+            border: '1px solid #fecdd3',
+            color: '#e11d48',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: '600',
           }}
           title="Daily Reset"
         >
@@ -169,14 +257,31 @@ export default function Header({
         </button>
 
         {/* Profile Avatar Dropdown */}
-        <div ref={menuRef} style={{ position: 'relative', marginLeft: '6px', paddingLeft: '12px', borderLeft: '1px solid rgba(204,195,216,0.3)' }}>
+        <div
+          ref={menuRef}
+          style={{
+            position: 'relative',
+            marginLeft: '6px',
+            paddingLeft: '12px',
+            borderLeft: '1px solid rgba(204,195,216,0.3)',
+          }}
+        >
           <button
             type="button"
-            onClick={() => setMenuOpen(o => !o)}
+            onClick={() => setMenuOpen((o) => !o)}
             style={{
-              width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#630ed4',
-              color: 'white', fontWeight: '700', fontSize: '14px', border: '2px solid rgba(99,14,212,0.2)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: '#630ed4',
+              color: 'white',
+              fontWeight: '700',
+              fontSize: '14px',
+              border: '2px solid rgba(99,14,212,0.2)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             title={`Signed in as ${userName}`}
             aria-label="User Menu"
@@ -185,24 +290,68 @@ export default function Header({
           </button>
 
           {menuOpen && (
-            <div style={{
-              position: 'absolute', right: 0, top: '44px', width: '200px',
-              backgroundColor: 'white', borderRadius: '16px', border: '1px solid rgba(204,195,216,0.4)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 999, overflow: 'hidden'
-            }}>
-              <div style={{ padding: '12px 16px', backgroundColor: '#f0f3ff', borderBottom: '1px solid rgba(204,195,216,0.3)' }}>
-                <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#111c2d' }}>{userName}</p>
-                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#4a4455' }}>Active Session</p>
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '44px',
+                width: '200px',
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                border: '1px solid rgba(204,195,216,0.4)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                zIndex: 999,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#f0f3ff',
+                  borderBottom: '1px solid rgba(204,195,216,0.3)',
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#111c2d',
+                  }}
+                >
+                  {userName}
+                </p>
+                <p
+                  style={{
+                    margin: '2px 0 0 0',
+                    fontSize: '11px',
+                    color: '#4a4455',
+                  }}
+                >
+                  Active Session
+                </p>
               </div>
               <div style={{ padding: '8px' }}>
                 <PwaInstallPrompt showToast={showToast} />
                 <button
                   type="button"
-                  onClick={() => { setMenuOpen(false); onLogout(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onLogout();
+                  }}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '8px 12px', borderRadius: '10px', border: 'none',
-                    backgroundColor: 'transparent', color: '#dc2626', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    color: '#dc2626',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
                   }}
                 >
                   <span>🚪</span>

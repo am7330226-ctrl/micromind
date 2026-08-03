@@ -7,7 +7,7 @@ export default function MobileBottomDock({
   onOpenPomodoro,
   onOpenAnalytics,
   onReset,
-  showToast
+  showToast,
 }) {
   const focusInput = () => {
     const input = document.getElementById('dump-input');
@@ -18,7 +18,11 @@ export default function MobileBottomDock({
   };
 
   return (
-    <div className="mobile-bottom-dock" role="navigation" aria-label="Mobile Bottom Navigation">
+    <div
+      className="mobile-bottom-dock"
+      role="navigation"
+      aria-label="Mobile Bottom Navigation"
+    >
       <button
         className="dock-btn"
         onClick={focusInput}

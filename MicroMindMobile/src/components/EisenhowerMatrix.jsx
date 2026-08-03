@@ -4,10 +4,30 @@ import { useStoreState } from '../store/StoreContext';
 import TaskCard from './TaskCard';
 
 const QUADRANTS = [
-  { id: 'q1', title: 'Q1: Do First', subtitle: 'Urgent & Important', color: '#ef4444' },
-  { id: 'q2', title: 'Q2: Schedule', subtitle: 'Not Urgent & Important', color: '#3b82f6' },
-  { id: 'q3', title: 'Q3: Delegate', subtitle: 'Urgent & Not Important', color: '#eab308' },
-  { id: 'q4', title: 'Q4: Eliminate', subtitle: 'Not Urgent & Not Important', color: '#94a3b8' },
+  {
+    id: 'q1',
+    title: 'Q1: Do First',
+    subtitle: 'Urgent & Important',
+    color: '#ef4444',
+  },
+  {
+    id: 'q2',
+    title: 'Q2: Schedule',
+    subtitle: 'Not Urgent & Important',
+    color: '#3b82f6',
+  },
+  {
+    id: 'q3',
+    title: 'Q3: Delegate',
+    subtitle: 'Urgent & Not Important',
+    color: '#eab308',
+  },
+  {
+    id: 'q4',
+    title: 'Q4: Eliminate',
+    subtitle: 'Not Urgent & Not Important',
+    color: '#94a3b8',
+  },
 ];
 
 export default function EisenhowerMatrix({ onOpenDetail }) {
@@ -16,33 +36,59 @@ export default function EisenhowerMatrix({ onOpenDetail }) {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {QUADRANTS.map(q => {
-        const quadrantTasks = tasks.filter(t => t.category === q.id);
+      {QUADRANTS.map((q) => {
+        const quadrantTasks = tasks.filter((t) => t.category === q.id);
 
         return (
           <View
             key={q.id}
             style={[
               styles.quadrantBox,
-              { backgroundColor: colors.bgCard, borderColor: colors.borderColor },
+              {
+                backgroundColor: colors.bgCard,
+                borderColor: colors.borderColor,
+              },
             ]}
           >
             <View style={styles.quadrantHeader}>
-              <View style={[styles.colorIndicator, { backgroundColor: q.color }]} />
+              <View
+                style={[styles.colorIndicator, { backgroundColor: q.color }]}
+              />
               <View style={styles.quadrantTitleGroup}>
-                <Text style={[styles.quadrantTitle, { color: colors.textPrimary }]}>{q.title}</Text>
-                <Text style={[styles.quadrantSubtitle, { color: colors.textSecondary }]}>{q.subtitle}</Text>
+                <Text
+                  style={[styles.quadrantTitle, { color: colors.textPrimary }]}
+                >
+                  {q.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.quadrantSubtitle,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {q.subtitle}
+                </Text>
               </View>
-              <View style={[styles.countBadge, { backgroundColor: `${q.color}20` }]}>
-                <Text style={[styles.countText, { color: q.color }]}>{quadrantTasks.length}</Text>
+              <View
+                style={[styles.countBadge, { backgroundColor: `${q.color}20` }]}
+              >
+                <Text style={[styles.countText, { color: q.color }]}>
+                  {quadrantTasks.length}
+                </Text>
               </View>
             </View>
 
             {quadrantTasks.length === 0 ? (
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No tasks in this quadrant</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                No tasks in this quadrant
+              </Text>
             ) : (
-              quadrantTasks.map(task => (
-                <TaskCard key={task.id} task={task} onOpenDetail={onOpenDetail} />
+              quadrantTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onOpenDetail={onOpenDetail}
+                />
               ))
             )}
           </View>

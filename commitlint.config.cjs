@@ -9,4 +9,3 @@ module.exports = {
     'header-max-length': [0],
   },
 };
-

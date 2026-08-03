@@ -12,7 +12,8 @@
 const BREAKDOWN_RULES = [
   // Programming practice / Solving questions (Python, JS, DSA, LeetCode, etc.)
   {
-    pattern: /\b(solve|practice|questions|problems|leetcode|hackerrank|exercises|dsa|algo|algorithm|coding questions)\b/i,
+    pattern:
+      /\b(solve|practice|questions|problems|leetcode|hackerrank|exercises|dsa|algo|algorithm|coding questions)\b/i,
     subtasks: [
       'Pick 3 topic problems on LeetCode or HackerRank',
       'Set up local Python IDE or Jupyter environment',
@@ -32,7 +33,8 @@ const BREAKDOWN_RULES = [
   },
   // Web Development & App Building
   {
-    pattern: /\b(build|develop|implement|code|program|react|node|vue|css|html|frontend|backend|api)\b/i,
+    pattern:
+      /\b(build|develop|implement|code|program|react|node|vue|css|html|frontend|backend|api)\b/i,
     subtasks: [
       'Set up component structure and initial file layout',
       'Implement UI layout and core state management',
@@ -112,7 +114,8 @@ const BREAKDOWN_RULES = [
   },
   // Studying & Exam Prep
   {
-    pattern: /\b(study|learn|read|chapter|course|exam|prep|quiz|test|tutorial)\b/i,
+    pattern:
+      /\b(study|learn|read|chapter|course|exam|prep|quiz|test|tutorial)\b/i,
     subtasks: [
       'Review core chapter concepts and highlight key formulas',
       'Solve 5 practice problems without checking answer key',
@@ -179,7 +182,9 @@ const FALLBACK_SUBTASKS = [
  */
 export async function generateSubtasks(taskText) {
   // Simulate brief processing delay for UX realism
-  await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 300));
+  await new Promise((resolve) =>
+    setTimeout(resolve, 400 + Math.random() * 300),
+  );
 
   if (!taskText || typeof taskText !== 'string') {
     return FALLBACK_SUBTASKS.slice(0, 4);

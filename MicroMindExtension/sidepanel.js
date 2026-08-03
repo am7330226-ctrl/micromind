@@ -37,8 +37,10 @@ chrome.storage.onChanged.addListener((changes) => {
 
 function classifyCategory(text) {
   const lower = text.toLowerCase();
-  if (/\b(urgent|asap|critical|due today|today|fix|bug)\b/.test(lower)) return 'q1';
-  if (/\b(plan|strategy|goals|study|learn|workout|design|read)\b/.test(lower)) return 'q2';
+  if (/\b(urgent|asap|critical|due today|today|fix|bug)\b/.test(lower))
+    return 'q1';
+  if (/\b(plan|strategy|goals|study|learn|workout|design|read)\b/.test(lower))
+    return 'q2';
   if (/\b(email|call|reply|text|meeting|sync|book)\b/.test(lower)) return 'q3';
   if (/\b(scroll|browse|watch|game|social)\b/.test(lower)) return 'q4';
   return 'inbox';
@@ -67,12 +69,14 @@ function handleAddTask() {
 }
 
 function toggleTask(id) {
-  tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+  tasks = tasks.map((t) =>
+    t.id === id ? { ...t, completed: !t.completed } : t,
+  );
   chrome.storage.local.set({ micromind_tasks: tasks });
 }
 
 function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
+  tasks = tasks.filter((t) => t.id !== id);
   chrome.storage.local.set({ micromind_tasks: tasks });
 }
 
@@ -101,11 +105,11 @@ function createTaskItem(t) {
 }
 
 function render() {
-  const q1 = tasks.filter(t => t.category === 'q1');
-  const q2 = tasks.filter(t => t.category === 'q2');
-  const q3 = tasks.filter(t => t.category === 'q3');
-  const q4 = tasks.filter(t => t.category === 'q4');
-  const inbox = tasks.filter(t => t.category === 'inbox' || !t.category);
+  const q1 = tasks.filter((t) => t.category === 'q1');
+  const q2 = tasks.filter((t) => t.category === 'q2');
+  const q3 = tasks.filter((t) => t.category === 'q3');
+  const q4 = tasks.filter((t) => t.category === 'q4');
+  const inbox = tasks.filter((t) => t.category === 'inbox' || !t.category);
 
   q1Count.textContent = q1.length;
   q2Count.textContent = q2.length;
@@ -113,19 +117,19 @@ function render() {
   q4Count.textContent = q4.length;
 
   q1List.innerHTML = '';
-  q1.forEach(t => q1List.appendChild(createTaskItem(t)));
+  q1.forEach((t) => q1List.appendChild(createTaskItem(t)));
 
   q2List.innerHTML = '';
-  q2.forEach(t => q2List.appendChild(createTaskItem(t)));
+  q2.forEach((t) => q2List.appendChild(createTaskItem(t)));
 
   q3List.innerHTML = '';
-  q3.forEach(t => q3List.appendChild(createTaskItem(t)));
+  q3.forEach((t) => q3List.appendChild(createTaskItem(t)));
 
   q4List.innerHTML = '';
-  q4.forEach(t => q4List.appendChild(createTaskItem(t)));
+  q4.forEach((t) => q4List.appendChild(createTaskItem(t)));
 
   inboxList.innerHTML = '';
-  inbox.forEach(t => inboxList.appendChild(createTaskItem(t)));
+  inbox.forEach((t) => inboxList.appendChild(createTaskItem(t)));
 }
 
 loadData();

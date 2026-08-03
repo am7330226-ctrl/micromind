@@ -12,30 +12,72 @@
 // ── Keyword Patterns & Their Estimated Minutes ──────────────────────────────
 const KEYWORD_RULES = [
   // Very quick (2-5 min)
-  { pattern: /\b(call|phone|text|ping|slack|dm|reply|ack|confirm|quick (check|ask|message))\b/i, minutes: 5 },
-  { pattern: /\b(check|read|glance|verify|look at|review notification)\b/i, minutes: 10 },
+  {
+    pattern:
+      /\b(call|phone|text|ping|slack|dm|reply|ack|confirm|quick (check|ask|message))\b/i,
+    minutes: 5,
+  },
+  {
+    pattern: /\b(check|read|glance|verify|look at|review notification)\b/i,
+    minutes: 10,
+  },
 
   // Short tasks (15-30 min)
-  { pattern: /\b(email|respond|schedule|book|reserve|purchase|order|pay|invoice|fill|form|sign)\b/i, minutes: 15 },
-  { pattern: /\b(meeting|standup|sync|1:1|one-on-one|call with|talk with|discuss)\b/i, minutes: 30 },
-  { pattern: /\b(fix|patch|bug|hotfix|debug|tweak|update|edit|revise|proofread)\b/i, minutes: 30 },
+  {
+    pattern:
+      /\b(email|respond|schedule|book|reserve|purchase|order|pay|invoice|fill|form|sign)\b/i,
+    minutes: 15,
+  },
+  {
+    pattern:
+      /\b(meeting|standup|sync|1:1|one-on-one|call with|talk with|discuss)\b/i,
+    minutes: 30,
+  },
+  {
+    pattern:
+      /\b(fix|patch|bug|hotfix|debug|tweak|update|edit|revise|proofread)\b/i,
+    minutes: 30,
+  },
 
   // Medium tasks (45-60 min)
-  { pattern: /\b(write|draft|compose|prepare|outline|summarize|document|report|slides|presentation|proposal)\b/i, minutes: 45 },
-  { pattern: /\b(design|mockup|wireframe|prototype|figma|sketch|ui|ux)\b/i, minutes: 60 },
-  { pattern: /\b(implement|build|develop|create|code|program|refactor|migrate|integrate)\b/i, minutes: 60 },
-  { pattern: /\b(research|analyze|investigate|study|explore|audit|review|evaluate)\b/i, minutes: 60 },
+  {
+    pattern:
+      /\b(write|draft|compose|prepare|outline|summarize|document|report|slides|presentation|proposal)\b/i,
+    minutes: 45,
+  },
+  {
+    pattern: /\b(design|mockup|wireframe|prototype|figma|sketch|ui|ux)\b/i,
+    minutes: 60,
+  },
+  {
+    pattern:
+      /\b(implement|build|develop|create|code|program|refactor|migrate|integrate)\b/i,
+    minutes: 60,
+  },
+  {
+    pattern:
+      /\b(research|analyze|investigate|study|explore|audit|review|evaluate)\b/i,
+    minutes: 60,
+  },
 
   // Long tasks (90-120 min)
-  { pattern: /\b(launch|deploy|release|ship|plan|strategy|roadmap|architect|system|feature|project)\b/i, minutes: 90 },
-  { pattern: /\b(campaign|marketing|onboarding|workshop|training|course|tutorial)\b/i, minutes: 120 },
+  {
+    pattern:
+      /\b(launch|deploy|release|ship|plan|strategy|roadmap|architect|system|feature|project)\b/i,
+    minutes: 90,
+  },
+  {
+    pattern:
+      /\b(campaign|marketing|onboarding|workshop|training|course|tutorial)\b/i,
+    minutes: 120,
+  },
 ];
 
 // Complexity boost from word count
 function wordCountBoost(text) {
   const wordCount = text.trim().split(/\s+/).length;
   if (wordCount > 12) return 15; // Long task description → complexity bonus
-  if (wordCount > 7)  return 5;
+  if (wordCount > 7) return 5;
   return 0;
 }
 

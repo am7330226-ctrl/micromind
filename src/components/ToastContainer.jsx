@@ -8,13 +8,13 @@ export default function ToastContainer({ toasts }) {
 
   return createPortal(
     <div className="toast-container">
-      {toasts.map(t => (
+      {toasts.map((t) => (
         <div key={t.id} className="toast">
           <span>{t.emoji}</span>
           <span>{t.message}</span>
         </div>
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }

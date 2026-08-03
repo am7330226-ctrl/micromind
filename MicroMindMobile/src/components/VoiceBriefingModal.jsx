@@ -11,8 +11,8 @@ export default function VoiceBriefingModal({ visible, onClose }) {
 
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const pendingCount = tasks.filter(t => !t.completed).length;
-  const q1Tasks = tasks.filter(t => t.category === 'q1' && !t.completed);
+  const pendingCount = tasks.filter((t) => !t.completed).length;
+  const q1Tasks = tasks.filter((t) => t.category === 'q1' && !t.completed);
 
   const script = `Good morning! Welcome to MicroMind. You have a ${streak}-day streak and are currently Level ${level}. Today you have ${pendingCount} pending tasks, including ${q1Tasks.length} high priority Q1 items. Focus on your top goals and make today count!`;
 
@@ -41,21 +41,50 @@ export default function VoiceBriefingModal({ visible, onClose }) {
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent
+      onRequestClose={handleClose}
+    >
       <View style={styles.overlay}>
-        <View style={[styles.modalCard, { backgroundColor: colors.bgSidebar, borderColor: colors.borderColor }]}>
+        <View
+          style={[
+            styles.modalCard,
+            {
+              backgroundColor: colors.bgSidebar,
+              borderColor: colors.borderColor,
+            },
+          ]}
+        >
           <View style={styles.headerRow}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>🎙️ Daily Audio Briefing</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              🎙️ Daily Audio Briefing
+            </Text>
             <Pressable onPress={handleClose}>
               <Ionicons name="close" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
 
-          <Text style={[styles.scriptText, { color: colors.textPrimary }]}>{script}</Text>
+          <Text style={[styles.scriptText, { color: colors.textPrimary }]}>
+            {script}
+          </Text>
 
-          <Pressable style={[styles.speakButton, { backgroundColor: colors.primaryViolet }]} onPress={handleSpeak}>
-            <Ionicons name={isSpeaking ? 'pause-circle' : 'volume-high'} size={24} color="#ffffff" />
-            <Text style={styles.speakButtonText}>{isSpeaking ? 'Stop Briefing' : 'Play Voice Briefing'}</Text>
+          <Pressable
+            style={[
+              styles.speakButton,
+              { backgroundColor: colors.primaryViolet },
+            ]}
+            onPress={handleSpeak}
+          >
+            <Ionicons
+              name={isSpeaking ? 'pause-circle' : 'volume-high'}
+              size={24}
+              color="#ffffff"
+            />
+            <Text style={styles.speakButtonText}>
+              {isSpeaking ? 'Stop Briefing' : 'Play Voice Briefing'}
+            </Text>
           </Pressable>
         </View>
       </View>
