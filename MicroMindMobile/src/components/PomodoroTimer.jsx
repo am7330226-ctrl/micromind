@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
-import {
-  toggleAmbientSound,
-  getCurrentSoundState,
-} from '../services/soundEngine';
+import { toggleAmbientSound } from '../services/soundEngine';
 import { Ionicons } from '@expo/vector-icons';
 import { triggerMediumImpact, triggerLightImpact } from '../services/haptics';
 
@@ -38,7 +35,6 @@ export default function PomodoroTimer() {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsRunning(false);
       triggerMediumImpact();
       if (selectedPreset.label === 'Pomodoro') {

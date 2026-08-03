@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useReducer,
@@ -419,7 +419,9 @@ export function StoreProvider({ children }) {
           data: { session },
         } = await supabase.auth.getSession();
         setUser(session?.user || null);
-      } catch (e) {}
+      } catch {
+        // No active Supabase session
+      }
 
       setIsLoaded(true);
     }

@@ -32,7 +32,6 @@ export default function FocusAnalytics() {
   }, [tasks]);
 
   const maxMins = Math.max(...weekData.map((d) => d.mins), 60);
-  const todayMins = weekData.find((d) => d.isToday)?.mins || 0;
   const totalHrs = (weekData.reduce((s, d) => s + d.mins, 0) / 60).toFixed(1);
   const completed = tasks.filter((t) => t.completed).length;
   const total = tasks.length;

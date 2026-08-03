@@ -1,12 +1,10 @@
-import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { Ionicons } from '@expo/vector-icons';
 import { triggerMediumImpact, triggerLightImpact } from '../services/haptics';
 
 export default function AnalyticsScreen() {
-  const { tasks, habits, moodToday, xp, level, badges, theme } =
-    useStoreState();
+  const { tasks, moodToday, xp, level, badges, theme } = useStoreState();
   const dispatch = useStoreDispatch();
   const colors = theme.colors;
 

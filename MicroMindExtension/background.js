@@ -15,7 +15,7 @@ chrome.runtime.onInstalled.addListener(() => {
   }
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info) => {
   if (info.menuItemId === 'add-to-micromind' && info.selectionText) {
     const text = info.selectionText.trim();
     if (!text) return;

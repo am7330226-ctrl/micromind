@@ -50,7 +50,7 @@ const MONTH_SHORT = [
 
 export default function HabitHeatmap() {
   const state = useAppState();
-  const history = state.history || [];
+  const history = useMemo(() => state.history || [], [state.history]);
   const [tooltip, setTooltip] = useState(null); // { date, count, x, y }
 
   // Build a lookup map: dateString → tasksCompleted

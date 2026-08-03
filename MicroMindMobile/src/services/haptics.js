@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 export function triggerTaskCompletionHaptic() {
   try {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  } catch (err) {
+  } catch {
     // Fallback silently if haptics aren't supported on device
   }
 }
@@ -11,17 +11,23 @@ export function triggerTaskCompletionHaptic() {
 export function triggerLightImpact() {
   try {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  } catch (err) {}
+  } catch {
+    // Fallback silently if haptics aren't supported on device
+  }
 }
 
 export function triggerMediumImpact() {
   try {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  } catch (err) {}
+  } catch {
+    // Fallback silently if haptics aren't supported on device
+  }
 }
 
 export function triggerSelectionHaptic() {
   try {
     Haptics.selectionAsync();
-  } catch (err) {}
+  } catch {
+    // Fallback silently if haptics aren't supported on device
+  }
 }

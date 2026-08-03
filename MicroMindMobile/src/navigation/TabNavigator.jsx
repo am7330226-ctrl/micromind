@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useStoreState } from '../store/StoreContext';
@@ -84,7 +84,7 @@ export default function TabNavigator() {
             fontSize: 10,
             fontWeight: '700',
           },
-          tabBarIcon: ({ color, focused, size }) => {
+          tabBarIcon: ({ color, focused }) => {
             const iconMap = {
               Feed: focused ? 'sparkles' : 'sparkles-outline',
               Deck: focused ? 'albums' : 'albums-outline',

@@ -73,7 +73,7 @@ export default function AuthModal({ onAuthSuccess, onGuestSuccess }) {
           setCheckEmail(true);
         }
       }
-    } catch (ex) {
+    } catch {
       setError('Unexpected network error. Try Guest mode to continue offline.');
     } finally {
       setLoading(false);

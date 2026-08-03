@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  Text,
-  ScrollView,
-} from 'react-native';
+import { useState } from 'react';
+import { View, TextInput, StyleSheet, Pressable, Text } from 'react-native';
 import { useStoreState, useStoreDispatch } from '../store/StoreContext';
 import { classifyTask, estimateTaskTime } from '../services/aiClassifier';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,7 +34,6 @@ export default function BrainDumpInput() {
 
   const [text, setText] = useState('');
   const [selectedTag, setSelectedTag] = useState(null);
-  const [mode, setMode] = useState('task'); // 'task' | 'thought'
 
   const predictedCategory = text.trim() ? classifyTask(text) : null;
   const timeEstimate = text.trim() ? estimateTaskTime(text) : null;
@@ -168,7 +160,7 @@ export default function BrainDumpInput() {
           <>
             <Ionicons name="albums-outline" size={11} color={tagStyle?.text} />
             <Text style={[styles.hintText, { color: tagStyle?.text }]}>
-              → Memory Deck as "{selectedTag}"
+              → Memory Deck as &quot;{selectedTag}&quot;
             </Text>
           </>
         ) : (
